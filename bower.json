@@ -1,0 +1,21 @@
+{
+  "name": "starfish",
+  "description": "starfish",
+  "main": "starfish.js",
+  "license": "ISC",
+  "homepage": "https://actarian.github.io/starfish/",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "v4.0.0-alpha.6",
+    "angular": "1.6.4",
+    "angular-route": "^1.6.4",
+    "json-formatter": "^0.6.0"
+  }
+}
