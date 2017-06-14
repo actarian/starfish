@@ -1,5 +1,99 @@
 ﻿/* global angular, app */
 
+app.controller('RootCtrl', ['$scope', 'FirebaseService', function($scope, FirebaseService) {
+
+    function ___InitFirebase() {
+        var user = {
+
+        };
+
+        var service = $scope.service = new FirebaseService({
+            onPresences: function(items) {
+                console.log('GanttCtrl.onPresences', items.length);
+                gantt.onPresences(items);
+            },
+            onActivities: function(items) {
+                console.log('GanttCtrl.onActivities', items.length);
+                gantt.onActivities(items);
+            }
+        });
+        service.signin(user).then(function() {
+            /*
+            service.getPresences().then(function() {
+                service.getActivities().then(function() {
+                    console.log('GanttCtrl.FirebaseService.ready');
+                });
+            });
+            */
+        });
+        /*
+        $scope.$on('onGanttInsert', function(scope, items) {
+            console.log('GanttCtrl.onGanttInsert', items.length);
+            items = items.map(function(item) {
+                var item = angular.copy(item);
+                return item;
+            });
+            service.addActivities(items);
+        });
+        $scope.$on('onGanttUpdate', function(scope, items) {
+            console.log('GanttCtrl.onGanttUpdate', items.length);
+            items = items.map(function(item) {
+                var item = angular.copy(item);
+                return item;
+            });
+            service.addActivities(items);
+        });
+        $scope.$on('onGanttRemove', function(scope, items) {
+            console.log('GanttCtrl.onGanttRemove', items.length);
+            items = items.map(function(item) {
+                var item = angular.copy(item);
+                item.hours = 0;
+                return item;
+            });
+            service.addActivities(items);
+        });
+        */
+    }
+
+    // InitFirebase();
+
+}]);
+
+app.controller('HomeCtrl', ['$scope', '$location', '$timeout', 'State', function($scope, $location, $timeout, State) {
+
+    var state = $scope.state = new State();
+
+    state.ready();
+
+}]);
+
+app.controller('SigninCtrl', ['$scope', '$location', '$timeout', 'State', 'User', function($scope, $location, $timeout, State, User) {
+
+    var state = $scope.state = new State();
+
+    var model = $scope.model = {};
+
+    $scope.submit = function() {
+        if (state.busy()) {
+            User.signin(model).then(function success(response) {
+                state.success();
+                console.log('SigninCtrl', $location.$$lastRequestedPath || '/');
+                /*
+                $timeout(function() {
+                    console.log('SigninCtrl', $location.$$lastRequestedPath || '/');
+                    $location.path($location.$$lastRequestedPath || '/');
+                    $location.$$lastRequestedPath = null;
+                }, 1000);
+                */
+            }, function error(response) {
+                console.log('SigninCtrl.error', response);
+                state.error(response);
+            });
+        }
+    }
+
+}]);
+
 app.controller('DemoCtrl', ['$scope', '$interval', 'Hash', 'Calendar', 'GanttRow', function($scope, $interval, Hash, Calendar, GanttRow) {
 
     var row = $scope.row = new GanttRow({

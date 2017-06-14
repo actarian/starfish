@@ -1,0 +1,28 @@
+<header>
+    <header-items>
+        <li class="nav-item">Signin</li>
+    </header-items>
+</header>
+
+<main>
+    <div class="content">
+        <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()">
+            <div class="container-fluid maxw-lg">
+                <section class="container-fluid maxw-sm section-bordered shadow">
+                    <h6 class="headline foreground light-60">Accedi</h6>
+                    <div class="padding-top-xs-20 padding-bottom-xs-20">
+                        <div class="form-group" form="form" control-row="text" title="Username" placeholder="il tuo username" model="model.userName" required="true"></div>
+                        <div class="form-group" form="form" control-row="password" title="Password" placeholder="la tua password" model="model.password" required="true"></div>
+                        <br>
+                        <div ng-include="'partials/errors'"></div>
+                        <div class="row">
+                            <div class="col-lg-9 offset-lg-3">
+                                <button state="state" on-click="submit()" on-validate="form.$invalid"><span>Accedi</span> <i class="icon-user"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </form>
+    </div>
+</main>

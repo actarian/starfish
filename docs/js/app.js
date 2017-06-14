@@ -2,10 +2,219 @@
 
 "use strict";
 
-var app = angular.module('app', ['ngRoute', 'jsonFormatter']);
+var app = angular.module('app', ['ngRoute', 'firebase', 'jsonFormatter']);
+
+app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
+
+    $routeProvider.when('/', {
+        title: 'Homepage',
+        templateUrl: 'partials/home.html',
+        controller: 'HomeCtrl',
+
+    }).when('/signin', {
+        title: 'Accedi',
+        templateUrl: 'partials/signin.html',
+        controller: 'SigninCtrl',
+
+    }).when('/user/:userId', {
+        title: 'User',
+        templateUrl: 'partials/user.html',
+        controller: 'UserCtrl',
+        resolve: {
+            user: ['User', function(User) {
+                return User.isLoggedOrGoTo('/signin');
+            }],
+        },
+
+    }).when('/404', {
+        title: 'Error 404',
+        templateUrl: 'partials/404',
+
+    });
+
+    // $routeProvider.otherwise('/'); // stream
+
+    // HTML5 MODE url writing method (false: #/anchor/use, true: /html5/url/use)
+    $locationProvider.html5Mode(false);
+
+}]);
+
+app.config(['$httpProvider', function($httpProvider) {
+    $httpProvider.defaults.withCredentials = true;
+}]);
+
+app.run(['$rootScope', '$route', '$routeParams', '$window', '$q', '$timeout', function($rootScope, $route, $routeParams, $window, $q, $timeout) {
+
+    $rootScope.standalone = $window.navigator.standalone;
+
+    $rootScope.$on('$routeChangeSuccess', function() {
+        var title = $route.current.title;
+        angular.forEach($routeParams, function(value, key) {
+            title = title.replace(new RegExp(':' + key, 'g'), value);
+        });
+        document.title = title || '';
+    });
+
+    $rootScope.log = function() {
+        if (console && console.info) {
+            console.info.apply(console, arguments);
+        }
+    };
+
+    // MODALS
+    $rootScope.modals = [];
+
+    function closeModal(modal) {
+        var index = -1;
+        angular.forEach($rootScope.modals, function(m, i) {
+            if (m === modal) {
+                index = i;
+            }
+        });
+        if (index !== -1) {
+            modal.active = false;
+            $timeout(function() {
+                $rootScope.modals.splice(index, 1);
+            }, 500);
+        }
+    };
+    $rootScope.addModal = function(modalType, title, params) {
+        var deferred = $q.defer();
+        params = params || null;
+        var modal = {
+            title: 'Untitled',
+            controller: null,
+            template: null,
+            params: params,
+        }
+        switch (modalType) {
+            case 'messageModal':
+                modal = {
+                    title: title || 'Messaggio',
+                    controller: 'MessageModalCtrl',
+                    template: 'partials/modals/message',
+                    params: params,
+                }
+                break;
+        }
+        modal.deferred = deferred;
+        modal.resolve = function(data) {
+            closeModal(this);
+            modal.deferred.resolve(data, modal);
+        }
+        modal.reject = function() {
+            closeModal(this);
+            modal.deferred.reject(modal);
+        }
+        $rootScope.modals.push(modal);
+        angular.forEach($rootScope.modals, function(m, i) {
+            m.active = false;
+        });
+        $timeout(function() {
+            modal.active = true;
+            window.scrollTo(0, 0);
+        }, 500);
+        return deferred.promise;
+    };
+
+}]);
 /* global angular, app */
 
 /* global angular, app */
+
+app.controller('RootCtrl', ['$scope', 'FirebaseService', function($scope, FirebaseService) {
+
+    function ___InitFirebase() {
+        var user = {
+
+        };
+
+        var service = $scope.service = new FirebaseService({
+            onPresences: function(items) {
+                console.log('GanttCtrl.onPresences', items.length);
+                gantt.onPresences(items);
+            },
+            onActivities: function(items) {
+                console.log('GanttCtrl.onActivities', items.length);
+                gantt.onActivities(items);
+            }
+        });
+        service.signin(user).then(function() {
+            /*
+            service.getPresences().then(function() {
+                service.getActivities().then(function() {
+                    console.log('GanttCtrl.FirebaseService.ready');
+                });
+            });
+            */
+        });
+        /*
+        $scope.$on('onGanttInsert', function(scope, items) {
+            console.log('GanttCtrl.onGanttInsert', items.length);
+            items = items.map(function(item) {
+                var item = angular.copy(item);
+                return item;
+            });
+            service.addActivities(items);
+        });
+        $scope.$on('onGanttUpdate', function(scope, items) {
+            console.log('GanttCtrl.onGanttUpdate', items.length);
+            items = items.map(function(item) {
+                var item = angular.copy(item);
+                return item;
+            });
+            service.addActivities(items);
+        });
+        $scope.$on('onGanttRemove', function(scope, items) {
+            console.log('GanttCtrl.onGanttRemove', items.length);
+            items = items.map(function(item) {
+                var item = angular.copy(item);
+                item.hours = 0;
+                return item;
+            });
+            service.addActivities(items);
+        });
+        */
+    }
+
+    // InitFirebase();
+
+}]);
+
+app.controller('HomeCtrl', ['$scope', '$location', '$timeout', 'State', function($scope, $location, $timeout, State) {
+
+    var state = $scope.state = new State();
+
+    state.ready();
+
+}]);
+
+app.controller('SigninCtrl', ['$scope', '$location', '$timeout', 'State', 'User', function($scope, $location, $timeout, State, User) {
+
+    var state = $scope.state = new State();
+
+    var model = $scope.model = {};
+
+    $scope.submit = function() {
+        if (state.busy()) {
+            User.signin(model).then(function success(response) {
+                state.success();
+                console.log('SigninCtrl', $location.$$lastRequestedPath || '/');
+                /*
+                $timeout(function() {
+                    console.log('SigninCtrl', $location.$$lastRequestedPath || '/');
+                    $location.path($location.$$lastRequestedPath || '/');
+                    $location.$$lastRequestedPath = null;
+                }, 1000);
+                */
+            }, function error(response) {
+                console.log('SigninCtrl.error', response);
+                state.error(response);
+            });
+        }
+    }
+
+}]);
 
 app.controller('DemoCtrl', ['$scope', '$interval', 'Hash', 'Calendar', 'GanttRow', function($scope, $interval, Hash, Calendar, GanttRow) {
 
@@ -745,8 +954,1235 @@ app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calen
 }]);
 /* global angular, app */
 
+
+app.directive('controlRow', ['$http', '$templateCache', '$compile', function($http, $templateCache, $compile) {
+    var aid = 0;
+
+    function _format(string, prepend, expression) {
+        string = string || '';
+        prepend = prepend || '';
+        var splitted = string.split(',');
+        if (splitted.length > 1) {
+            var formatted = splitted.shift();
+            angular.forEach(splitted, function(value, index) {
+                if (expression) {
+                    formatted = formatted.split('{' + index + '}').join('\' + ' + prepend + value + ' + \'');
+                } else {
+                    formatted = formatted.split('{' + index + '}').join(prepend + value);
+                }
+            });
+            if (expression) {
+                return '\'' + formatted + '\'';
+            } else {
+                return formatted;
+            }
+        } else {
+            return prepend + string;
+        }
+    }
+
+    function templateFunction(element, attributes) {
+        var form = attributes.form || 'Form';
+        var title = attributes.title || 'Untitled';
+        var placeholder = attributes.placeholder || title;
+        var name = title.replace(/[^0-9a-zA-Z]/g, "").split(' ').join('') + (++aid);
+        var formKey = form + '.' + name;
+        var formFocus = ' ng-focus="' + formKey + '.hasFocus=true" ng-blur="' + formKey + '.hasFocus=false"';
+        var message = '',
+            decoration = '',
+            disabled = '';
+        var label = (attributes.label ? attributes.label : 'name');
+        var key = (attributes.key ? attributes.key : 'id');
+        var model = attributes.model;
+        var change = (attributes.onChange ? ' ng-change="' + attributes.onChange + '"' : '');
+        var focus = (attributes.onFocus ? ' ng-focus="' + attributes.onFocus + '"' : '');
+        var blur = (attributes.onBlur ? ' ng-blur="' + attributes.onBlur + '"' : '');
+        var inputCols = attributes.cols ? 6 : 9;
+        var colInput = 'col-lg-' + inputCols;
+        var colLabel = 'col-lg-' + (12 - inputCols);
+        if (attributes.cols === '12') {
+            colLabel = colInput = 'col-lg-12';
+        }
+        var required = (attributes.required ? ' required="true"' : '');
+        var readonly = (attributes.readonly ? ' readonly' : '');
+        var options = (attributes.options ? ' ng-model-options="' + attributes.options + '" ' : '');
+        var validate = (attributes.validate ? ' validate-type="' + attributes.validate + '" ' : '');
+        var format = (attributes.format ? ' format="' + attributes.format + '" ' : '');
+        var precision = (attributes.precision ? ' precision="' + attributes.precision + '" ' : '');
+        if (attributes.disabled) {
+            disabled = ' disabled';
+        }
+        if (attributes.ngDisabled) {
+            disabled = ' ng-disabled="' + attributes.ngDisabled + '"';
+        }
+        if (attributes.required) {
+            decoration = attributes.readonly || attributes.disabled ? '' : '<sup>âœ½</sup>';
+        }
+        message = '<span ng-messages="' + (attributes.readonly ? '' : '(' + form + '.$submitted || ' + formKey + '.$touched) && ') + formKey + '.$error" role="alert">';
+        message = message + '<span ng-message="required" class="label-error animated flash">obbligatorio â¤´</span>';
+        switch (attributes.controlRow) {
+            case 'password':
+                message = message + '<span ng-message="minlength" class="label-error animated flash">almeno 6 caratteri â¤´</span>';
+                break;
+            case 'email':
+                message = message + '<span ng-message="email" class="label-error animated flash">valore non corretto â¤´</span>';
+                break;
+            case 'number':
+            case 'range':
+                message = message + '<span ng-message="positive" class="label-error animated flash">solo valori positivi â¤´</span>';
+                message = message + '<span ng-message="number" class="label-error animated flash">solo valori numerici â¤´</span>';
+                break;
+        }
+        if (attributes.match !== undefined) {
+            message = message + '<span ng-message="match" class="label-error animated flash">non corrispondente â¤´</span>';
+        }
+        message = message + '</span>';
+        var validation = ' ng-class="{ \'control-focus\': ' + formKey + '.hasFocus, \'control-success\': ' + formKey + '.$valid, \'control-error\': ' + formKey + '.$invalid && (' + form + '.$submitted || ' + formKey + '.$touched), \'control-empty\': !' + formKey + '.$viewValue }"';
+        var template = '<div class="row" ' + validation + '><label for="' + name + '" class="' + colLabel + ' col-form-label">' + title + decoration + '</label><div class="' + colInput + ' col-' + attributes.controlRow + '">';
+        switch (attributes.controlRow) {
+            case 'static':
+                var click = (attributes.click ? ' ng-click="' + attributes.click + '"' : '');
+                var mouseover = (attributes.mouseover ? ' ng-mouseover="' + attributes.mouseover + '"' : '');
+                var mouseout = (attributes.mouseout ? ' ng-mouseover="' + attributes.mouseout + '"' : '');
+                var icon = (attributes.icon ? '<i class="pull-xs-right ' + attributes.icon + '"></i>' : '');
+                template += '<p class="form-control" ' + click + mouseover + mouseout + '><span ng-bind-html="' + model + ' || \'&nbsp;\'"></span>' + icon + '</p>';
+                break;
+            case 'checkbox':
+                template = '<div class="' + colInput + '"' + validation + '><div class="col-xs-12"><label class="custom-control custom-checkbox">';
+                template += '   <input type="checkbox" class="custom-control-input" ng-model="' + model + '">';
+                template += '   <span class="custom-control-indicator"></span>';
+                template += '   <span class="custom-control-description">' + title + '</span>';
+                template += '</label>';
+                // template += '<input id="' + name + '" name="' + name + '" type="checkbox" ng-model="' + model + '" ' + change + focus + blur + required + ' class="toggle toggle-round-flat">';
+                /*
+                template = '<div class="checkbox">';
+                template += '<span class="checkbox-label">' + title + required +'</span>';
+                template += '<span class="switch"><input id="' + name + '" name="' + name + '" type="checkbox" ng-model="' + model + '" ' + change + focus + blur + required + ' class="toggle toggle-round-flat"><label for="' + name + '"></label></span>';
+                template += '</div>';
+                */
+                break;
+            case 'yesno':
+                template = '<div class="row" ' + validation + '><label class="col-lg-6 custom-control custom-checkbox">' + title + decoration + '</label>';
+                template += '<div class="' + colLabel + '"><label class="custom-control custom-checkbox">';
+                template += '   <input type="checkbox" class="custom-control-input" ng-model="' + model + '" ng-change="' + model + 'No=!' + model + '">';
+                template += '   <span class="custom-control-indicator"></span>';
+                template += '   <span class="custom-control-description">SÃ¬</span>';
+                template += '</label></div>';
+                template += '<div class="' + colLabel + '"><label class="custom-control custom-checkbox">';
+                template += '   <input type="checkbox" class="custom-control-input" ng-model="' + model + 'No" ng-change="' + model + '=!' + model + 'No">';
+                template += '   <span class="custom-control-indicator"></span>';
+                template += '   <span class="custom-control-description">No</span>';
+                template += '</label>';
+                // template += '<input id="' + name + '" name="' + name + '" type="checkbox" ng-model="' + model + '" ' + change + focus + blur + required + ' class="toggle toggle-round-flat">';
+                /*
+                template = '<div class="checkbox">';
+                template += '<span class="checkbox-label">' + title + required +'</span>';
+                template += '<span class="switch"><input id="' + name + '" name="' + name + '" type="checkbox" ng-model="' + model + '" ' + change + focus + blur + required + ' class="toggle toggle-round-flat"><label for="' + name + '"></label></span>';
+                template += '</div>';
+                */
+                break;
+            case 'switch':
+                if (attributes.disabled) {
+                    disabled = ' disabled="true"';
+                }
+                if (attributes.ngDisabled) {
+                    disabled = ' disabled="' + attributes.ngDisabled + '"';
+                }
+                template = '<div class="row control-switch" ' + validation + '><label for="' + name + '" class="' + colLabel + ' col-form-label">' + title + decoration + '</label>';
+                template += '<div class="' + colInput + '">';
+                template += '<switch name="' + name + '" ng-model="' + model + '" ' + change + focus + blur + options + ' on="SÃ¬" off="No" ' + required + disabled + readonly + formFocus + '></switch>';
+                break;
+            case 'range':
+                validate = ' validate-type="number"';
+                var nameHi = name + 'Hi';
+                var formKeyHi = form + '.' + nameHi;
+                var modelHi = attributes.modelHi;
+                var validationHi = ' ng-class="{ \'control-focus\': ' + formKeyHi + '.hasFocus, \'control-success\': ' + formKeyHi + '.$valid, \'control-error\': ' + formKeyHi + '.$invalid && (' + form + '.$submitted || ' + formKeyHi + '.$touched), \'control-empty\': !' + formKeyHi + '.$viewValue }"';
+                var requiredHi = required;
+                if (attributes.requiredHi == 'true') {
+                    requiredHi = ' required="true"';
+                } else if (attributes.requiredHi == 'false') {
+                    requiredHi = '';
+                }
+                var messageHi = ' ',
+                    decorationHi = ' ';
+                if (attributes.required && attributes.requiredHi !== 'false') {
+                    decorationHi = attributes.readonly || attributes.disabled ? '' : '<sup>âœ½</sup>';
+                }
+                messageHi = '<span ng-messages="' + (attributes.readonly ? '' : '(' + form + '.$submitted || ' + formKeyHi + '.$touched) && ') + formKeyHi + '.$error" role="alert">';
+                messageHi = messageHi + '<span ng-message="required" class="label-error animated flash">obbligatorio â¤´</span>';
+                switch (attributes.controlRow) {
+                    case 'password':
+                        messageHi = messageHi + '<span ng-message="minlength" class="label-error animated flash">almeno 3 caratteri â¤´</span>';
+                        break;
+                    case 'email':
+                        messageHi = messageHi + '<span ng-message="email" class="label-error animated flash">valore non corretto â¤´</span>';
+                        break;
+                    case 'number':
+                    case 'range':
+                        messageHi = messageHi + '<span ng-message="positive" class="label-error animated flash">solo valori positivi â¤´</span>';
+                        messageHi = messageHi + '<span ng-message="number" class="label-error animated flash">solo valori numerici â¤´</span>';
+                        break;
+                }
+                if (attributes.match !== undefined) {
+                    messageHi = messageHi + '<span ng-message="match" class="label-error animated flash">non corrispondente â¤´</span>';
+                }
+                messageHi = messageHi + '</span>';
+                template = '<div class="row"><label for="' + name + '" class="' + colLabel + ' col-form-label">' + title + '</label><div class="' + colInput + ' col-' + attributes.controlRow + '">';
+                template += '<div class="form-control-range form-control-range-min" ' + validation + '>' + decoration + '<input class="form-control" name="' + name + '" ng-model="' + model + '" ' + change + focus + blur + options + ' placeholder="' + placeholder + '" type="text"' + required + disabled + readonly + formFocus + validate + format + precision + '>' + message + '</div>';
+                template += '<div class="form-control-range form-control-range-max" ' + validationHi + '>' + decorationHi + '<input class="form-control" name="' + nameHi + '" ng-model="' + modelHi + '" ' + change + focus + blur + options + ' placeholder="' + placeholder + '" type="text"' + requiredHi + disabled + readonly + formFocus + validate + format + precision + '>' + messageHi + '</div>';
+                return template + '</div></div>';
+                break;
+            case 'range-slider':
+                var himodel = (attributes.himodel ? ' rz-slider-high="' + attributes.himodel + '" ' : '');
+                options = (attributes.options ? ' rz-slider-options="' + attributes.options + '" ' : '');
+                template += '<rzslider rz-slider-model="' + model + '" ' + himodel + options + '"></rzslider>';
+                break;
+            case 'select':
+                var filter = (attributes.min ? ' | filter:gte(\'' + key + '\', ' + attributes.min + ')' : '');
+                var optionLabel = _format(label, 'item.', true);
+                var options = attributes.number ?
+                    'item.' + key + ' as ' + optionLabel + ' disable when item.disabled for item in ' + attributes.source + filter :
+                    optionLabel + ' disable when item.disabled for item in ' + attributes.source + filter + ' track by item.' + key;
+                template += '<select name="' + name + '" class="form-control" ng-model="' + model + '" ' + change + focus + blur + ' ng-options="' + options + '" ' + (attributes.number ? 'convert-to-number' : '') + required + disabled + '><option value="" disabled selected hidden>' + placeholder + '</option></select>';
+                break;
+            case 'autocomplete':
+                var canCreate = (attributes.canCreate ? attributes.canCreate : false);
+                var flatten = (attributes.flatten ? attributes.flatten : false);
+                var queryable = (attributes.queryable ? attributes.queryable : false);
+                var onSelected = (attributes.onSelected ? ' on-selected="' + attributes.onSelected + '"' : '');
+                template += '<input name="' + name + '" ng-model="' + model + '" type="hidden" ' + (attributes.required ? 'required' : '') + '>';
+                template += '<div control-autocomplete="' + attributes.source + '" model="' + model + '" label="' + label + '"  key="' + key + '" can-create="' + canCreate + '" flatten="' + flatten + '" queryable="' + queryable + '" placeholder="' + placeholder + '" on-focus="' + formKey + '.hasFocus=true" on-blur="' + formKey + '.hasFocus=false"' + onSelected + '></div>';
+                break;
+            case 'textarea':
+                var rows = (attributes.rows ? attributes.rows : '1');
+                template += '<textarea name="' + name + '" class="form-control" ng-model="' + model + '" ' + change + focus + blur + options + ' placeholder="' + placeholder + '" ' + required + disabled + ' rows="' + rows + '"' + formFocus + '></textarea>';
+                break;
+            case 'htmltext':
+                var taDisabled = '';
+                if (attributes.disabled) {
+                    taDisabled = ' ta-disabled="true"';
+                }
+                if (attributes.ngDisabled) {
+                    taDisabled = ' ta-disabled="' + attributes.ngDisabled + '"';
+                }
+                template += '<div text-angular name="' + name + '" ta-paste="doStripHtml($html)" ng-model="' + model + '" ' + change + focus + blur + options + ' placeholder="' + placeholder + '" ' + required + taDisabled + readonly + formFocus + (attributes.required ? ' ta-min-text="1"' : '') + '></div>';
+                break;
+            case 'password':
+                template += '<div class="input-group"><input name="' + name + '" class="form-control" ng-model="' + model + '" ' + change + focus + blur + options + ' placeholder="' + placeholder + '" type="{{form.' + name + ' ? \'password\' : \'text\'}}" ng-minlength="6" ' + required + disabled + formFocus + '><span class="input-group-addon" ng-if="' + model + '"><span class="icon-eye" ng-click="form.' + name + ' = !form.' + name + '"></span></span></div>';
+                break;
+            case 'email':
+                template += '<input name="' + name + '" class="form-control" ng-model="' + model + '" ' + change + focus + blur + options + ' placeholder="' + placeholder + '" type="email" ' + required + disabled + formFocus + '>';
+                break;
+            case 'number-picker':
+                validate = ' validate-type="anynumber"';
+                /*
+                var doSub = model + ' = ' + model + ' -1';
+                if (attributes.min) {
+                    validate += ' min="' + attributes.min + '"';
+                    doSub = model + ' = Math.max(' + attributes.min + ', ' + model + ' -1)';
+                }
+                var doAdd = model + ' = ' + model + ' +1';
+                if (attributes.max) {
+                    validate += ' max="' + attributes.max + '"';
+                    doAdd = model + ' = Math.min(' + attributes.max + ', ' + model + ' +1)';
+                }
+                template += '<div class="input-group">';
+                template += '   <span class="input-group-btn"><button class="btn btn-outline-primary" type="button" ng-click="(' + doSub + ')">-</button></span>';
+                template += '   <input name="' + name + '" class="form-control" ng-model="' + model + '" ' + change + focus + blur + options + ' placeholder="' + placeholder + '" type="text"' + required + disabled + readonly + formFocus + validate + format + precision + '>';
+                template += '   <span class="input-group-btn"><button class="btn btn-outline-primary" type="button" ng-click="(' + doAdd + ')">+</button></span>';
+                template += '</div>';
+                */
+                template += '<div number-picker="' + model + '" min="' + attributes.min + '" max="' + attributes.max + '">';
+                template += '   <input name="' + name + '" class="form-control" ng-model="' + model + '" ' + change + focus + blur + options + ' placeholder="' + placeholder + '" type="text"' + required + disabled + readonly + formFocus + validate + format + precision + '>';
+                template += '</div>';
+                break;
+            case 'number':
+                validate = ' validate-type="number"';
+                template += '<input name="' + name + '" class="form-control" ng-model="' + model + '" ' + change + focus + blur + options + ' placeholder="' + placeholder + '" type="text"' + required + disabled + readonly + formFocus + validate + format + precision + '>';
+                break;
+            case 'anynumber':
+                validate = ' validate-type="anynumber"';
+                template += '<input name="' + name + '" class="form-control" ng-model="' + model + '" ' + change + focus + blur + options + ' placeholder="' + placeholder + '" type="text"' + required + disabled + readonly + formFocus + validate + format + precision + '>';
+                break;
+            case 'date':
+                validate = ' validate-type="date"';
+                format = ' format="dd-MM-yyyy"';
+                if (attributes.disabled || attributes.readonly) {
+                    template += '<div class="input-group"><input type="text" class="form-control" name="' + name + '" ng-model="' + model + '" placeholder="' + placeholder + '" ' + required + disabled + readonly + formFocus + validate + format + '><span class="input-group-addon"><i class="icon-calendar"></i></span></div>';
+                } else {
+                    template += '<input type="date" name="' + name + '" class="form-control form-control-hidden" is-open="flags.' + name + '" ng-model="' + model + '" placeholder="dd-MM-yyyy" ' + required + disabled + readonly + formFocus + ' uib-datepicker-popup datepicker-options="sources.datepickerOptions" datepicker-template-url="uib/template/datepicker/datepicker.html" show-button-bar="false" current-text="Oggi" clear-text="Rimuovi" close-text="Chiudi">';
+                    template += '<div ng-click="(flags.' + name + ' = true)" class="input-group disabled"><input type="text" class="form-control" name="' + name + '" ng-model="' + model + '" placeholder="' + placeholder + '" ' + required + disabled + readonly + formFocus + validate + format + '><span class="input-group-addon"><i class="icon-calendar"></i></span></div>';
+                }
+                break;
+                /*
+            case 'date':
+                placeholder = placeholder || 'dd-MM-yyyy';
+                template += '<input name="' + name + '" class="form-control" ng-model="' + model + '" ' + change + focus + blur + options + ' placeholder="' + placeholder + '" type="date"' + required + disabled + readonly + formFocus + '>';
+                break;
+                */
+            case 'datetime-local':
+                placeholder = placeholder || 'dd-MM-yyyyTHH:mm:ss';
+                // placeholder == title ? placeholder = 'dd/MM/yyyyTHH:mm:ss' : null;
+                template += '<input name="' + name + '" class="form-control" ng-model="' + model + '" ' + change + focus + blur + options + ' placeholder="' + placeholder + '" type="datetime-local"' + required + disabled + readonly + formFocus + '>';
+                break;
+            case 'text':
+            default:
+                template += '<input name="' + name + '" class="form-control" ng-model="' + model + '" ' + change + focus + blur + options + ' placeholder="' + placeholder + '" type="text"' + required + disabled + readonly + formFocus + validate + format + precision + '>';
+                break;
+        }
+        return template + message + '</div></div>';
+    }
+    return {
+        restrict: 'A',
+        replace: true,
+        compile: function(templateElement, templateAttributes) {
+            return function(scope, element, attributes) {
+                element.html(templateFunction(templateElement, templateAttributes));
+                $compile(element.contents())(scope);
+            }
+        }
+    }
+}]);
+
+app.directive('numberPicker', ['$parse', '$timeout', function($parse, $timeout) {
+    return {
+        restrict: 'A',
+        template: '<div class="input-group">' +
+            '   <span class="input-group-btn"><button class="btn btn-outline-primary" type="button">-</button></span>' +
+            '   <div ng-transclude></div>' +
+            '   <span class="input-group-btn"><button class="btn btn-outline-primary" type="button">+</button></span>' +
+            '</div>',
+        replace: true,
+        transclude: true,
+        link: function(scope, element, attributes, model) {
+            var node = element[0];
+            var nodeRemove = node.querySelectorAll('.input-group-btn > .btn')[0];
+            var nodeAdd = node.querySelectorAll('.input-group-btn > .btn')[1];
+
+            function onRemove(e) {
+                var min = $parse(attributes.min)(scope);
+                var getter = $parse(attributes.numberPicker);
+                var setter = getter.assign;
+                $timeout(function() {
+                    setter(scope, Math.max(min, getter(scope) - 1));
+                });
+                // console.log('numberPicker.onRemove', min);
+            }
+
+            function onAdd(e) {
+                var max = $parse(attributes.max)(scope);
+                var getter = $parse(attributes.numberPicker);
+                var setter = getter.assign;
+                $timeout(function() {
+                    setter(scope, Math.min(max, getter(scope) + 1));
+                });
+                // console.log('numberPicker.onAdd', max);
+            }
+
+            function addListeners() {
+                angular.element(nodeRemove).on('touchstart mousedown', onRemove);
+                angular.element(nodeAdd).on('touchstart mousedown', onAdd);
+            }
+
+            function removeListeners() {
+                angular.element(nodeRemove).off('touchstart mousedown', onRemove);
+                angular.element(nodeAdd).off('touchstart mousedown', onAdd);
+            }
+            scope.$on('$destroy', function() {
+                removeListeners();
+            });
+            addListeners();
+        }
+    }
+}]);
+
+
+
+app.directive('validateType', ['$filter', function($filter) {
+    return {
+        require: 'ngModel',
+        link: function(scope, element, attributes, model) {
+            var validateType = attributes.validateType;
+            var format = attributes.format || '';
+            var precision = attributes.precision || 2;
+            var focus = false;
+            switch (validateType) {
+                case 'date':
+                case 'datetime':
+                case 'datetime-local':
+                    model.$formatters.push(function(value) {
+                        if (value) {
+                            return $filter('date')(value, format);
+                        } else {
+                            return null;
+                        }
+                    });
+                    break;
+                case 'number':
+                    model.$parsers.unshift(function(value) {
+                        var valid = false,
+                            type = validateType;
+                        if (value !== undefined && value !== "") {
+                            valid = String(value).indexOf(Number(value).toString()) !== -1; // isFinite(value); // 
+                            value = Number(value);
+                            model.$setValidity('number', valid);
+                            if (valid) {
+                                model.$setValidity('positive', value >= 0.01);
+                                attributes.min !== undefined ? model.$setValidity('range', value >= Number(attributes.min)) : null;
+                                attributes.max !== undefined ? model.$setValidity('range', value <= Number(attributes.max)) : null;
+                            }
+                            /*                             
+                            if (valid) {
+                                if (value < 0.01) {
+                                    valid = false;
+                                    type = 'positive';
+                                }
+                                if (valid && attributes.min !== undefined) {
+                                    valid = valid && value >= Number(attributes.min);
+                                    if (!valid) {
+                                        type = 'range';
+                                    }
+                                }
+                                if (valid && attributes.max !== undefined) {
+                                    valid = valid && value <= Number(attributes.max);
+                                    if (!valid) {
+                                        type = 'range';
+                                    }
+                                }
+                            }
+                            */
+                            // console.log('validateType.number', type, valid, value);
+                        } else {
+                            valid = true;
+                            value = Number(value);
+                            model.$setValidity('number', true);
+                            model.$setValidity('positive', true);
+                            attributes.min !== undefined ? model.$setValidity('range', true) : null;
+                            attributes.max !== undefined ? model.$setValidity('range', true) : null;
+                        }
+                        return value;
+                    });
+                    model.$formatters.push(function(value) {
+                        if (value) {
+                            return $filter('number')(value, precision) + ' ' + format;
+                        } else {
+                            return null;
+                        }
+                    });
+                    /*
+                    model.$render = function () {
+                        console.log('model.render', model.$modelValue);
+                        element[0].value = model.$modelValue ? $filter('number')(model.$modelValue, precision) + ' ' + format : ' ';
+                    };
+                    */
+                    break;
+                case 'anynumber':
+                    model.$parsers.unshift(function(value) {
+                        var valid = false,
+                            type = validateType;
+                        if (value !== undefined && value !== "") {
+                            valid = String(value).indexOf(Number(value).toString()) !== -1; // isFinite(value); // 
+                            value = Number(value);
+                            model.$setValidity('number', valid);
+                            if (valid) {
+                                attributes.min !== undefined ? model.$setValidity('range', value >= Number(attributes.min)) : null;
+                                attributes.max !== undefined ? model.$setValidity('range', value <= Number(attributes.max)) : null;
+                            }
+                        } else {
+                            valid = true;
+                            value = Number(value);
+                            model.$setValidity('number', true);
+                            attributes.min !== undefined ? model.$setValidity('range', true) : null;
+                            attributes.max !== undefined ? model.$setValidity('range', true) : null;
+                        }
+                        return value;
+                    });
+                    model.$formatters.push(function(value) {
+                        if (value || value === 0) {
+                            return $filter('number')(value, precision) + ' ' + format;
+                        } else {
+                            return null;
+                        }
+                    });
+                    break;
+            }
+
+            function onFocus() {
+                focus = true;
+                if (format) {
+                    element[0].value = model.$modelValue || null;
+                    if (!model.$modelValue) {
+                        model.$setViewValue(null);
+                    }
+                }
+            }
+
+            function doBlur() {
+                if (format && !model.$invalid) {
+                    switch (validateType) {
+                        case 'date':
+                        case 'datetime':
+                        case 'datetime-local':
+                            element[0].value = model.$modelValue ? $filter('date')(model.$modelValue, format) : ' ';
+                            break;
+                        default:
+                            element[0].value = model.$modelValue ? $filter('number')(model.$modelValue, precision) + ' ' + format : ' ';
+                            break;
+                    }
+                }
+            }
+
+            function onBlur() {
+                focus = false;
+                doBlur();
+            }
+
+            function addListeners() {
+                element.on('focus', onFocus);
+                element.on('blur', onBlur);
+            }
+
+            function removeListeners() {
+                element.off('focus', onFocus);
+                element.off('blur', onBlur);
+            }
+            scope.$on('$destroy', function() {
+                removeListeners();
+            });
+            addListeners();
+        }
+    };
+}]);
 /* global angular, app, Autolinker */
 
 /* global angular, app */
 
+app.factory('State', ['$timeout', function($timeout) {
+    function State() {
+        this.isReady = false;
+        this.idle();
+    }
+    State.prototype = {
+        idle: function() {
+            this.isBusy = false;
+            this.isError = false;
+            this.isErroring = false;
+            this.isSuccess = false;
+            this.isSuccessing = false;
+            this.button = null;
+            this.errors = [];
+        },
+        enabled: function() {
+            return !this.isBusy && !this.isErroring && !this.isSuccessing;
+        },
+        busy: function() {
+            if (!this.isBusy) {
+                this.isBusy = true;
+                this.isError = false;
+                this.isErroring = false;
+                this.isSuccess = false;
+                this.isSuccessing = false;
+                this.errors = [];
+                // console.log('State.busy', this);
+                return true;
+            } else {
+                return false;
+            }
+        },
+        success: function() {
+            this.isBusy = false;
+            this.isError = false;
+            this.isErroring = false;
+            this.isSuccess = true;
+            this.isSuccessing = true;
+            this.errors = [];
+            $timeout(function() {
+                this.isSuccessing = false;
+                this.button = null;
+            }.bind(this), 1000);
+        },
+        error: function(error) {
+            this.isBusy = false;
+            this.isError = true;
+            this.isErroring = true;
+            this.isSuccess = false;
+            this.isSuccessing = false;
+            this.errors.push(error);
+            $timeout(function() {
+                this.isErroring = false;
+                this.button = null;
+            }.bind(this), 1000);
+        },
+        ready: function() {
+            this.isReady = true;
+            this.success();
+        },
+        errorMessage: function() {
+            return this.isError ? this.errors[this.errors.length - 1] : null;
+        },
+        submitClass: function() {
+            return {
+                busy: this.isBusy,
+                ready: this.isReady,
+                successing: this.isSuccessing,
+                success: this.isSuccess,
+                errorring: this.isErroring,
+                error: this.isError,
+            };
+        },
+        submitMessage: function(idleMessage, busyMessage, successMessage, errorMessage) {
+            idleMessage = idleMessage || 'Submit';
+            if (this.isBusy) {
+                return busyMessage || idleMessage;
+            } else if (this.isSuccess) {
+                return successMessage || idleMessage;
+            } else if (this.isError) {
+                return errorMessage || idleMessage;
+            } else {
+                return idleMessage;
+            }
+        },
+    };
+    return State;
+}]);
+
+app.factory('User', ['$q', '$location', 'LocalStorage', 'Api', function($q, $location, storage, Api) {
+    function User(data) {
+        data ? angular.extend(this, data) : null;
+    }
+    User.prototype = {};
+    User.current = function() {
+        return storage.get('user');
+    };
+    User.isLoggedOrGoTo = function(redirect) {
+        var deferred = $q.defer();
+        var q = storage.get('q');
+
+        function success(response) {
+            storage.set('q', window.btoa(JSON.stringify({
+                un: response.userName,
+                pwd: response.password
+            })));
+            response.password = null;
+            storage.set('user', { id: response.id });
+            deferred.resolve(response);
+        }
+
+        function error(response) {
+            deferred.reject(response);
+            $location.$$lastRequestedPath = $location.path();
+            $location.path(redirect);
+        }
+        if (q) {
+            Api.auth.sso(q).then(success, error);
+        } else {
+            Api.auth.current().then(success, error);
+        }
+        return deferred.promise;
+    };
+    User.signin = function(model) {
+        var deferred = $q.defer();
+        Api.auth.signin(model).then(function success(response) {
+            storage.set('q', window.btoa(JSON.stringify({
+                un: response.userName,
+                pwd: response.password
+            })));
+            response.password = null;
+            storage.set('user', { id: response.id });
+            deferred.resolve(response);
+        }, function error(response) {
+            deferred.reject(response);
+        });
+        return deferred.promise;
+    };
+    User.signout = function() {
+        var deferred = $q.defer();
+        var user = storage.get('user');
+        if (user) {
+            Api.auth.signout(user.id).then(function success(response) {
+                storage.delete('q');
+                storage.delete('user');
+                deferred.resolve(response);
+            }, function error(response) {
+                deferred.reject(response);
+            });
+        } else {
+            deferred.reject(null);
+        }
+        return deferred.promise;
+    };
+    return User;
+}]);
 /* global angular, app */
+
+app.service('Api', ['$http', '$q', '$timeout', '$location', 'FirebaseService', function($http, $q, $timeout, $location, FirebaseService) {
+
+    var _service = new FirebaseService({
+        onPresences: function(items) {
+            console.log('Api.onPresences', items.length);
+        },
+        onActivities: function(items) {
+            console.log('Api.onActivities', items.length);
+        }
+    });
+
+    var _this = this;
+
+    /*
+    var _get = this.get = function (url, params) {
+        var deferred = $q.defer();
+        $http.get(url, { params: params }).then(function (response) {
+            deferred.resolve(response.data);
+        }, function (response) {
+            onError(deferred, 'get', url, { params: params }, response);
+        });
+        return deferred.promise;
+    };
+    var _post = this.post = function (url, model) {
+        var deferred = $q.defer();
+        if (_this.DEBUG) {
+            console.log('Api.DEBUG', url, model);
+            deferred.resolve(model);
+        } else {
+            $http.post(url, model).then(function (response) {
+                deferred.resolve(response.data);
+            }, function (response) {
+                onError(deferred, 'post', url, model, response);
+            });
+        }
+        return deferred.promise;
+    };
+    var _put = this.put = function (url, model) {
+        var deferred = $q.defer();
+        $http.put(url, model).then(function (response) {
+            deferred.resolve(response.data);
+        }, function (response) {
+            onError(deferred, 'put', url, model, response);
+        });
+        return deferred.promise;
+    };
+    var _patch = this.patch = function (url, model) {
+        var deferred = $q.defer();
+        $http.patch(url, model).then(function (response) {
+            deferred.resolve(response.data);
+        }, function (response) {
+            onError(deferred, 'patch', url, model, response);
+        });
+        return deferred.promise;
+    };
+    var _delete = this.delete = function (url) {
+        var deferred = $q.defer();
+        $http.delete(url).then(function (response) {
+            deferred.resolve(response.data);
+        }, function (response) {
+            onError(deferred, 'delete', url, null, response);
+        });
+        return deferred.promise;
+    };
+    var _blob = this.blob = function (url, model) {
+        var deferred = $q.defer();
+        if (_this.DEBUG) {
+            console.log('Api.DEBUG', url, model);
+            deferred.resolve(model);
+        } else {
+            $http({
+                url: url,
+                method: "POST",
+                data: model,
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                responseType: 'arraybuffer',
+            }).then(function (response) {
+                deferred.resolve(response);
+            }, function (response) {
+                onError(deferred, 'post', url, model, response);
+            });
+        }
+        return deferred.promise;
+    };
+    */
+
+    this.auth = {
+        signin: _service.signin,
+        // return _post('/api/auth/login', model);
+        signout: function(userId) {
+            // return _get('/api/auth/logout/' + userId);
+        },
+        current: function() {
+            var deferred = $q.defer();
+            if (_service.user) {
+                deferred.resolve(_service.user);
+            } else {
+                deferred.reject();
+            }
+            return deferred.promise;
+            // return _get('/api/auth/current/');
+        },
+    };
+
+}]);
+
+app.factory('FirebaseService', ['$q', '$firebaseAuth', '$firebaseObject', '$firebaseArray', function($q, $firebaseAuth, $firebaseObject, $firebaseArray) {
+    var config = null;
+
+    function getConfig() {
+        if (!config) {
+            // Initialize the Firebase SDK
+            config = {
+                apiKey: "AIzaSyCskd8Cgzd_j7JzgEC3mEb4ir1qZFh6auQ",
+                authDomain: "starfish-c2b0f.firebaseapp.com",
+                databaseURL: "https://starfish-c2b0f.firebaseio.com",
+                projectId: "starfish-c2b0f",
+                storageBucket: "starfish-c2b0f.appspot.com",
+                messagingSenderId: "796739915579"
+            };
+            firebase.initializeApp(config);
+        }
+        return config;
+    }
+
+    function FirebaseService(options) {
+        var defaults = {
+            onPresences: function(items) {
+                console.log('FirebaseService.onPresences', items.length);
+            },
+            onActivities: function(items) {
+                console.log('FirebaseService.onActivities', items.length);
+            }
+        };
+        this.options = options ? angular.extend(defaults, options) : defaults;
+        this.config = getConfig();
+    }
+    FirebaseService.prototype = {
+        signin: function($user) {
+            console.log('FirebaseService.signin', $user);
+            var deferred = $q.defer();
+            if (this.user) {
+                console.log('Signed in as', this.user);
+                deferred.resolve(this.user);
+            } else {
+                var random = 10000 + Math.floor(Math.random() * 1000);
+                var user = this.user = {
+                    id: random,
+                    name: 'Firebase ' + random,
+                    firstName: 'Firebase',
+                    lastName: random,
+                };
+                if ($user) {
+                    for (var p in user) {
+                        user[p] = $user[p] || user[p];
+                    }
+                }
+                user.timestamp = Date.now();
+                var fs = this;
+                var auth = this.auth = $firebaseAuth();
+                auth.$signInAnonymously({ remember: 'sessionOnly' }).then(function(logged) {
+                    user.uid = logged.uid;
+                    console.log('Signed in as', user);
+                    deferred.resolve(user);
+                }).catch(function(error) {
+                    console.log('Error', error);
+                    deferred.reject(error);
+                });
+            }
+            return deferred.promise;
+        },
+        getPresences: function() {
+            var deferred = $q.defer();
+            var fs = this;
+            var user = this.user;
+            var root = this.root = firebase.database().ref();
+            var presencesRef = root.child('presences');
+            var userRef = presencesRef.push();
+            var connectedRef = root.child('.info/connected');
+            connectedRef.on('value', function(snap) {
+                if (snap.val()) {
+                    userRef.onDisconnect().remove();
+                    userRef.set(user);
+                    fs.updateUser = function() {
+                        userRef.set(user);
+                    };
+                    deferred.resolve();
+                }
+            });
+            presencesRef.on('value', function(snap) {
+                // console.log('# of online users = ', snap.numChildren());
+                var presences = snap.val(),
+                    items = [];
+                for (var key in presences) {
+                    var user = presences[key];
+                    if (user.id !== fs.user.id) {
+                        items.push(user);
+                    }
+                }
+                items.length ? fs.options.onPresences(items) : null;
+            });
+            this.presences = $firebaseArray(presencesRef);
+            return deferred.promise;
+        },
+        removeRange: function(firebaseArray, from, to) {
+            var keys = {};
+            if (to === undefined) {
+                to = firebaseArray.length;
+            }
+            for (var i = from; i < to; ++i) {
+                keys[firebaseArray.$keyAt(i)] = null;
+            }
+            return firebaseArray.$ref().update(keys);
+        },
+        clearActivities: function() {
+            var min = Number.POSITIVE_INFINITY;
+            angular.forEach(this.presences, function(presence) {
+                min = Math.min(presence.timestamp, min);
+            });
+            var activities = this.activities;
+            var from = 0,
+                to = 0;
+            angular.forEach(activities, function(item, index) {
+                if (item.timestamp < min) {
+                    to = index + 1;
+                }
+            });
+            this.removeRange(activities, from, to);
+        },
+        addActivities: function(items) {
+            if (items && items.length) {
+                var user = this.user;
+                var root = this.root; // firebase.database().ref();
+                var lastActivity = null;
+                var activitiesRef = root.child('activities');
+                angular.forEach(items, function(item) {
+                    item.userId = user.id;
+                    item.timestamp = Date.now();
+                    lastActivity = item;
+                    var activityRef = activitiesRef.push();
+                    activityRef.set(item);
+                });
+                if (lastActivity) {
+                    user.lastActivity = lastActivity;
+                    this.updateUser();
+                }
+            }
+        },
+        getUniqueActivities: function(items) {
+            items.sort(function(a, b) {
+                return b.timestamp - a.timestamp; // desc
+            });
+            var pool = {};
+            items = items.filter(function(item) {
+                if (!pool[item.id]) {
+                    return (pool[item.id] = true);
+                } else {
+                    return false;
+                }
+            });
+            items.sort(function(a, b) {
+                return a.timestamp - b.timestamp; // asc
+            });
+            return items;
+        },
+        getActivities: function() {
+            var deferred = $q.defer();
+            var fs = this;
+            var root = this.root; // firebase.database().ref();
+            var activitiesRef = root.child('activities');
+            var user = this.user;
+            var lastDate = user.timestamp;
+            activitiesRef.on('value', function(snap) {
+                var activities = snap.val(),
+                    items = [];
+                var max = Number.NEGATIVE_INFINITY;
+                for (var key in activities) {
+                    var activity = activities[key];
+                    max = Math.max(max, activity.timestamp);
+                    if (activity.userId !== fs.user.id && activity.timestamp > lastDate) {
+                        items.push(activity);
+                    }
+                }
+                lastDate = Math.max(lastDate, max);
+                items = fs.getUniqueActivities(items);
+                items.length ? fs.options.onActivities(items) : null;
+            });
+            var activities = this.activities = $firebaseArray(activitiesRef);
+            activities.$loaded().then(function() {
+                fs.clearActivities();
+                deferred.resolve();
+            }).catch(function(error) {
+                deferred.reject(error);
+            });
+            /*
+            var unwatch = activities.$watch(function(event) {
+              console.log(event);
+            });
+            // at some time in the future, we can unregister using
+            // unwatch();
+            */
+            return deferred.promise;
+        },
+    };
+    return FirebaseService;
+}]);
+
+app.factory('Cookie', ['$q', '$window', function($q, $window) {
+    function Cookie() {}
+    Cookie.TIMEOUT = 5 * 60 * 1000; // five minutes
+    Cookie._set = function(name, value, days) {
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            var expires = "; expires=" + date.toGMTString();
+        } else {
+            var expires = "";
+        }
+        $window.document.cookie = name + "=" + value + expires + "; path=/";
+    }
+    Cookie.set = function(name, value, days) {
+        try {
+            var cache = [];
+            var json = JSON.stringify(value, function(key, value) {
+                if (key === 'pool') {
+                    return;
+                }
+                if (typeof value === 'object' && value !== null) {
+                    if (cache.indexOf(value) !== -1) {
+                        // Circular reference found, discard key
+                        return;
+                    }
+                    cache.push(value);
+                }
+                return value;
+            });
+            cache = null;
+            Cookie._set(name, json, days);
+        } catch (e) {
+            console.log('Cookie.set.error serializing', name, value, e);
+        }
+    };
+    Cookie.get = function(name) {
+        var cookieName = name + "=";
+        var ca = $window.document.cookie.split(';');
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1, c.length);
+            }
+            if (c.indexOf(cookieName) == 0) {
+                var value = c.substring(cookieName.length, c.length);
+                var model = null;
+                try {
+                    model = JSON.parse(value);
+                } catch (e) {
+                    console.log('Cookie.get.error parsing', key, e);
+                };
+                return model;
+            }
+        }
+        return null;
+    };
+    Cookie.delete = function(name) {
+        Cookie._set(name, "", -1);
+    };
+    Cookie.on = function(name) {
+        var deferred = $q.defer();
+        var i, interval = 1000,
+            elapsed = 0,
+            timeout = Cookie.TIMEOUT;
+
+        function checkCookie() {
+            if (elapsed > timeout) {
+                deferred.reject('timeout');
+            } else {
+                var c = Cookie.get(name);
+                if (c) {
+                    deferred.resolve(c);
+                } else {
+                    elapsed += interval;
+                    i = setTimeout(checkCookie, interval);
+                }
+            }
+        }
+        checkCookie();
+        return deferred.promise;
+    };
+    return Cookie;
+}]);
+
+app.factory('LocalStorage', ['$q', '$window', 'Cookie', function($q, $window, Cookie) {
+    function LocalStorage() {}
+
+    function isLocalStorageSupported() {
+        var supported = false;
+        try {
+            supported = 'localStorage' in $window && $window['localStorage'] !== null;
+            if (supported) {
+                $window.localStorage.setItem('test', '1');
+                $window.localStorage.removeItem('test');
+            } else {
+                supported = false;
+            }
+        } catch (e) {
+            supported = false;
+        }
+        return supported;
+    }
+    LocalStorage.isSupported = isLocalStorageSupported();
+    if (LocalStorage.isSupported) {
+        LocalStorage.set = function(name, value) {
+            try {
+                var cache = [];
+                var json = JSON.stringify(value, function(key, value) {
+                    if (key === 'pool') {
+                        return;
+                    }
+                    if (typeof value === 'object' && value !== null) {
+                        if (cache.indexOf(value) !== -1) {
+                            // Circular reference found, discard key
+                            return;
+                        }
+                        cache.push(value);
+                    }
+                    return value;
+                });
+                cache = null;
+                $window.localStorage.setItem(name, json);
+            } catch (e) {
+                console.log('LocalStorage.set.error serializing', name, value, e);
+            }
+        };
+        LocalStorage.get = function(name) {
+            var value = null;
+            if ($window.localStorage[name] !== undefined) {
+                try {
+                    value = JSON.parse($window.localStorage[name]);
+                } catch (e) {
+                    console.log('LocalStorage.get.error parsing', name, e);
+                }
+            }
+            return value;
+        };
+        LocalStorage.delete = function(name) {
+            $window.localStorage.removeItem(name);
+        };
+        LocalStorage.on = function(name) {
+            var deferred = $q.defer();
+            var i, timeout = Cookie.TIMEOUT;
+
+            function storageEvent(e) {
+                // console.log('LocalStorage.on', name, e);
+                clearTimeout(i);
+                if (e.originalEvent.key == name) {
+                    try {
+                        var value = JSON.parse(e.originalEvent.newValue); // , e.originalEvent.oldValue
+                        deferred.resolve(value);
+                    } catch (e) {
+                        console.log('LocalStorage.on.error parsing', name, e);
+                        deferred.reject('error parsing ' + name);
+                    }
+                }
+            }
+            angular.element($window).on('storage', storageEvent);
+            i = setTimeout(function() {
+                deferred.reject('timeout');
+            }, timeout);
+            return deferred.promise;
+        };
+    } else {
+        console.log('LocalStorage.unsupported switching to cookies');
+        LocalStorage.set = Cookie.set;
+        LocalStorage.get = Cookie.get;
+        LocalStorage.delete = Cookie.delete;
+        LocalStorage.on = Cookie.on;
+    }
+    return LocalStorage;
+}]);
+
+app.factory('SessionStorage', ['$q', '$window', 'Cookie', function($q, $window, Cookie) {
+    function SessionStorage() {}
+
+    function isSessionStorageSupported() {
+        var supported = false;
+        try {
+            supported = 'sessionStorage' in $window && $window.sessionStorage !== undefined;
+            if (supported) {
+                $window.sessionStorage.setItem('test', '1');
+                $window.sessionStorage.removeItem('test');
+            } else {
+                supported = false;
+            }
+        } catch (e) {
+            supported = false;
+        }
+        return supported;
+    }
+    SessionStorage.isSupported = isSessionStorageSupported();
+    if (SessionStorage.isSupported) {
+        SessionStorage.set = function(name, value) {
+            try {
+                var cache = [];
+                var json = JSON.stringify(value, function(key, value) {
+                    if (key === 'pool') {
+                        return;
+                    }
+                    if (typeof value === 'object' && value !== null) {
+                        if (cache.indexOf(value) !== -1) {
+                            // Circular reference found, discard key
+                            return;
+                        }
+                        cache.push(value);
+                    }
+                    return value;
+                });
+                cache = null;
+                $window.sessionStorage.setItem(name, json);
+            } catch (e) {
+                console.log('SessionStorage.set.error serializing', name, value, e);
+            }
+        };
+        SessionStorage.get = function(name) {
+            var value = null;
+            if ($window.sessionStorage[name] !== undefined) {
+                try {
+                    value = JSON.parse($window.sessionStorage[name]);
+                } catch (e) {
+                    console.log('SessionStorage.get.error parsing', name, e);
+                }
+            }
+            return value;
+        };
+        SessionStorage.delete = function(name) {
+            $window.sessionStorage.removeItem(name);
+        };
+        SessionStorage.on = function(name) {
+            var deferred = $q.defer();
+            var i, timeout = Cookie.TIMEOUT;
+
+            function storageEvent(e) {
+                // console.log('SessionStorage.on', name, e);
+                clearTimeout(i);
+                if (e.originalEvent.key === name) {
+                    try {
+                        var value = JSON.parse(e.originalEvent.newValue); // , e.originalEvent.oldValue
+                        deferred.resolve(value);
+                    } catch (e) {
+                        console.log('SessionStorage.on.error parsing', name, e);
+                        deferred.reject('error parsing ' + name);
+                    }
+                }
+            }
+            angular.element($window).on('storage', storageEvent);
+            i = setTimeout(function() {
+                deferred.reject('timeout');
+            }, timeout);
+            return deferred.promise;
+        };
+    } else {
+        console.log('SessionStorage.unsupported switching to cookies');
+        SessionStorage.set = Cookie.set;
+        SessionStorage.get = Cookie.get;
+        SessionStorage.delete = Cookie.delete;
+        SessionStorage.on = Cookie.on;
+    }
+    return SessionStorage;
+}]);
