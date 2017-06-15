@@ -2,7 +2,7 @@
 
 "use strict";
 
-var app = angular.module('app', ['ngRoute', 'firebase', 'jsonFormatter']);
+var app = angular.module('app', ['ngRoute', 'ngMessages', 'firebase', 'jsonFormatter']);
 
 app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
 
@@ -15,6 +15,11 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         title: 'Accedi',
         templateUrl: 'partials/signin.html',
         controller: 'SigninCtrl',
+
+    }).when('/dashboard', {
+        title: 'Dashboard',
+        templateUrl: 'partials/dashboard.html',
+        controller: 'DashboardCtrl',
 
     }).when('/user/:userId', {
         title: 'User',
@@ -36,6 +41,7 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
 
     // HTML5 MODE url writing method (false: #/anchor/use, true: /html5/url/use)
     $locationProvider.html5Mode(false);
+    $locationProvider.hashPrefix('');
 
 }]);
 
@@ -43,7 +49,7 @@ app.config(['$httpProvider', function($httpProvider) {
     $httpProvider.defaults.withCredentials = true;
 }]);
 
-app.run(['$rootScope', '$route', '$routeParams', '$window', '$q', '$timeout', function($rootScope, $route, $routeParams, $window, $q, $timeout) {
+app.run(['$rootScope', '$route', '$routeParams', '$window', '$document', '$q', '$timeout', function($rootScope, $route, $routeParams, $window, $document, $q, $timeout) {
 
     $rootScope.standalone = $window.navigator.standalone;
 
@@ -52,18 +58,17 @@ app.run(['$rootScope', '$route', '$routeParams', '$window', '$q', '$timeout', fu
         angular.forEach($routeParams, function(value, key) {
             title = title.replace(new RegExp(':' + key, 'g'), value);
         });
-        document.title = title || '';
+        $document.title = title || '';
     });
 
     $rootScope.log = function() {
-        if (console && console.info) {
-            console.info.apply(console, arguments);
+        if ($window.console && $window.console.info) {
+            $window.console.info.apply($window.console, arguments);
         }
     };
 
     // MODALS
     $rootScope.modals = [];
-
     function closeModal(modal) {
         var index = -1;
         angular.forEach($rootScope.modals, function(m, i) {
@@ -77,7 +82,8 @@ app.run(['$rootScope', '$route', '$routeParams', '$window', '$q', '$timeout', fu
                 $rootScope.modals.splice(index, 1);
             }, 500);
         }
-    };
+    }
+
     $rootScope.addModal = function(modalType, title, params) {
         var deferred = $q.defer();
         params = params || null;
@@ -86,7 +92,7 @@ app.run(['$rootScope', '$route', '$routeParams', '$window', '$q', '$timeout', fu
             controller: null,
             template: null,
             params: params,
-        }
+        };
         switch (modalType) {
             case 'messageModal':
                 modal = {
@@ -94,25 +100,25 @@ app.run(['$rootScope', '$route', '$routeParams', '$window', '$q', '$timeout', fu
                     controller: 'MessageModalCtrl',
                     template: 'partials/modals/message',
                     params: params,
-                }
+                };
                 break;
         }
         modal.deferred = deferred;
         modal.resolve = function(data) {
             closeModal(this);
             modal.deferred.resolve(data, modal);
-        }
+        };
         modal.reject = function() {
             closeModal(this);
             modal.deferred.reject(modal);
-        }
+        };
         $rootScope.modals.push(modal);
         angular.forEach($rootScope.modals, function(m, i) {
             m.active = false;
         });
         $timeout(function() {
             modal.active = true;
-            window.scrollTo(0, 0);
+            $window.scrollTo(0, 0);
         }, 500);
         return deferred.promise;
     };

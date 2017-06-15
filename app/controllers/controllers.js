@@ -1,65 +1,10 @@
 ﻿/* global angular, app */
 
-app.controller('RootCtrl', ['$scope', 'FirebaseService', function($scope, FirebaseService) {
-
-    function ___InitFirebase() {
-        var user = {
-
-        };
-
-        var service = $scope.service = new FirebaseService({
-            onPresences: function(items) {
-                console.log('GanttCtrl.onPresences', items.length);
-                gantt.onPresences(items);
-            },
-            onActivities: function(items) {
-                console.log('GanttCtrl.onActivities', items.length);
-                gantt.onActivities(items);
-            }
-        });
-        service.signin(user).then(function() {
-            /*
-            service.getPresences().then(function() {
-                service.getActivities().then(function() {
-                    console.log('GanttCtrl.FirebaseService.ready');
-                });
-            });
-            */
-        });
-        /*
-        $scope.$on('onGanttInsert', function(scope, items) {
-            console.log('GanttCtrl.onGanttInsert', items.length);
-            items = items.map(function(item) {
-                var item = angular.copy(item);
-                return item;
-            });
-            service.addActivities(items);
-        });
-        $scope.$on('onGanttUpdate', function(scope, items) {
-            console.log('GanttCtrl.onGanttUpdate', items.length);
-            items = items.map(function(item) {
-                var item = angular.copy(item);
-                return item;
-            });
-            service.addActivities(items);
-        });
-        $scope.$on('onGanttRemove', function(scope, items) {
-            console.log('GanttCtrl.onGanttRemove', items.length);
-            items = items.map(function(item) {
-                var item = angular.copy(item);
-                item.hours = 0;
-                return item;
-            });
-            service.addActivities(items);
-        });
-        */
-    }
-
-    // InitFirebase();
+app.controller('RootCtrl', ['$scope', function ($scope) {
 
 }]);
 
-app.controller('HomeCtrl', ['$scope', '$location', '$timeout', 'State', function($scope, $location, $timeout, State) {
+app.controller('HomeCtrl', ['$scope', '$location', '$timeout', 'State', function ($scope, $location, $timeout, State) {
 
     var state = $scope.state = new State();
 
@@ -67,34 +12,45 @@ app.controller('HomeCtrl', ['$scope', '$location', '$timeout', 'State', function
 
 }]);
 
-app.controller('SigninCtrl', ['$scope', '$location', '$timeout', 'State', 'User', function($scope, $location, $timeout, State, User) {
+app.controller('DashboardCtrl', ['$scope', '$location', '$timeout', 'State', 'FirebaseApi', function ($scope, $location, $timeout, State, api) {
 
     var state = $scope.state = new State();
 
-    var model = $scope.model = {};
+    var user = $scope.user = api.auth.current();
 
-    $scope.submit = function() {
+    state.ready();
+
+}]);
+
+app.controller('SigninCtrl', ['$scope', '$location', '$timeout', 'State', 'FirebaseApi', function ($scope, $location, $timeout, State, api) {
+
+    var state = $scope.state = new State();
+
+    var model = $scope.model = {
+        userName: 'username',
+        password: 'password',
+    };
+
+    $scope.submit = function () {
         if (state.busy()) {
-            User.signin(model).then(function success(response) {
+            api.auth.signin(model).then(function success(response) {                
                 state.success();
-                console.log('SigninCtrl', $location.$$lastRequestedPath || '/');
-                /*
-                $timeout(function() {
-                    console.log('SigninCtrl', $location.$$lastRequestedPath || '/');
-                    $location.path($location.$$lastRequestedPath || '/');
+                $timeout(function () {
+                    var path = $location.$$lastRequestedPath || '/dashboard';
+                    console.log('SigninCtrl', path, response);
+                    $location.path(path);
                     $location.$$lastRequestedPath = null;
                 }, 1000);
-                */
             }, function error(response) {
                 console.log('SigninCtrl.error', response);
                 state.error(response);
             });
         }
-    }
+    };
 
 }]);
 
-app.controller('DemoCtrl', ['$scope', '$interval', 'Hash', 'Calendar', 'GanttRow', function($scope, $interval, Hash, Calendar, GanttRow) {
+app.controller('DemoCtrl', ['$scope', '$interval', 'Hash', 'Calendar', 'GanttRow', function ($scope, $interval, Hash, Calendar, GanttRow) {
 
     var row = $scope.row = new GanttRow({
         activity: {
@@ -108,7 +64,7 @@ app.controller('DemoCtrl', ['$scope', '$interval', 'Hash', 'Calendar', 'GanttRow
         },
     }, []);
 
-    $scope.addItem = function() {
+    $scope.addItem = function () {
         var item = getRandomItem();
         row.slots.add(item);
         row.update();
@@ -117,7 +73,7 @@ app.controller('DemoCtrl', ['$scope', '$interval', 'Hash', 'Calendar', 'GanttRow
         // console.log('addItem', item.id);
         log('addItem', item.id);
     };
-    $scope.updateItem = function() {
+    $scope.updateItem = function () {
         if ($scope.item) {
             var id = $scope.item.id;
             item = getRandomItem();
@@ -130,7 +86,7 @@ app.controller('DemoCtrl', ['$scope', '$interval', 'Hash', 'Calendar', 'GanttRow
             log('updateItem', item.id);
         }
     };
-    $scope.clearItems = function() {
+    $scope.clearItems = function () {
         row.ranges.removeAll();
         row.months.removeAll();
         row.days.removeAll();
@@ -142,11 +98,11 @@ app.controller('DemoCtrl', ['$scope', '$interval', 'Hash', 'Calendar', 'GanttRow
     };
 
     var intervalId;
-    $scope.start = function() {
+    $scope.start = function () {
         $scope.stop();
         intervalId = $interval($scope.addItem, 1000 / 60);
     };
-    $scope.stop = function() {
+    $scope.stop = function () {
         if (intervalId) {
             $interval.cancel(intervalId);
         }
@@ -173,7 +129,7 @@ app.controller('DemoCtrl', ['$scope', '$interval', 'Hash', 'Calendar', 'GanttRow
     }
 
     function getRandomDay() {
-        const oneday = (24 * 60 * 60 * 1000);
+        var oneday = (24 * 60 * 60 * 1000);
         var date = new Date();
         date.setDate(date.getDate() + Math.floor(Math.random() * 60));
         // date.setMonth(date.getMonth() + Math.floor(Math.random() * 2));
@@ -203,7 +159,7 @@ app.controller('DemoCtrl', ['$scope', '$interval', 'Hash', 'Calendar', 'GanttRow
             mKey: day.mKey,
             activityId: row.id,
         };
-        if (Math.floor(Math.random() * 3) == 0) {
+        if (Math.floor(Math.random() * 3) === 0) {
             item.taskId = 10000 + Math.floor(Math.random() * 50);
         }
         uid++;
@@ -227,7 +183,7 @@ app.constant('ganttGroups', {
     USER: 9,
 });
 
-app.factory('Hash', [function() {
+app.factory('Hash', [function () {
     var pools = {};
 
     function Hash(key, pool) {
@@ -358,9 +314,9 @@ app.factory('Hash', [function() {
     }
 
     function forward(key, reverse) {
-        var hash = this,
-            key = (key || this.key);
-        hash.sort(function(c, d) {
+        var hash = this;
+        key = (key || this.key);
+        hash.sort(function (c, d) {
             var a = reverse ? d : c;
             var b = reverse ? c : d;
             return a[key] - b[key];
@@ -391,15 +347,15 @@ app.factory('Hash', [function() {
         var hash = this,
             pool = this.pool,
             key = this.key;
-        Object.keys(pool).forEach(function(key) {
+        Object.keys(pool).forEach(function (key) {
             delete pool[key];
         });
-        angular.forEach(hash, function(item) {
+        angular.forEach(hash, function (item) {
             pool[item[key]] = item;
         });
     }
-    Hash.get = function(pool) {
-        return pools[pool] = (pools[pool] || {});
+    Hash.get = function (pool) {
+        return (pools[pool] = pools[pool] || {});
     };
     Hash.prototype = new Array;
     Hash.prototype.has = has;
@@ -419,8 +375,8 @@ app.factory('Hash', [function() {
     return Hash;
 }]);
 
-app.factory('Calendar', ['Hash', function(Hash) {
-    const oneday = (24 * 60 * 60 * 1000);
+app.factory('Calendar', ['Hash', function (Hash) {
+    var oneday = (24 * 60 * 60 * 1000);
     var today = new Date();
     today.setHours(0);
     today.setMinutes(0);
@@ -433,26 +389,26 @@ app.factory('Calendar', ['Hash', function(Hash) {
             a.push(callback(a.length));
         }
         return a;
-    };
+    }
     var months = new Hash('mKey');
 
-    function Calendar() {}
-    Calendar.getDate = function(day) {
+    function Calendar() { }
+    Calendar.getDate = function (day) {
         if (typeof day.date.getMonth === 'function') {
             return day.date;
         } else {
             return new Date(day.date);
         }
     };
-    Calendar.clearMonth = function(month) {
-        month.days.each(function(day) {
+    Calendar.clearMonth = function (month) {
+        month.days.each(function (day) {
             if (day) {
                 day.hours = 0;
                 day.tasks = [];
             }
         });
     };
-    Calendar.getMonth = function(day) {
+    Calendar.getMonth = function (day) {
         today = new Date();
         today.setHours(0);
         today.setMinutes(0);
@@ -469,7 +425,7 @@ app.factory('Calendar', ['Hash', function(Hash) {
             var fromDay = new Date(yyyy, MM, 1).getDay();
             var monthDays = new Date(yyyy, MM + 1, 0).getDate();
             var weeks = Math.ceil(monthDays / 7);
-            var month = {
+            month = {
                 date: date,
                 mKey: mKey,
                 month: MM,
@@ -477,8 +433,8 @@ app.factory('Calendar', ['Hash', function(Hash) {
                 fromDay: fromDay,
                 days: new Hash('key'),
             };
-            month.weeks = ArrayFrom(weeks, function(r) {
-                var days = ArrayFrom(7, function(c) {
+            month.weeks = ArrayFrom(weeks, function (r) {
+                var days = ArrayFrom(7, function (c) {
                     var item = null;
                     var d = r * 7 + c - (fromDay - 1);
                     if (d >= 0 && d < monthDays) {
@@ -501,27 +457,27 @@ app.factory('Calendar', ['Hash', function(Hash) {
                 return {
                     r: r,
                     days: days,
-                }
+                };
             });
             month = months.add(month);
         }
         return month;
     };
-    Calendar.getDay = function(days) {
+    Calendar.getDay = function (days) {
         var date = new Date(today);
         date.setDate(date.getDate() + days);
         return date;
     };
-    Calendar.getKey = function(date) {
+    Calendar.getKey = function (date) {
         return Math.ceil(date.getTime() / oneday);
     };
     return Calendar;
 }]);
 
-app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calendar, ganttGroups) {
+app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function (Hash, Calendar, ganttGroups) {
     var uid = 1;
 
-    const oneday = (24 * 60 * 60 * 1000);
+    var oneday = (24 * 60 * 60 * 1000);
     var today = new Date();
     today.setHours(0);
     today.setMinutes(0);
@@ -554,19 +510,25 @@ app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calen
         this.update();
     }
     GanttRow.prototype = {
-        canSelect: function() {
+        canSelect: function () {
             return this.type === ganttGroups.ACTIVITY && this.budgetHours > 0;
         },
-        canEdit: function() {
+        canEdit: function () {
             return this.canSelect() && this.resource.name.toLowerCase().indexOf('nondefinito') === -1;
         },
-        mergeSlot: function(slot) {
+        mergeSlot: function (slot) {
             var slots = this.slots;
-            slot.hours ? slots.add(slot) : slots.remove(slot);
+            if (slot.hours) {
+                slots.add(slot);
+            } else {
+                slots.remove(slot);
+            }
         },
-        insertSlot: function(key, hours, taskId) {
+        insertSlot: function (key, hours, taskId) {
             var slot = null;
-            this.useBudget ? hours = Math.min(hours, this.budgetHours - this.assignedHours) : null;
+            if (this.useBudget) {
+                hours = Math.min(hours, this.budgetHours - this.assignedHours);
+            }
             hours = Math.max(0, hours);
             if (hours > 0) {
                 var item = {
@@ -586,9 +548,9 @@ app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calen
             this.update();
             return slot;
         },
-        removeSlots: function(key) {
+        removeSlots: function (key) {
             var day = this.days.getId(key);
-            day.tasks.each(function(item) {
+            day.tasks.each(function (item) {
                 item.hours = 0;
             });
             var slots = day.tasks.slice();
@@ -596,7 +558,7 @@ app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calen
             this.update();
             return slots;
         },
-        toggleSlots: function(key, hours) {
+        toggleSlots: function (key, hours) {
             if (this.days.has(key)) {
                 return this.removeSlots(key);
             } else {
@@ -605,7 +567,7 @@ app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calen
             }
         },
         // WRITE CANCEL DAY SLOT
-        assign: function(col, value) {
+        assign: function (col, value) {
             console.log('assign');
             var slots = this.slots,
                 key = col.$key;
@@ -617,24 +579,30 @@ app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calen
                 hours: value || 0,
                 activityId: this.id,
             };
-            value ? slots.add(item) : slots.remove(item);
+            if (value) {
+                slots.add(item);
+            } else {
+                slots.remove(item);
+            }
             this.update();
             return this.days.getId(key);
         },
-        write: function(col, value, max) {
+        write: function (col, value, max) {
             value = Math.min(value, max);
-            this.useBudget ? value = Math.min(value, this.budgetHours - this.assignedHours) : null;
+            if (this.useBudget) {
+                value = Math.min(value, this.budgetHours - this.assignedHours);
+            }
             value = Math.max(0, value);
             if (value && !this.days.has(col.$key) && col.$date >= today) {
                 return this.assign(col, value);
             }
         },
-        erase: function(col, value, max) {
+        erase: function (col, value, max) {
             if (this.days.has(col.$key) && col.$date >= today) {
                 return this.assign(col, null);
             }
         },
-        toggle: function(col, value, max) {
+        toggle: function (col, value, max) {
             if (this.days.has(col.$key)) {
                 return this.erase(col, value, max);
             } else {
@@ -642,13 +610,13 @@ app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calen
             }
         },
         // WRITE CANCEL DAY SLOT
-        update: function() {
+        update: function () {
             var total = 0;
             var slots = this.slots,
                 days = this.days;
             days.removeAll();
             var taskId = null;
-            slots.each(function(item) {
+            slots.each(function (item) {
                 taskId = item.taskId || taskId;
                 total += item ? item.hours : 0;
                 var day = days.add({
@@ -658,7 +626,7 @@ app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calen
                 });
                 day.tasks = day.tasks || new Hash('id'); // 'taskId'
                 day.tasks.add(angular.copy(item));
-                day.tasks.each(function(task) {
+                day.tasks.each(function (task) {
                     day.hours += task.hours;
                 });
             });
@@ -667,12 +635,12 @@ app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calen
             this.assignedHours = total;
             this.updateRanges();
         },
-        updateMonths: function() {
+        updateMonths: function () {
             var days = this.days,
                 months = this.months;
             months.removeAll();
             var previous;
-            days.each(function(item) {
+            days.each(function (item) {
                 var month = Calendar.getMonth(item);
                 if (month !== previous) {
                     previous = month;
@@ -687,13 +655,13 @@ app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calen
             });
             months.forward(); // sort by key  
         },
-        updateRanges: function() {
+        updateRanges: function () {
             var days = this.days,
                 ranges = this.ranges;
             ranges.removeAll();
             var rKey = 0,
                 lastDay;
-            days.each(function(day, i) {
+            days.each(function (day, i) {
                 if (lastDay) {
                     if (day.key - lastDay.key > 1 || day.tasks.differs(lastDay.tasks)) {
                         rKey++;
@@ -708,11 +676,11 @@ app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calen
             });
             ranges.forward(); // sort by key   
         },
-        getRange: function(col, from, to) {
+        getRange: function (col, from, to) {
             var ranges = this.ranges,
                 range = null,
                 key = col.$key;
-            ranges.each(function(item) {
+            ranges.each(function (item) {
                 var index = item.days.indexOf(key);
                 if (index !== -1) {
                     item.c = index;
@@ -723,7 +691,7 @@ app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calen
             });
             return range;
         },
-        updateRange: function(col, from, to) {
+        updateRange: function (col, from, to) {
             var ranges = this.ranges,
                 range = this.getRange(col, from, to);
             if (range) {
@@ -741,7 +709,7 @@ app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calen
             }
             return range;
         },
-        canMoveRange: function(range, dir) {
+        canMoveRange: function (range, dir) {
             // rifare !!!
             var can = true;
             var row = this;
@@ -760,18 +728,18 @@ app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calen
             }
             return can;
         },
-        moveRange: function(range, dir) {
+        moveRange: function (range, dir) {
             if (range.items.length) {
                 var row = this;
                 if (row.canMoveRange(range, dir)) {
-                    angular.forEach(range.items, function(item) {
+                    angular.forEach(range.items, function (item) {
                         row.addDays(item, dir);
                     });
                     row.update();
                 }
             }
         },
-        addDays: function(item, days) {
+        addDays: function (item, days) {
             // console.log('GanttRow.addDay', item, days);
             var date = new Date(item.startDate);
             date.setDate(date.getDate() + days);
@@ -779,31 +747,31 @@ app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calen
             item.key = Math.ceil(date.getTime() / oneday);
             return item;
         },
-        getOffsetKey: function(date, day) {
-            var date = new Date(date);
+        getOffsetKey: function (date, day) {
+            date = new Date(date);
             date.setDate(date.getDate() + day);
             var key = Math.ceil(date.getTime() / oneday);
             return key;
         },
-        getHours: function(key) {
+        getHours: function (key) {
             var hours = 0;
             var day = this.days.getId(key);
             if (day) {
-                day.tasks.each(function(task) {
+                day.tasks.each(function (task) {
                     hours += task.hours;
                 });
             }
             return hours;
         },
-        toggleOpened: function() {
+        toggleOpened: function () {
             // console.log('toggleOpened');
             this.opened = !this.opened;
         },
-        compress: function(key) {
+        compress: function (key) {
             if (!this.items.length) {
                 return;
             }
-            this.items.sort(function(a, b) {
+            this.items.sort(function (a, b) {
                 return a.key - b.key;
             });
             var item = Utils.where(this.items, { key: key });
@@ -817,15 +785,15 @@ app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calen
             // redistribuire records in base a carico giornaliero
             // spostare su gantt
             while (i < t) {
-                var item = this.items[i];
+                item = this.items[i];
                 item.key = key + i - index;
                 item.date = new Date(item.key * oneday);
                 i++;
             }
             this.update();
         },
-    }
-    GanttRow.serialNumber = function(number, max) {
+    };
+    GanttRow.serialNumber = function (number, max) {
         return new Array((1 + (max.toString().length) - (number.toString().length))).join('0');
     };
     return GanttRow;

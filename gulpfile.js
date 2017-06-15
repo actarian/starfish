@@ -45,6 +45,7 @@ gulp.task('docs', ['docs:compile', 'docs:watch']);
 var vendors = [
     './bower_components/angular/angular.js',
     './bower_components/angular-route/angular-route.js',
+    './bower_components/angular-messages/angular-messages.js',
     './bower_components/angularfire/dist/angularfire.js',
     './bower_components/json-formatter/dist/json-formatter.js',
 ];

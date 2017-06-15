@@ -59,17 +59,110 @@
 
     <!-- HEADER -->
     <script type="text/ng-template" id="partials/header">
-        <nav class="navbar navbar-dark">
-            <a class="navbar-brand" href="#" ng-href="/{{getQuery()}}">
-                <img width="34" src="/img/logo.png" title="starfish" alt="starfish">
-            </a>
-            <ul class="nav navbar-nav hidden-xs-down" ng-transclude="header"></ul>
-            <ul class="nav navbar-nav pull-xs-right" ng-if="user">
-                <li class="nav-item hidden-xs-down" ng-class="{ 'active': isLocation('/signin') }">
-                    <a class="nav-link" href="#" ng-href="/signin{{getQuery()}}">signin <span class="sr-only" ng-if="isLocation('/signin')">(current)</span></a>
-                </li>
-            </ul>
-        </nav>
+        <div class="container-fluid maxw-lg">
+
+<!--
+            <nav class="navbar navbar-light bg-faded">
+                <a class="navbar-brand" href="#">
+                    <img src="/assets/brand/bootstrap-solid.svg" width="30" height="30" class="d-inline-block align-top" alt=""> Bootstrap
+                </a>
+                <div class="collapse navbar-collapse">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Features</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Pricing</a>
+                        </li>
+                    </ul>
+                    <span class="navbar-text">Navbar text with an inline element</span>
+                </div>
+            </nav>-->
+            
+            <nav class="navbar">
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <ul class="navbar-nav mr-auto" ng-transclude="header"></ul>
+                    <!--
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Link</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link disabled" href="#">Disabled</a>
+                        </li>
+                    </ul>
+                    -->
+                    <form class="form-inline">
+                        <a ng-href="#/signin" class="btn btn-outline-success">Accedi</a>
+                    </form>
+                </div>
+            </nav>
+
+        </div>
+    </script>
+
+    <!-- CONTROL -->
+    <script type="text/ng-template" id="partials/control">
+        <div class="form-group">
+            <div class="row" ng-class="getClasses()">
+                <label for="{{field}}" class="col-lg-3 col-form-label">
+                    <span ng-bind="title"></span><sup>✽</sup>
+                </label>
+                <div class="col-lg-9 col-{{type}}">
+                    <div class="input-group">
+                        <input type="{{getType()}}" name="{{field}}" class="form-control" ng-model="ngModel" placeholder="{{placeholder}}" ng-minlength="minLength"
+                            ng-maxlength="maxLength" ng-required="required" ng-disabled="disabled" ng-readonly="readonly" ng-change="onChange"
+                            ng-focus="focus = true" ng-blur="focus = false">
+                        <span class="input-group-addon" ng-if="type == 'password' && ngModel">
+                            <span class="icon-eye" ng-click="visible = !visible"></span>
+                        </span>
+                    </div>
+                    <control-messages></control-messages>
+                </div>
+            </div>
+            <!-- <input + options + formFocus + validate + format + precision + '> -->
+        </div>
+    </script>
+
+    <!-- CONTROL-SELECT -->
+    <script type="text/ng-template" id="partials/control-select">
+        <div class="form-group">
+            <div class="row" ng-class="getClasses()">
+                <label for="{{field}}" class="col-lg-3 col-form-label">
+                    <span ng-bind="title"></span><sup>✽</sup>
+                </label>
+                <div class="col-lg-9 col-{{type}}">
+                    <select name="{{field}}" class="form-control" ng-model="ngModel" ng-options="{{options}}" ng-required="required" ng-disabled="disabled"
+                        ng-readonly="readonly" ng-change="onChange" ng-focus="focus = true" ng-blur="focus = false">
+                        <option value="" disabled selected hidden>{{placeholder}}</option>
+                    </select>
+                    <control-messages></control-messages>
+                </div>
+            </div>
+        </div>
+    </script>
+
+    <!-- CONTROL-MESSAGES -->
+    <script type="text/ng-template" id="partials/control-messages">
+        <span ng-messages="getMessages()" role="alert">
+            <span ng-message="required" class="label-error animated flash">obbligatorio</span>
+        <span ng-message="minlength" class="label-error animated flash" ng-if="type == 'password'">almeno 6 caratteri</span>
+        <span ng-message="email" class="label-error animated flash" ng-if="type == 'email'">valore non corretto</span>
+        <span ng-message="positive" class="label-error animated flash" ng-if="type == 'number' || type == 'range'">solo valori positivi</span>
+        <span ng-message="number" class="label-error animated flash" ng-if="type == 'number' || type == 'range'">solo valori numerici</span>
+        <span ng-message="match" class="label-error animated flash" ng-if="match">non corrispondente</span>
+        </span>
+    </script>
+
+    <!-- STATE BUTTON -->
+    <script type="text/ng-template" id="partials/state">
+        <button type="button" class="btn btn-sm btn-primary" ng-class="stateClass()" ng-disabled="stateDisabled()"><span ng-transclude></span></button>
     </script>
 
     <!--

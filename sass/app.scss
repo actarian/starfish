@@ -2,6 +2,20 @@
 * * * * DOCS * * * *
 *********************/
 
+@import "mixins";
+@import "forms";
+
+.maxw-lg {
+    max-width: 1320px;
+}
+
+header {
+    min-height: 80px;
+    margin-bottom: 30px;
+}
+
+/*
+
 html,
 body {
     width: 100%;
@@ -136,13 +150,8 @@ section {
             height: 4px;
             margin: 0 2px 3px 0;
             border-radius: 2px;
-            /*
-            width: 6px;
-            height: 6px;
-            border-radius: 3px;
-            left: 3px; 
-            top: 3px;
-            */
         }
     }
 }
+
+*/
