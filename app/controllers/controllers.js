@@ -9,7 +9,7 @@ app.controller('RootCtrl', ['$scope', '$location', 'FirebaseApi', function($scop
         api.auth.signout().then(function() {
             $location.path('/');
         });
-    }
+    };
 
     api.current().then(function(user) {
         console.log(user);
@@ -31,27 +31,29 @@ app.controller('DashboardCtrl', ['$scope', '$location', '$timeout', 'State', 'Fi
 
     state.ready();
 
+    api.items().then(function(items){
+        console.log('DashboardCtrl.items', items);
+        $scope.items = items;
+    });
+
 }]);
 
 app.controller('SigninCtrl', ['$scope', '$location', '$timeout', 'State', 'FirebaseApi', function($scope, $location, $timeout, State, api) {
-
+    
     var state = $scope.state = new State();
 
-    var model = $scope.model = {
-        email: 'stefano.tombari@gmail.com',
-        password: 'password',
-    };
+    var model = $scope.model = {};
 
     $scope.submit = function() {
         if (state.busy()) {
             api.auth.signin(model).then(function success(response) {
                 state.success();
-                $timeout(function() {
+                // $timeout(function() {
                     var path = $location.$$lastRequestedPath || '/dashboard';
                     console.log('SigninCtrl', path, response);
                     $location.path(path);
                     $location.$$lastRequestedPath = null;
-                }, 1000);
+                // }, 1000);
             }, function error(response) {
                 console.log('SigninCtrl.error', response);
                 state.error(response);
@@ -65,22 +67,18 @@ app.controller('SignupCtrl', ['$scope', '$location', '$timeout', 'State', 'Fireb
 
     var state = $scope.state = new State();
 
-    var model = $scope.model = {
-        email: 'stefano.tombari@gmail.com',
-        password: 'password',
-        shopName: 'Bagni Elsa n°3',
-    };
+    var model = $scope.model = {};
 
     $scope.submit = function() {
         if (state.busy()) {
             api.auth.signup(model).then(function success(response) {
                 state.success();
-                $timeout(function() {
+                // $timeout(function() {
                     var path = $location.$$lastRequestedPath || '/dashboard';
                     console.log('SignupCtrl', path, response);
                     $location.path(path);
                     $location.$$lastRequestedPath = null;
-                }, 1000);
+                // }, 1000);
             }, function error(response) {
                 console.log('SignupCtrl.error', response);
                 state.error(response);
