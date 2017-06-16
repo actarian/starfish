@@ -1,6 +1,6 @@
 ﻿/* global angular, app */
 
-app.service('FirebaseApi', ['$q', '$firebaseAuth', '$firebaseObject', '$firebaseArray', function ($q, $firebaseAuth, $firebaseObject, $firebaseArray) {
+app.service('FirebaseApi', ['$q', '$location', '$firebaseAuth', '$firebaseObject', '$firebaseArray', 'LocalStorage', function($q, $location, $firebaseAuth, $firebaseObject, $firebaseArray, storage) {
 
     var service = this;
 
@@ -19,21 +19,6 @@ app.service('FirebaseApi', ['$q', '$firebaseAuth', '$firebaseObject', '$firebase
         throw ('missing firebase.js');
     }
 
-    /*
-    function FirebaseService(options) {
-        var defaults = {
-            onPresences: function(items) {
-                console.log('FirebaseService.onPresences', items.length);
-            },
-            onActivities: function(items) {
-                console.log('FirebaseService.onActivities', items.length);
-            }
-        };
-        this.options = options ? angular.extend(defaults, options) : defaults;
-        this.config = getConfig();
-    }
-    */
-
     function removeRange(firebaseArray, from, to) {
         var keys = {};
         if (to === undefined) {
@@ -45,31 +30,77 @@ app.service('FirebaseApi', ['$q', '$firebaseAuth', '$firebaseObject', '$firebase
         return firebaseArray.$ref().update(keys);
     }
 
+    function first(snap) {
+        var item = null;
+        if (snap.numChildren() === 1) {
+            var items = snap.val();
+            var keys = Object.keys(items);
+            item = items[keys[0]];
+        }
+        return item;
+    }
+
+    this.current = function() {
+        var deferred = $q.defer();
+        if (service.user) {
+            deferred.resolve(service.user);
+        } else {
+            var token = storage.get('token');
+            if (token) {
+                service.auth.connect().then(function(p) {
+                    var root = firebase.database().ref();
+                    var usersRef = root.child('users');
+                    usersRef.orderByChild('token').equalTo(token).on('value', function(snap) {
+                        var user = service.user = first(snap);
+                        if (user) {
+                            storage.set('token', user.token);
+                            deferred.resolve(user);
+                        } else {
+                            deferred.reject();
+                        }
+                    });
+                }, function() {
+                    deferred.reject();
+                });
+            } else {
+                deferred.reject();
+            }
+        }
+        return deferred.promise;
+    };
+
+    this.isLoggedOrGoTo = function(redirect) {
+        var deferred = $q.defer();
+        service.current().then(function(user) {
+            deferred.resolve(service.user);
+        }, function() {
+            deferred.reject();
+            $location.$$lastRequestedPath = $location.path();
+            $location.path(redirect);
+        });
+        return deferred.promise;
+    };
+
     this.auth = {
-        connect: function() {            
+        connect: function() {
             var deferred = $q.defer();
             if (service.presence) {
                 deferred.resolve(service.presence);
             } else {
-                var presence = service.presence = {
-                    id: random,
-                    name: 'Firebase ' + random,
-                    firstName: 'Firebase',
-                    lastName: random,
-                };
-                var auth = service.auth = $firebaseAuth();
-                auth.$signInAnonymously({ remember: 'sessionOnly' }).then(function (logged) {
-                    presence.uid = logged.uid;
-                    console.log('connecting', presence);
+                var firebaseAuth = service.firebaseAuth = $firebaseAuth();
+                firebaseAuth.$signInAnonymously({ remember: 'sessionOnly' }).then(function(logged) {
+                    var presence = service.presence = {
+                        uid: logged.uid,
+                    };
                     deferred.resolve(presence);
-                }).catch(function (error) {
+                }).catch(function(error) {
                     console.log('Error', error);
                     deferred.reject(error);
                 });
             }
             return deferred.promise;
         },
-        current: function () {
+        current: function() {
             var deferred = $q.defer();
             if (service.user) {
                 deferred.resolve(service.user);
@@ -78,91 +109,83 @@ app.service('FirebaseApi', ['$q', '$firebaseAuth', '$firebaseObject', '$firebase
             }
             return deferred.promise;
         },
-        signin: function ($user) {
-            console.log('FirebaseService.signin', $user);
+        signin: function(model) {
+            console.log('FirebaseApi.signin', model);
             var deferred = $q.defer();
             if (service.user) {
-                console.log('Signed in as', service.user);
+                console.log('signed', service.user);
                 deferred.resolve(service.user);
             } else {
-                var random = 10000 + Math.floor(Math.random() * 1000);
-                var user = service.user = {
-                    id: random,
-                    name: 'Firebase ' + random,
-                    firstName: 'Firebase',
-                    lastName: random,
-                };
-                if ($user) {
-                    for (var p in user) {
-                        user[p] = $user[p] || user[p];
-                    }
-                }
-                user.timestamp = Date.now();
-                var auth = service.auth = $firebaseAuth();
-                auth.$signInAnonymously({ remember: 'sessionOnly' }).then(function (logged) {
-                    user.uid = logged.uid;
-                    console.log('Signed in as', user);
-                    deferred.resolve(user);
-                }).catch(function (error) {
-                    console.log('Error', error);
-                    deferred.reject(error);
+                service.auth.connect().then(function(presence) {
+                    var root = firebase.database().ref();
+                    var usersRef = root.child('users');
+                    usersRef.orderByChild('email').equalTo(model.email).on('value', function(snap) {
+                        var user = service.user = first(snap);
+                        if (user && user.password === model.password) {
+                            storage.set('token', user.token);
+                            deferred.resolve(user);
+                        } else {
+                            deferred.reject({
+                                message: 'not found',
+                            });
+                        }
+                    });
+                }, function() {
+                    deferred.reject();
                 });
             }
             return deferred.promise;
         },
-        signup: function ($user) {
-            console.log('FirebaseService.signin', $user);
+        signup: function(model) {
+            console.log('FirebaseApi.signup', model);
             var deferred = $q.defer();
-            if (service.user) {
-                console.log('Signed in as', service.user);
-                deferred.resolve(service.user);
-            } else {
-                var random = 10000 + Math.floor(Math.random() * 1000);
-                var user = service.user = {
-                    id: random,
-                    name: 'Firebase ' + random,
-                    firstName: 'Firebase',
-                    lastName: random,
+            service.auth.connect().then(function(p) {
+                console.log('connected', p);
+                var root = firebase.database().ref();
+                var usersRef = root.child('users');
+                var userRef = usersRef.push();
+                model.token = service.presence.uid;
+                storage.set('token', model.token);
+                userRef.set(model);
+                service.user = model;
+                service.updateUser = function() {
+                    userRef.set(model);
                 };
-                if ($user) {
-                    for (var p in user) {
-                        user[p] = $user[p] || user[p];
-                    }
-                }
-                user.timestamp = Date.now();
-                var auth = service.auth = $firebaseAuth();
-                auth.$signInAnonymously({ remember: 'sessionOnly' }).then(function (logged) {
-                    user.uid = logged.uid;
-                    console.log('Signed in as', user);
-                    deferred.resolve(user);
-                }).catch(function (error) {
-                    console.log('Error', error);
-                    deferred.reject(error);
-                });
-            }
+                deferred.resolve(model);
+            }, function() {
+                deferred.reject();
+            });
+            return deferred.promise;
+        },
+        signout: function() {
+            console.log('FirebaseApi.signout');
+            var deferred = $q.defer();
+            storage.delete('token');
+            service.user = null;
+            deferred.resolve();
             return deferred.promise;
         },
     };
 
     this.presences = {
-        getPresences: function () {
+        getPresences: function() {
             var deferred = $q.defer();
             var user = service.user;
             var root = service.root = firebase.database().ref();
             var presencesRef = root.child('presences');
             var userRef = presencesRef.push();
             var connectedRef = root.child('.info/connected');
-            connectedRef.on('value', function (snap) {
+            connectedRef.on('value', function(snap) {
                 if (snap.val()) {
                     userRef.onDisconnect().remove();
                     userRef.set(user);
-                    service.updateUser = function () {
+                    service.updateUser = function() {
                         userRef.set(user);
                     };
                     deferred.resolve();
                 }
             });
-            presencesRef.on('value', function (snap) {
+            presencesRef.on('value', function(snap) {
                 // console.log('# of online users = ', snap.numChildren());
                 var presences = snap.val(),
                     items = [];
@@ -182,28 +205,28 @@ app.service('FirebaseApi', ['$q', '$firebaseAuth', '$firebaseObject', '$firebase
     };
 
     this.activities = {
-        clearActivities: function () {
+        clearActivities: function() {
             var min = Number.POSITIVE_INFINITY;
-            angular.forEach(service.presences, function (presence) {
+            angular.forEach(service.presences, function(presence) {
                 min = Math.min(presence.timestamp, min);
             });
             var activities = service.activities;
             var from = 0,
                 to = 0;
-            angular.forEach(activities, function (item, index) {
+            angular.forEach(activities, function(item, index) {
                 if (item.timestamp < min) {
                     to = index + 1;
                 }
             });
             removeRange(activities, from, to);
         },
-        addActivities: function (items) {
+        addActivities: function(items) {
             if (items && items.length) {
                 var user = service.user;
                 var root = service.root; // firebase.database().ref();
                 var lastActivity = null;
                 var activitiesRef = root.child('activities');
-                angular.forEach(items, function (item) {
+                angular.forEach(items, function(item) {
                     item.userId = user.id;
                     item.timestamp = Date.now();
                     lastActivity = item;
@@ -216,30 +239,30 @@ app.service('FirebaseApi', ['$q', '$firebaseAuth', '$firebaseObject', '$firebase
                 }
             }
         },
-        getUniqueActivities: function (items) {
-            items.sort(function (a, b) {
+        getUniqueActivities: function(items) {
+            items.sort(function(a, b) {
                 return b.timestamp - a.timestamp; // desc
             });
             var pool = {};
-            items = items.filter(function (item) {
+            items = items.filter(function(item) {
                 if (!pool[item.id]) {
                     return (pool[item.id] = true);
                 } else {
                     return false;
                 }
             });
-            items.sort(function (a, b) {
+            items.sort(function(a, b) {
                 return a.timestamp - b.timestamp; // asc
             });
             return items;
         },
-        getActivities: function () {
+        getActivities: function() {
             var deferred = $q.defer();
             var root = service.root; // firebase.database().ref();
             var activitiesRef = root.child('activities');
             var user = service.user;
             var lastDate = user.timestamp;
-            activitiesRef.on('value', function (snap) {
+            activitiesRef.on('value', function(snap) {
                 var activities = snap.val(),
                     items = [];
                 var max = Number.NEGATIVE_INFINITY;
@@ -257,10 +280,10 @@ app.service('FirebaseApi', ['$q', '$firebaseAuth', '$firebaseObject', '$firebase
                 }
             });
             var activities = service.activities = $firebaseArray(activitiesRef);
-            activities.$loaded().then(function () {
+            activities.$loaded().then(function() {
                 service.clearActivities();
                 deferred.resolve();
-            }).catch(function (error) {
+            }).catch(function(error) {
                 deferred.reject(error);
             });
             /*
@@ -276,61 +299,61 @@ app.service('FirebaseApi', ['$q', '$firebaseAuth', '$firebaseObject', '$firebase
 
 }]);
 
-app.service('WebApi', ['$http', '$q', '$timeout', '$location', function ($http, $q, $timeout, $location) {
+app.service('WebApi', ['$http', '$q', '$timeout', '$location', function($http, $q, $timeout, $location) {
 
     var service = this;
 
-    var _get = this.get = function (url, params) {
+    var _get = this.get = function(url, params) {
         var deferred = $q.defer();
-        $http.get(url, { params: params }).then(function (response) {
+        $http.get(url, { params: params }).then(function(response) {
             deferred.resolve(response.data);
-        }, function (response) {
+        }, function(response) {
             onError(deferred, 'get', url, { params: params }, response);
         });
         return deferred.promise;
     };
-    var _post = this.post = function (url, model) {
+    var _post = this.post = function(url, model) {
         var deferred = $q.defer();
         if (service.DEBUG) {
             console.log('Api.DEBUG', url, model);
             deferred.resolve(model);
         } else {
-            $http.post(url, model).then(function (response) {
+            $http.post(url, model).then(function(response) {
                 deferred.resolve(response.data);
-            }, function (response) {
+            }, function(response) {
                 onError(deferred, 'post', url, model, response);
             });
         }
         return deferred.promise;
     };
-    var _put = this.put = function (url, model) {
+    var _put = this.put = function(url, model) {
         var deferred = $q.defer();
-        $http.put(url, model).then(function (response) {
+        $http.put(url, model).then(function(response) {
             deferred.resolve(response.data);
-        }, function (response) {
+        }, function(response) {
             onError(deferred, 'put', url, model, response);
         });
         return deferred.promise;
     };
-    var _patch = this.patch = function (url, model) {
+    var _patch = this.patch = function(url, model) {
         var deferred = $q.defer();
-        $http.patch(url, model).then(function (response) {
+        $http.patch(url, model).then(function(response) {
             deferred.resolve(response.data);
-        }, function (response) {
+        }, function(response) {
             onError(deferred, 'patch', url, model, response);
         });
         return deferred.promise;
     };
-    var _delete = this.delete = function (url) {
+    var _delete = this.delete = function(url) {
         var deferred = $q.defer();
-        $http.delete(url).then(function (response) {
+        $http.delete(url).then(function(response) {
             deferred.resolve(response.data);
-        }, function (response) {
+        }, function(response) {
             onError(deferred, 'delete', url, null, response);
         });
         return deferred.promise;
     };
-    var _blob = this.blob = function (url, model) {
+    var _blob = this.blob = function(url, model) {
         var deferred = $q.defer();
         if (service.DEBUG) {
             console.log('Api.DEBUG', url, model);
@@ -344,9 +367,9 @@ app.service('WebApi', ['$http', '$q', '$timeout', '$location', function ($http, 
                     'Content-type': 'application/json'
                 },
                 responseType: 'arraybuffer',
-            }).then(function (response) {
+            }).then(function(response) {
                 deferred.resolve(response);
-            }, function (response) {
+            }, function(response) {
                 onError(deferred, 'post', url, model, response);
             });
         }
@@ -356,10 +379,10 @@ app.service('WebApi', ['$http', '$q', '$timeout', '$location', function ($http, 
     this.auth = {
         signin: _service.signin,
         // return _post('/api/auth/login', model);
-        signout: function (userId) {
+        signout: function(userId) {
             // return _get('/api/auth/logout/' + userId);
         },
-        current: function () {
+        current: function() {
             var deferred = $q.defer();
             if (_service.user) {
                 deferred.resolve(_service.user);
@@ -373,223 +396,10 @@ app.service('WebApi', ['$http', '$q', '$timeout', '$location', function ($http, 
 
 }]);
 
-app.factory('FirebaseService', ['$q', '$firebaseAuth', '$firebaseObject', '$firebaseArray', function ($q, $firebaseAuth, $firebaseObject, $firebaseArray) {
-
-    var service = this;
-
-    var firebase = window.firebase || null;
-
-    if (!firebase) {
-        throw ('missing firebase.js');
-    }
-
-    var config = null;
-
-    function getConfig() {
-        if (!config) {
-            // Initialize the Firebase SDK
-            config = {
-                apiKey: "AIzaSyCskd8Cgzd_j7JzgEC3mEb4ir1qZFh6auQ",
-                authDomain: "starfish-c2b0f.firebaseapp.com",
-                databaseURL: "https://starfish-c2b0f.firebaseio.com",
-                projectId: "starfish-c2b0f",
-                storageBucket: "starfish-c2b0f.appspot.com",
-                messagingSenderId: "796739915579"
-            };
-            firebase.initializeApp(config);
-        }
-        return config;
-    }
-
-    function FirebaseService(options) {
-        var defaults = {
-            onPresences: function (items) {
-                console.log('FirebaseService.onPresences', items.length);
-            },
-            onActivities: function (items) {
-                console.log('FirebaseService.onActivities', items.length);
-            }
-        };
-        this.options = options ? angular.extend(defaults, options) : defaults;
-        this.config = getConfig();
-    }
-
-    function removeRange(firebaseArray, from, to) {
-        var keys = {};
-        if (to === undefined) {
-            to = firebaseArray.length;
-        }
-        for (var i = from; i < to; ++i) {
-            keys[firebaseArray.$keyAt(i)] = null;
-        }
-        return firebaseArray.$ref().update(keys);
-    }
-
-    FirebaseService.prototype = {
-        signin: function ($user) {
-            console.log('FirebaseService.signin', $user);
-            var deferred = $q.defer();
-            if (this.user) {
-                console.log('Signed in as', this.user);
-                deferred.resolve(this.user);
-            } else {
-                var random = 10000 + Math.floor(Math.random() * 1000);
-                var user = this.user = {
-                    id: random,
-                    name: 'Firebase ' + random,
-                    firstName: 'Firebase',
-                    lastName: random,
-                };
-                if ($user) {
-                    for (var p in user) {
-                        user[p] = $user[p] || user[p];
-                    }
-                }
-                user.timestamp = Date.now();
-                var auth = this.auth = $firebaseAuth();
-                auth.$signInAnonymously({ remember: 'sessionOnly' }).then(function (logged) {
-                    user.uid = logged.uid;
-                    console.log('Signed in as', user);
-                    deferred.resolve(user);
-                }).catch(function (error) {
-                    console.log('Error', error);
-                    deferred.reject(error);
-                });
-            }
-            return deferred.promise;
-        },
-        getPresences: function () {
-            var deferred = $q.defer();
-            var user = this.user;
-            var root = this.root = firebase.database().ref();
-            var presencesRef = root.child('presences');
-            var userRef = presencesRef.push();
-            var connectedRef = root.child('.info/connected');
-            connectedRef.on('value', function (snap) {
-                if (snap.val()) {
-                    userRef.onDisconnect().remove();
-                    userRef.set(user);
-                    service.updateUser = function () {
-                        userRef.set(user);
-                    };
-                    deferred.resolve();
-                }
-            });
-            presencesRef.on('value', function (snap) {
-                // console.log('# of online users = ', snap.numChildren());
-                var presences = snap.val(),
-                    items = [];
-                for (var key in presences) {
-                    var user = presences[key];
-                    if (user.id !== service.user.id) {
-                        items.push(user);
-                    }
-                }
-                if (items.length) {
-                    service.options.onPresences(items);
-                }
-            });
-            this.presences = $firebaseArray(presencesRef);
-            return deferred.promise;
-        },
-        clearActivities: function () {
-            var min = Number.POSITIVE_INFINITY;
-            angular.forEach(this.presences, function (presence) {
-                min = Math.min(presence.timestamp, min);
-            });
-            var activities = this.activities;
-            var from = 0,
-                to = 0;
-            angular.forEach(activities, function (item, index) {
-                if (item.timestamp < min) {
-                    to = index + 1;
-                }
-            });
-            removeRange(activities, from, to);
-        },
-        addActivities: function (items) {
-            if (items && items.length) {
-                var user = this.user;
-                var root = this.root; // firebase.database().ref();
-                var lastActivity = null;
-                var activitiesRef = root.child('activities');
-                angular.forEach(items, function (item) {
-                    item.userId = user.id;
-                    item.timestamp = Date.now();
-                    lastActivity = item;
-                    var activityRef = activitiesRef.push();
-                    activityRef.set(item);
-                });
-                if (lastActivity) {
-                    user.lastActivity = lastActivity;
-                    service.updateUser();
-                }
-            }
-        },
-        getUniqueActivities: function (items) {
-            items.sort(function (a, b) {
-                return b.timestamp - a.timestamp; // desc
-            });
-            var pool = {};
-            items = items.filter(function (item) {
-                if (!pool[item.id]) {
-                    return (pool[item.id] = true);
-                } else {
-                    return false;
-                }
-            });
-            items.sort(function (a, b) {
-                return a.timestamp - b.timestamp; // asc
-            });
-            return items;
-        },
-        getActivities: function () {
-            var deferred = $q.defer();
-            var root = this.root; // firebase.database().ref();
-            var activitiesRef = root.child('activities');
-            var user = this.user;
-            var lastDate = user.timestamp;
-            activitiesRef.on('value', function (snap) {
-                var activities = snap.val(),
-                    items = [];
-                var max = Number.NEGATIVE_INFINITY;
-                for (var key in activities) {
-                    var activity = activities[key];
-                    max = Math.max(max, activity.timestamp);
-                    if (activity.userId !== service.user.id && activity.timestamp > lastDate) {
-                        items.push(activity);
-                    }
-                }
-                lastDate = Math.max(lastDate, max);
-                items = service.getUniqueActivities(items);
-                if (items.length) {
-                    service.options.onActivities(items);
-                }
-            });
-            var activities = this.activities = $firebaseArray(activitiesRef);
-            activities.$loaded().then(function () {
-                service.clearActivities();
-                deferred.resolve();
-            }).catch(function (error) {
-                deferred.reject(error);
-            });
-            /*
-            var unwatch = activities.$watch(function(event) {
-              console.log(event);
-            });
-            // at some time in the future, we can unregister using
-            // unwatch();
-            */
-            return deferred.promise;
-        },
-    };
-    return FirebaseService;
-}]);
-
-app.factory('Cookie', ['$q', '$window', function ($q, $window) {
-    function Cookie() { }
+app.factory('Cookie', ['$q', '$window', function($q, $window) {
+    function Cookie() {}
     Cookie.TIMEOUT = 5 * 60 * 1000; // five minutes
-    Cookie._set = function (name, value, days) {
+    Cookie._set = function(name, value, days) {
         var expires;
         if (days) {
             var date = new Date();
@@ -600,10 +410,10 @@ app.factory('Cookie', ['$q', '$window', function ($q, $window) {
         }
         $window.document.cookie = name + '=' + value + expires + '; path=/';
     };
-    Cookie.set = function (name, value, days) {
+    Cookie.set = function(name, value, days) {
         try {
             var cache = [];
-            var json = JSON.stringify(value, function (key, value) {
+            var json = JSON.stringify(value, function(key, value) {
                 if (key === 'pool') {
                     return;
                 }
@@ -622,7 +432,7 @@ app.factory('Cookie', ['$q', '$window', function ($q, $window) {
             console.log('Cookie.set.error serializing', name, value, e);
         }
     };
-    Cookie.get = function (name) {
+    Cookie.get = function(name) {
         var cookieName = name + "=";
         var ca = $window.document.cookie.split(';');
         for (var i = 0; i < ca.length; i++) {
@@ -643,10 +453,10 @@ app.factory('Cookie', ['$q', '$window', function ($q, $window) {
         }
         return null;
     };
-    Cookie.delete = function (name) {
+    Cookie.delete = function(name) {
         Cookie._set(name, "", -1);
     };
-    Cookie.on = function (name) {
+    Cookie.on = function(name) {
         var deferred = $q.defer();
         var i, interval = 1000,
             elapsed = 0,
@@ -671,8 +481,8 @@ app.factory('Cookie', ['$q', '$window', function ($q, $window) {
     return Cookie;
 }]);
 
-app.factory('LocalStorage', ['$q', '$window', 'Cookie', function ($q, $window, Cookie) {
-    function LocalStorage() { }
+app.factory('LocalStorage', ['$q', '$window', 'Cookie', function($q, $window, Cookie) {
+    function LocalStorage() {}
 
     function isLocalStorageSupported() {
         var supported = false;
@@ -691,10 +501,10 @@ app.factory('LocalStorage', ['$q', '$window', 'Cookie', function ($q, $window, C
     }
     LocalStorage.isSupported = isLocalStorageSupported();
     if (LocalStorage.isSupported) {
-        LocalStorage.set = function (name, value) {
+        LocalStorage.set = function(name, value) {
             try {
                 var cache = [];
-                var json = JSON.stringify(value, function (key, value) {
+                var json = JSON.stringify(value, function(key, value) {
                     if (key === 'pool') {
                         return;
                     }
@@ -713,7 +523,7 @@ app.factory('LocalStorage', ['$q', '$window', 'Cookie', function ($q, $window, C
                 console.log('LocalStorage.set.error serializing', name, value, e);
             }
         };
-        LocalStorage.get = function (name) {
+        LocalStorage.get = function(name) {
             var value = null;
             if ($window.localStorage[name] !== undefined) {
                 try {
@@ -724,10 +534,10 @@ app.factory('LocalStorage', ['$q', '$window', 'Cookie', function ($q, $window, C
             }
             return value;
         };
-        LocalStorage.delete = function (name) {
+        LocalStorage.delete = function(name) {
             $window.localStorage.removeItem(name);
         };
-        LocalStorage.on = function (name) {
+        LocalStorage.on = function(name) {
             var deferred = $q.defer();
             var i, timeout = Cookie.TIMEOUT;
 
@@ -745,7 +555,7 @@ app.factory('LocalStorage', ['$q', '$window', 'Cookie', function ($q, $window, C
                 }
             }
             angular.element($window).on('storage', storageEvent);
-            i = setTimeout(function () {
+            i = setTimeout(function() {
                 deferred.reject('timeout');
             }, timeout);
             return deferred.promise;
@@ -760,8 +570,8 @@ app.factory('LocalStorage', ['$q', '$window', 'Cookie', function ($q, $window, C
     return LocalStorage;
 }]);
 
-app.factory('SessionStorage', ['$q', '$window', 'Cookie', function ($q, $window, Cookie) {
-    function SessionStorage() { }
+app.factory('SessionStorage', ['$q', '$window', 'Cookie', function($q, $window, Cookie) {
+    function SessionStorage() {}
 
     function isSessionStorageSupported() {
         var supported = false;
@@ -780,10 +590,10 @@ app.factory('SessionStorage', ['$q', '$window', 'Cookie', function ($q, $window,
     }
     SessionStorage.isSupported = isSessionStorageSupported();
     if (SessionStorage.isSupported) {
-        SessionStorage.set = function (name, value) {
+        SessionStorage.set = function(name, value) {
             try {
                 var cache = [];
-                var json = JSON.stringify(value, function (key, value) {
+                var json = JSON.stringify(value, function(key, value) {
                     if (key === 'pool') {
                         return;
                     }
@@ -802,7 +612,7 @@ app.factory('SessionStorage', ['$q', '$window', 'Cookie', function ($q, $window,
                 console.log('SessionStorage.set.error serializing', name, value, e);
             }
         };
-        SessionStorage.get = function (name) {
+        SessionStorage.get = function(name) {
             var value = null;
             if ($window.sessionStorage[name] !== undefined) {
                 try {
@@ -813,10 +623,10 @@ app.factory('SessionStorage', ['$q', '$window', 'Cookie', function ($q, $window,
             }
             return value;
         };
-        SessionStorage.delete = function (name) {
+        SessionStorage.delete = function(name) {
             $window.sessionStorage.removeItem(name);
         };
-        SessionStorage.on = function (name) {
+        SessionStorage.on = function(name) {
             var deferred = $q.defer();
             var i, timeout = Cookie.TIMEOUT;
 
@@ -834,7 +644,7 @@ app.factory('SessionStorage', ['$q', '$window', 'Cookie', function ($q, $window,
                 }
             }
             angular.element($window).on('storage', storageEvent);
-            i = setTimeout(function () {
+            i = setTimeout(function() {
                 deferred.reject('timeout');
             }, timeout);
             return deferred.promise;

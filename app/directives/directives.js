@@ -1,37 +1,35 @@
 ﻿/* global angular, app */
 
-app.directive('header', [function () {
+app.directive('header', [function() {
     return {
         restrict: 'E',
         templateUrl: 'partials/header',
         transclude: {
             'header': '?headerItems',
         },
-        link: function (scope, element, attributes, model) {
-        }
+        link: function(scope, element, attributes, model) {}
     };
 }]);
 
-app.directive('controlMessages', [function () {
+app.directive('controlMessages', [function() {
     return {
         restrict: 'E',
         templateUrl: 'partials/control-messages',
         transclude: {
             'message': '?messageItems',
         },
-        link: function (scope, element, attributes, model) {
-        }
+        link: function(scope, element, attributes, model) {}
     };
 }]);
 
-app.directive('control', ['$http', '$templateCache', '$compile', '$parse', function ($http, $templateCache, $compile, $parse) {
+app.directive('control', ['$http', '$templateCache', '$compile', '$parse', function($http, $templateCache, $compile, $parse) {
     function formatLabel(string, prepend, expression) {
         string = string || '';
         prepend = prepend || '';
         var splitted = string.split(',');
         if (splitted.length > 1) {
             var formatted = splitted.shift();
-            angular.forEach(splitted, function (value, index) {
+            angular.forEach(splitted, function(value, index) {
                 if (expression) {
                     formatted = formatted.split('{' + index + '}').join('\' + ' + prepend + value + ' + \'');
                 } else {
@@ -50,7 +48,7 @@ app.directive('control', ['$http', '$templateCache', '$compile', '$parse', funct
     var uniqueId = 0;
     return {
         restrict: 'A',
-        templateUrl: function (element, attributes) {
+        templateUrl: function(element, attributes) {
             var template = 'partials/control';
             switch (attributes.control) {
                 case 'select':
@@ -67,76 +65,76 @@ app.directive('control', ['$http', '$templateCache', '$compile', '$parse', funct
             placeholder: '@',
         },
         require: 'ngModel',
-        link: function (scope, element, attributes, model) {
-            
+        link: function(scope, element, attributes, model) {
+
         },
-        compile: function (element, attributes) {
-            return {
-                pre: function (scope, element, attributes) {
-                    if (attributes.control === 'select') {
-                        var label = (attributes.label ? attributes.label : 'name');
-                        var key = (attributes.key ? attributes.key : 'id');
-                        var filter = (attributes.min ? ' | filter:gte(\'' + key + '\', ' + attributes.min + ')' : '');
-                        var optionLabel = formatLabel(label, 'item.', true);
-                        scope.options = attributes.number ?
-                            'item.' + key + ' as ' + optionLabel + ' disable when item.disabled for item in ' + attributes.source + filter :
-                            optionLabel + ' disable when item.disabled for item in ' + attributes.source + filter + ' track by item.' + key;
-                        console.log('control.compile.pre', scope.options);
-                    }
-                    var type = scope.type = attributes.control;
-                    var form = scope.form = scope.form || 'form';
-                    var title = scope.title = scope.title || 'untitled';
-                    var placeholder = scope.placeholder = scope.placeholder || title;
-                    var field = scope.field = title.replace(/[^0-9a-zA-Z]/g, "").split(' ').join('') + (++uniqueId);
-                    scope.minLength = attributes.min || 0;
-                    scope.maxLength = attributes.max || Number.POSITIVE_INFINITY;
-                    scope.focus = false;
-                    scope.getType = function () {
-                        var type = 'text';
-                        switch(attributes.control) {
-                            case 'password':
-                                // var form = $parse(scope.form)(scope.$parent);
-                                // var field = $parse(scope.form + '.' + scope.field)(scope.$parent);
-                                type = scope.visible ? 'text' : 'password'; 
-                            break;
-                            default:
-                            type = attributes.control;
-                        }
-                        console.log('control.getType', type);
-                        return type;
-                    };
-                    scope.getClasses = function () {
-                        var form = $parse(scope.form)(scope.$parent);
-                        var field = $parse(scope.form + '.' + scope.field)(scope.$parent);
-                        return {
-                            'control-focus': scope.focus,
-                            'control-success': field.$valid,
-                            'control-error': field.$invalid && (form.$submitted || field.$touched),
-                            'control-empty': !field.$viewValue
-                        };
-                    };
-                    scope.getMessages = function () {
-                        var form = $parse(scope.form)(scope.$parent);
-                        var field = $parse(scope.form + '.' + scope.field)(scope.$parent);
-                        return (form.$submitted || field.$touched) && field.$error;
-                    };
-                },
-                // post: function (scope, element, attributes) { }
-            };
-        }
-        /*
         compile: function(element, attributes) {
-            element.removeAttr('my-dir'); 
-            element.attr('ng-hide', 'true');
-            return function(scope) {
-                $compile(element)(scope);
-            };
-        },
-        */
+                return {
+                    pre: function(scope, element, attributes) {
+                        if (attributes.control === 'select') {
+                            var label = (attributes.label ? attributes.label : 'name');
+                            var key = (attributes.key ? attributes.key : 'id');
+                            var filter = (attributes.min ? ' | filter:gte(\'' + key + '\', ' + attributes.min + ')' : '');
+                            var optionLabel = formatLabel(label, 'item.', true);
+                            scope.options = attributes.number ?
+                                'item.' + key + ' as ' + optionLabel + ' disable when item.disabled for item in ' + attributes.source + filter :
+                                optionLabel + ' disable when item.disabled for item in ' + attributes.source + filter + ' track by item.' + key;
+                            console.log('control.compile.pre', scope.options);
+                        }
+                        var type = scope.type = attributes.control;
+                        var form = scope.form = scope.form || 'form';
+                        var title = scope.title = scope.title || 'untitled';
+                        var placeholder = scope.placeholder = scope.placeholder || title;
+                        var field = scope.field = title.replace(/[^0-9a-zA-Z]/g, "").split(' ').join('') + (++uniqueId);
+                        scope.minLength = attributes.min || 0;
+                        scope.maxLength = attributes.max || Number.POSITIVE_INFINITY;
+                        scope.focus = false;
+                        scope.getType = function() {
+                            var type = 'text';
+                            switch (attributes.control) {
+                                case 'password':
+                                    // var form = $parse(scope.form)(scope.$parent);
+                                    // var field = $parse(scope.form + '.' + scope.field)(scope.$parent);
+                                    type = scope.visible ? 'text' : 'password';
+                                    break;
+                                default:
+                                    type = attributes.control;
+                            }
+                            console.log('control.getType', type);
+                            return type;
+                        };
+                        scope.getClasses = function() {
+                            var form = $parse(scope.form)(scope.$parent);
+                            var field = $parse(scope.form + '.' + scope.field)(scope.$parent);
+                            return {
+                                'control-focus': scope.focus,
+                                'control-success': field.$valid,
+                                'control-error': field.$invalid && (form.$submitted || field.$touched),
+                                'control-empty': !field.$viewValue
+                            };
+                        };
+                        scope.getMessages = function() {
+                            var form = $parse(scope.form)(scope.$parent);
+                            var field = $parse(scope.form + '.' + scope.field)(scope.$parent);
+                            return (form.$submitted || field.$touched) && field.$error;
+                        };
+                    },
+                    // post: function (scope, element, attributes) { }
+                };
+            }
+            /*
+            compile: function(element, attributes) {
+                element.removeAttr('my-dir'); 
+                element.attr('ng-hide', 'true');
+                return function(scope) {
+                    $compile(element)(scope);
+                };
+            },
+            */
     };
 }]);
 
-app.directive('state', ['$timeout', function ($timeout) {
+app.directive('state', ['$timeout', function($timeout) {
     return {
         restrict: 'EA',
         templateUrl: 'partials/state',
@@ -145,8 +143,8 @@ app.directive('state', ['$timeout', function ($timeout) {
         scope: {
             state: '=',
         },
-        link: function (scope, element, attributes, model) {
-            scope.stateClass = function () {
+        link: function(scope, element, attributes, model) {
+            scope.stateClass = function() {
                 if (scope.state.button === element) {
                     var sclass = {
                         busy: scope.state.isBusy,
@@ -161,13 +159,14 @@ app.directive('state', ['$timeout', function ($timeout) {
                     return null;
                 }
             };
-            scope.stateDisabled = function () {
+            scope.stateDisabled = function() {
                 var disabled = (scope.state.button && scope.state.button !== element); // || scope.$parent.$eval(attributes.onValidate);
                 // console.log('stateDisabled', disabled);
                 return disabled;
             };
+
             function onClick() {
-                $timeout(function () {
+                $timeout(function() {
                     if (!scope.$parent.$eval(attributes.onValidate)) {
                         // console.log('state.onClick', attributes.onValidate, attributes.onClick);
                         scope.state.button = element;
@@ -177,13 +176,15 @@ app.directive('state', ['$timeout', function ($timeout) {
                     }
                 });
             };
+
             function addListeners() {
                 element.on('touchstart click', onClick);
             };
+
             function removeListeners() {
                 element.off('touchstart click', onClick);
             };
-            scope.$on('$destroy', function () {
+            scope.$on('$destroy', function() {
                 removeListeners();
             });
             addListeners();
@@ -191,7 +192,7 @@ app.directive('state', ['$timeout', function ($timeout) {
     }
 }]);
 
-app.directive('controlRow', ['$http', '$templateCache', '$compile', function ($http, $templateCache, $compile) {
+app.directive('controlRow', ['$http', '$templateCache', '$compile', function($http, $templateCache, $compile) {
     var aid = 0;
 
     function _format(string, prepend, expression) {
@@ -200,7 +201,7 @@ app.directive('controlRow', ['$http', '$templateCache', '$compile', function ($h
         var splitted = string.split(',');
         if (splitted.length > 1) {
             var formatted = splitted.shift();
-            angular.forEach(splitted, function (value, index) {
+            angular.forEach(splitted, function(value, index) {
                 if (expression) {
                     formatted = formatted.split('{' + index + '}').join('\' + ' + prepend + value + ' + \'');
                 } else {
@@ -451,7 +452,7 @@ app.directive('controlRow', ['$http', '$templateCache', '$compile', function ($h
                     template += '<div ng-click="(flags.' + name + ' = true)" class="input-group disabled"><input type="text" class="form-control" name="' + name + '" ng-model="' + model + '" placeholder="' + placeholder + '" ' + required + disabled + readonly + formFocus + validate + format + '><span class="input-group-addon"><i class="icon-calendar"></i></span></div>';
                 }
                 break;
-            /*
+                /*
         case 'date':
             placeholder = placeholder || 'dd-MM-yyyy';
             template += '<input name="' + name + '" class="form-control" ng-model="' + model + '" ' + change + focus + blur + options + ' placeholder="' + placeholder + '" type="date"' + required + disabled + readonly + formFocus + '>';
@@ -472,8 +473,8 @@ app.directive('controlRow', ['$http', '$templateCache', '$compile', function ($h
     return {
         restrict: 'A',
         replace: true,
-        compile: function (templateElement, templateAttributes) {
-            return function (scope, element, attributes) {
+        compile: function(templateElement, templateAttributes) {
+            return function(scope, element, attributes) {
                 element.html(templateFunction(templateElement, templateAttributes));
                 $compile(element.contents())(scope);
             }
@@ -481,17 +482,17 @@ app.directive('controlRow', ['$http', '$templateCache', '$compile', function ($h
     }
 }]);
 
-app.directive('numberPicker', ['$parse', '$timeout', function ($parse, $timeout) {
+app.directive('numberPicker', ['$parse', '$timeout', function($parse, $timeout) {
     return {
         restrict: 'A',
         template: '<div class="input-group">' +
-        '   <span class="input-group-btn"><button class="btn btn-outline-primary" type="button">-</button></span>' +
-        '   <div ng-transclude></div>' +
-        '   <span class="input-group-btn"><button class="btn btn-outline-primary" type="button">+</button></span>' +
-        '</div>',
+            '   <span class="input-group-btn"><button class="btn btn-outline-primary" type="button">-</button></span>' +
+            '   <div ng-transclude></div>' +
+            '   <span class="input-group-btn"><button class="btn btn-outline-primary" type="button">+</button></span>' +
+            '</div>',
         replace: true,
         transclude: true,
-        link: function (scope, element, attributes, model) {
+        link: function(scope, element, attributes, model) {
             var node = element[0];
             var nodeRemove = node.querySelectorAll('.input-group-btn > .btn')[0];
             var nodeAdd = node.querySelectorAll('.input-group-btn > .btn')[1];
@@ -500,7 +501,7 @@ app.directive('numberPicker', ['$parse', '$timeout', function ($parse, $timeout)
                 var min = $parse(attributes.min)(scope);
                 var getter = $parse(attributes.numberPicker);
                 var setter = getter.assign;
-                $timeout(function () {
+                $timeout(function() {
                     setter(scope, Math.max(min, getter(scope) - 1));
                 });
                 // console.log('numberPicker.onRemove', min);
@@ -510,7 +511,7 @@ app.directive('numberPicker', ['$parse', '$timeout', function ($parse, $timeout)
                 var max = $parse(attributes.max)(scope);
                 var getter = $parse(attributes.numberPicker);
                 var setter = getter.assign;
-                $timeout(function () {
+                $timeout(function() {
                     setter(scope, Math.min(max, getter(scope) + 1));
                 });
                 // console.log('numberPicker.onAdd', max);
@@ -525,7 +526,7 @@ app.directive('numberPicker', ['$parse', '$timeout', function ($parse, $timeout)
                 angular.element(nodeRemove).off('touchstart mousedown', onRemove);
                 angular.element(nodeAdd).off('touchstart mousedown', onAdd);
             }
-            scope.$on('$destroy', function () {
+            scope.$on('$destroy', function() {
                 removeListeners();
             });
             addListeners();
@@ -533,12 +534,10 @@ app.directive('numberPicker', ['$parse', '$timeout', function ($parse, $timeout)
     }
 }]);
 
-
-
-app.directive('validateType', ['$filter', function ($filter) {
+app.directive('validateType', ['$filter', function($filter) {
     return {
         require: 'ngModel',
-        link: function (scope, element, attributes, model) {
+        link: function(scope, element, attributes, model) {
             var validateType = attributes.validateType;
             var format = attributes.format || '';
             var precision = attributes.precision || 2;
@@ -547,7 +546,7 @@ app.directive('validateType', ['$filter', function ($filter) {
                 case 'date':
                 case 'datetime':
                 case 'datetime-local':
-                    model.$formatters.push(function (value) {
+                    model.$formatters.push(function(value) {
                         if (value) {
                             return $filter('date')(value, format);
                         } else {
@@ -556,7 +555,7 @@ app.directive('validateType', ['$filter', function ($filter) {
                     });
                     break;
                 case 'number':
-                    model.$parsers.unshift(function (value) {
+                    model.$parsers.unshift(function(value) {
                         var valid = false,
                             type = validateType;
                         if (value !== undefined && value !== "") {
@@ -599,7 +598,7 @@ app.directive('validateType', ['$filter', function ($filter) {
                         }
                         return value;
                     });
-                    model.$formatters.push(function (value) {
+                    model.$formatters.push(function(value) {
                         if (value) {
                             return $filter('number')(value, precision) + ' ' + format;
                         } else {
@@ -614,7 +613,7 @@ app.directive('validateType', ['$filter', function ($filter) {
                     */
                     break;
                 case 'anynumber':
-                    model.$parsers.unshift(function (value) {
+                    model.$parsers.unshift(function(value) {
                         var valid = false,
                             type = validateType;
                         if (value !== undefined && value !== "") {
@@ -634,7 +633,7 @@ app.directive('validateType', ['$filter', function ($filter) {
                         }
                         return value;
                     });
-                    model.$formatters.push(function (value) {
+                    model.$formatters.push(function(value) {
                         if (value || value === 0) {
                             return $filter('number')(value, precision) + ' ' + format;
                         } else {
@@ -683,7 +682,7 @@ app.directive('validateType', ['$filter', function ($filter) {
                 element.off('focus', onFocus);
                 element.off('blur', onBlur);
             }
-            scope.$on('$destroy', function () {
+            scope.$on('$destroy', function() {
                 removeListeners();
             });
             addListeners();

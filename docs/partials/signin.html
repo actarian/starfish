@@ -7,12 +7,16 @@
 <main>
 
     <div class="content">
-        <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()">
+        <div ng-if="api.user">
+            Hai già effettuato l'accesso
+            <button type="button" class="btn btn-sm btn-primary" ng-click="api.signout()">esci</button>
+        </div>
+        <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()" ng-if="!api.user">
             <div class="container-fluid maxw-lg">
                 <section class="container-fluid maxw-sm section-bordered shadow">
                     <h6 class="headline foreground light-60">Accedi</h6>
                     <div class="padding-top-xs-20 padding-bottom-xs-20">
-                        <div form="form" control="text" ng-model="model.userName" title="Nome utente" placeholder="il tuo username" required="true"></div>
+                        <div form="form" control="email" ng-model="model.email" title="Email" placeholder="la tua email" required="true"></div>
                         <div form="form" control="password" ng-model="model.password" title="Password" placeholder="la tua password" required="true" min="6"></div>
                         <!-- <div form="form" control="select" ng-model="model.type" title="Type" placeholder="selezione un tipo" required="true" source="[{id:1,name:'1'}, {id:2,name:'2'}]"></div> -->
                         <br>

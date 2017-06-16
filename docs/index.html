@@ -47,6 +47,7 @@
         </div>
     </div>
 
+    <!-- ERRORS -->
     <script type="text/ng-template" id="partials/errors">
         <ul class="nav padding-bottom-lg-20" ng-if="state.isError">
             <li class="nav-item" ng-repeat="item in state.errors track by $index">
@@ -60,50 +61,27 @@
     <!-- HEADER -->
     <script type="text/ng-template" id="partials/header">
         <div class="container-fluid maxw-lg">
-
-<!--
-            <nav class="navbar navbar-light bg-faded">
-                <a class="navbar-brand" href="#">
-                    <img src="/assets/brand/bootstrap-solid.svg" width="30" height="30" class="d-inline-block align-top" alt=""> Bootstrap
-                </a>
-                <div class="collapse navbar-collapse">
+            <nav class="navbar navbar-toggleable-md navbar-light">
+                <a class="navbar-brand" href="#/">brand</a>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav mr-auto">
                         <li class="nav-item active">
-                            <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                            <a class="nav-link" href="#/">home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Features</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Pricing</a>
+                            <a class="nav-link" href="#/dashboard">dashboard</a>
                         </li>
                     </ul>
-                    <span class="navbar-text">Navbar text with an inline element</span>
-                </div>
-            </nav>-->
-            
-            <nav class="navbar">
-                <div class="collapse navbar-collapse" id="navbarCollapse">
-                    <ul class="navbar-nav mr-auto" ng-transclude="header"></ul>
-                    <!--
-                    <ul class="navbar-nav mr-auto">
-                        <li class="nav-item active">
-                            <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Link</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link disabled" href="#">Disabled</a>
-                        </li>
-                    </ul>
-                    -->
-                    <form class="form-inline">
-                        <a ng-href="#/signin" class="btn btn-outline-success">Accedi</a>
-                    </form>
+                    <div class="form-inline my-2 my-lg-0" ng-if="!api.user">
+                        <a class="btn btn-outline-primary my-2 my-sm-0" href="#/signin">accedi</a>
+                        <a class="btn btn-outline-primary my-2 my-sm-0" href="#/signup">registra</a>
+                    </div>
+                    <div class="form-inline my-2 my-lg-0" ng-if="api.user">
+                        <span class="pr-2" ng-bind="api.user.shopName"></span>
+                        <button class="btn btn-outline-primary my-2 my-sm-0" type="button" ng-click="signout()">esci</a>
+                    </div>
                 </div>
             </nav>
-
         </div>
     </script>
 
@@ -116,8 +94,7 @@
                 </label>
                 <div class="col-lg-9 col-{{type}}">
                     <div class="input-group">
-                        <input type="{{getType()}}" name="{{field}}" class="form-control" ng-model="ngModel" placeholder="{{placeholder}}" ng-minlength="minLength"
-                            ng-maxlength="maxLength" ng-required="required" ng-disabled="disabled" ng-readonly="readonly" ng-change="onChange"
+                        <input type="{{getType()}}" name="{{field}}" class="form-control" ng-model="ngModel" placeholder="{{placeholder}}" ng-minlength="minLength" ng-maxlength="maxLength" ng-required="required" ng-disabled="disabled" ng-readonly="readonly" ng-change="onChange"
                             ng-focus="focus = true" ng-blur="focus = false">
                         <span class="input-group-addon" ng-if="type == 'password' && ngModel">
                             <span class="icon-eye" ng-click="visible = !visible"></span>
@@ -138,8 +115,7 @@
                     <span ng-bind="title"></span><sup>✽</sup>
                 </label>
                 <div class="col-lg-9 col-{{type}}">
-                    <select name="{{field}}" class="form-control" ng-model="ngModel" ng-options="{{options}}" ng-required="required" ng-disabled="disabled"
-                        ng-readonly="readonly" ng-change="onChange" ng-focus="focus = true" ng-blur="focus = false">
+                    <select name="{{field}}" class="form-control" ng-model="ngModel" ng-options="{{options}}" ng-required="required" ng-disabled="disabled" ng-readonly="readonly" ng-change="onChange" ng-focus="focus = true" ng-blur="focus = false">
                         <option value="" disabled selected hidden>{{placeholder}}</option>
                     </select>
                     <control-messages></control-messages>

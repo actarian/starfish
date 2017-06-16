@@ -16,18 +16,28 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         templateUrl: 'partials/signin.html',
         controller: 'SigninCtrl',
 
+    }).when('/signup', {
+        title: 'Registrazione',
+        templateUrl: 'partials/signup.html',
+        controller: 'SignupCtrl',
+
     }).when('/dashboard', {
         title: 'Dashboard',
         templateUrl: 'partials/dashboard.html',
         controller: 'DashboardCtrl',
+        resolve: {
+            user: ['FirebaseApi', function(api) {
+                return api.isLoggedOrGoTo('/signin');
+            }],
+        },
 
     }).when('/user/:userId', {
         title: 'User',
         templateUrl: 'partials/user.html',
         controller: 'UserCtrl',
         resolve: {
-            user: ['User', function(User) {
-                return User.isLoggedOrGoTo('/signin');
+            user: ['FirebaseApi', function(api) {
+                return api.isLoggedOrGoTo('/signin');
             }],
         },
 
@@ -69,6 +79,7 @@ app.run(['$rootScope', '$route', '$routeParams', '$window', '$document', '$q', '
 
     // MODALS
     $rootScope.modals = [];
+
     function closeModal(modal) {
         var index = -1;
         angular.forEach($rootScope.modals, function(m, i) {

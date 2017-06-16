@@ -12,17 +12,15 @@
                 <section class="container-fluid maxw-sm section-bordered shadow">
                     <h6 class="headline foreground light-60">Accedi</h6>
                     <div class="padding-top-xs-20 padding-bottom-xs-20">
-                        <div form="form" control="text" ng-model="model.userName" title="Nome utente" placeholder="il tuo username" required="true"></div>
+                        <div form="form" control="email" ng-model="model.email" title="Email" placeholder="la tua email" required="true"></div>
                         <div form="form" control="password" ng-model="model.password" title="Password" placeholder="la tua password" required="true" min="6"></div>
-                        <div form="form" control="text" ng-model="model.name" title="Nome stabilimento" placeholder="il tuo username" required="true"></div>
-                        <div form="form" control="text" ng-model="model.lat" title="Nome stabilimento" placeholder="il tuo username" required="true"></div>
-                        <div form="form" control="text" ng-model="model.lng" title="Nome stabilimento" placeholder="il tuo username" required="true"></div>
+                        <div form="form" control="text" ng-model="model.shopName" title="Stabilimento" placeholder="il nome dello stabilimento" required="true"></div>
                         <!-- <div form="form" control="select" ng-model="model.type" title="Type" placeholder="selezione un tipo" required="true" source="[{id:1,name:'1'}, {id:2,name:'2'}]"></div> -->
                         <br>
                         <div ng-include="'partials/errors'"></div>
                         <div class="row">
                             <div class="col-lg-9 offset-lg-3">
-                                <button state="state" on-click="submit()" on-validate="form.$invalid"><span>Accedi</span> <i class="icon-user"></i></button>
+                                <button state="state" on-click="submit()" on-validate="form.$invalid"><span>Registrati</span> <i class="icon-user"></i></button>
                             </div>
                         </div>
                     </div>
