@@ -1,28 +1,28 @@
 ﻿/* global angular */
 
-(function () {
+(function() {
     "use strict";
 
     var app = angular.module('app');
 
-    app.controller('RootCtrl', ['$scope', '$location', 'FirebaseApi', function ($scope, $location, api) {
+    app.controller('RootCtrl', ['$scope', '$location', 'FirebaseApi', function($scope, $location, api) {
 
         $scope.api = api;
 
-        $scope.signout = function () {
+        $scope.signout = function() {
             console.log(api);
-            api.auth.signout().then(function () {
+            api.auth.signout().then(function() {
                 $location.path('/');
             });
         };
 
-        api.current().then(function (user) {
+        api.current().then(function(user) {
             console.log(user);
         });
 
     }]);
 
-    app.controller('HomeCtrl', ['$scope', 'State', 'FirebaseApi', function ($scope, State, api) {
+    app.controller('HomeCtrl', ['$scope', 'State', 'FirebaseApi', function($scope, State, api) {
 
         var state = $scope.state = new State();
 
@@ -30,14 +30,15 @@
 
     }]);
 
-    app.controller('ProfileCtrl', ['$scope', 'State', 'FirebaseApi', function ($scope, State, api) {
+    app.controller('ProfileCtrl', ['$scope', 'State', 'FirebaseApi', function($scope, State, api) {
 
         var state = $scope.state = new State();
 
         var model = $scope.model = {};
 
-        api.current().then(function (user) {
-            angular.extend(model, user);
+        api.current().then(function(user) {
+            model = $scope.model = user;
+            // angular.extend(model, user);
             state.ready();
         });
 
@@ -74,7 +75,7 @@
 
         $scope.glControls = glControls;
 
-        $scope.submit = function () {
+        $scope.submit = function() {
             if (state.busy()) {
                 api.users.save(model).then(function success(response) {
                     state.success();
@@ -86,26 +87,26 @@
 
     }]);
 
-    app.controller('DashboardCtrl', ['$scope', 'State', 'FirebaseApi', function ($scope, State, api) {
+    app.controller('DashboardCtrl', ['$scope', 'State', 'FirebaseApi', function($scope, State, api) {
 
         var state = $scope.state = new State();
 
         state.ready();
 
-        api.items().then(function (items) {
+        api.items().then(function(items) {
             console.log('DashboardCtrl.items', items);
             $scope.items = items;
         });
 
     }]);
 
-    app.controller('SigninCtrl', ['$scope', 'State', 'Router', 'FirebaseApi', function ($scope, State, router, api) {
+    app.controller('SigninCtrl', ['$scope', 'State', 'Router', 'FirebaseApi', function($scope, State, router, api) {
 
         var state = $scope.state = new State();
 
         var model = $scope.model = {};
 
-        $scope.submit = function () {
+        $scope.submit = function() {
             if (state.busy()) {
                 api.auth.signin(model).then(function success(response) {
                     // console.log('SigninCtrl', response);
@@ -120,13 +121,13 @@
 
     }]);
 
-    app.controller('SignupCtrl', ['$scope', 'State', 'Router', 'FirebaseApi', function ($scope, State, router, api) {
+    app.controller('SignupCtrl', ['$scope', 'State', 'Router', 'FirebaseApi', function($scope, State, router, api) {
 
         var state = $scope.state = new State();
 
         var model = $scope.model = {};
 
-        $scope.submit = function () {
+        $scope.submit = function() {
             if (state.busy()) {
                 api.auth.signup(model).then(function success(response) {
                     // console.log('SignupCtrl', path, response);
@@ -141,7 +142,7 @@
 
     }]);
 
-    app.controller('DemoCtrl', ['$scope', '$interval', 'Hash', 'Calendar', 'GanttRow', function ($scope, $interval, Hash, Calendar, GanttRow) {
+    app.controller('DemoCtrl', ['$scope', '$interval', 'Hash', 'Calendar', 'GanttRow', function($scope, $interval, Hash, Calendar, GanttRow) {
 
         var row = $scope.row = new GanttRow({
             activity: {
@@ -155,7 +156,7 @@
             },
         }, []);
 
-        $scope.addItem = function () {
+        $scope.addItem = function() {
             var item = getRandomItem();
             row.slots.add(item);
             row.update();
@@ -164,7 +165,7 @@
             // console.log('addItem', item.id);
             log('addItem', item.id);
         };
-        $scope.updateItem = function () {
+        $scope.updateItem = function() {
             if ($scope.item) {
                 var id = $scope.item.id;
                 item = getRandomItem();
@@ -177,7 +178,7 @@
                 log('updateItem', item.id);
             }
         };
-        $scope.clearItems = function () {
+        $scope.clearItems = function() {
             row.ranges.removeAll();
             row.months.removeAll();
             row.days.removeAll();
@@ -189,11 +190,11 @@
         };
 
         var intervalId;
-        $scope.start = function () {
+        $scope.start = function() {
             $scope.stop();
             intervalId = $interval($scope.addItem, 1000 / 60);
         };
-        $scope.stop = function () {
+        $scope.stop = function() {
             if (intervalId) {
                 $interval.cancel(intervalId);
             }
@@ -274,7 +275,7 @@
     });
 
 
-    app.factory('Calendar', ['Hash', function (Hash) {
+    app.factory('Calendar', ['Hash', function(Hash) {
         var oneday = (24 * 60 * 60 * 1000);
         var today = new Date();
         today.setHours(0);
@@ -291,23 +292,23 @@
         }
         var months = new Hash('mKey');
 
-        function Calendar() { }
-        Calendar.getDate = function (day) {
+        function Calendar() {}
+        Calendar.getDate = function(day) {
             if (typeof day.date.getMonth === 'function') {
                 return day.date;
             } else {
                 return new Date(day.date);
             }
         };
-        Calendar.clearMonth = function (month) {
-            month.days.each(function (day) {
+        Calendar.clearMonth = function(month) {
+            month.days.each(function(day) {
                 if (day) {
                     day.hours = 0;
                     day.tasks = [];
                 }
             });
         };
-        Calendar.getMonth = function (day) {
+        Calendar.getMonth = function(day) {
             today = new Date();
             today.setHours(0);
             today.setMinutes(0);
@@ -332,8 +333,8 @@
                     fromDay: fromDay,
                     days: new Hash('key'),
                 };
-                month.weeks = ArrayFrom(weeks, function (r) {
-                    var days = ArrayFrom(7, function (c) {
+                month.weeks = ArrayFrom(weeks, function(r) {
+                    var days = ArrayFrom(7, function(c) {
                         var item = null;
                         var d = r * 7 + c - (fromDay - 1);
                         if (d >= 0 && d < monthDays) {
@@ -362,18 +363,18 @@
             }
             return month;
         };
-        Calendar.getDay = function (days) {
+        Calendar.getDay = function(days) {
             var date = new Date(today);
             date.setDate(date.getDate() + days);
             return date;
         };
-        Calendar.getKey = function (date) {
+        Calendar.getKey = function(date) {
             return Math.ceil(date.getTime() / oneday);
         };
         return Calendar;
     }]);
 
-    app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function (Hash, Calendar, ganttGroups) {
+    app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calendar, ganttGroups) {
         var uid = 1;
 
         var oneday = (24 * 60 * 60 * 1000);
@@ -409,13 +410,13 @@
             this.update();
         }
         GanttRow.prototype = {
-            canSelect: function () {
+            canSelect: function() {
                 return this.type === ganttGroups.ACTIVITY && this.budgetHours > 0;
             },
-            canEdit: function () {
+            canEdit: function() {
                 return this.canSelect() && this.resource.name.toLowerCase().indexOf('nondefinito') === -1;
             },
-            mergeSlot: function (slot) {
+            mergeSlot: function(slot) {
                 var slots = this.slots;
                 if (slot.hours) {
                     slots.add(slot);
@@ -423,7 +424,7 @@
                     slots.remove(slot);
                 }
             },
-            insertSlot: function (key, hours, taskId) {
+            insertSlot: function(key, hours, taskId) {
                 var slot = null;
                 if (this.useBudget) {
                     hours = Math.min(hours, this.budgetHours - this.assignedHours);
@@ -447,9 +448,9 @@
                 this.update();
                 return slot;
             },
-            removeSlots: function (key) {
+            removeSlots: function(key) {
                 var day = this.days.getId(key);
-                day.tasks.each(function (item) {
+                day.tasks.each(function(item) {
                     item.hours = 0;
                 });
                 var slots = day.tasks.slice();
@@ -457,7 +458,7 @@
                 this.update();
                 return slots;
             },
-            toggleSlots: function (key, hours) {
+            toggleSlots: function(key, hours) {
                 if (this.days.has(key)) {
                     return this.removeSlots(key);
                 } else {
@@ -466,7 +467,7 @@
                 }
             },
             // WRITE CANCEL DAY SLOT
-            assign: function (col, value) {
+            assign: function(col, value) {
                 console.log('assign');
                 var slots = this.slots,
                     key = col.$key;
@@ -486,7 +487,7 @@
                 this.update();
                 return this.days.getId(key);
             },
-            write: function (col, value, max) {
+            write: function(col, value, max) {
                 value = Math.min(value, max);
                 if (this.useBudget) {
                     value = Math.min(value, this.budgetHours - this.assignedHours);
@@ -496,12 +497,12 @@
                     return this.assign(col, value);
                 }
             },
-            erase: function (col, value, max) {
+            erase: function(col, value, max) {
                 if (this.days.has(col.$key) && col.$date >= today) {
                     return this.assign(col, null);
                 }
             },
-            toggle: function (col, value, max) {
+            toggle: function(col, value, max) {
                 if (this.days.has(col.$key)) {
                     return this.erase(col, value, max);
                 } else {
@@ -509,13 +510,13 @@
                 }
             },
             // WRITE CANCEL DAY SLOT
-            update: function () {
+            update: function() {
                 var total = 0;
                 var slots = this.slots,
                     days = this.days;
                 days.removeAll();
                 var taskId = null;
-                slots.each(function (item) {
+                slots.each(function(item) {
                     taskId = item.taskId || taskId;
                     total += item ? item.hours : 0;
                     var day = days.add({
@@ -525,7 +526,7 @@
                     });
                     day.tasks = day.tasks || new Hash('id'); // 'taskId'
                     day.tasks.add(angular.copy(item));
-                    day.tasks.each(function (task) {
+                    day.tasks.each(function(task) {
                         day.hours += task.hours;
                     });
                 });
@@ -534,12 +535,12 @@
                 this.assignedHours = total;
                 this.updateRanges();
             },
-            updateMonths: function () {
+            updateMonths: function() {
                 var days = this.days,
                     months = this.months;
                 months.removeAll();
                 var previous;
-                days.each(function (item) {
+                days.each(function(item) {
                     var month = Calendar.getMonth(item);
                     if (month !== previous) {
                         previous = month;
@@ -554,13 +555,13 @@
                 });
                 months.forward(); // sort by key  
             },
-            updateRanges: function () {
+            updateRanges: function() {
                 var days = this.days,
                     ranges = this.ranges;
                 ranges.removeAll();
                 var rKey = 0,
                     lastDay;
-                days.each(function (day, i) {
+                days.each(function(day, i) {
                     if (lastDay) {
                         if (day.key - lastDay.key > 1 || day.tasks.differs(lastDay.tasks)) {
                             rKey++;
@@ -575,11 +576,11 @@
                 });
                 ranges.forward(); // sort by key   
             },
-            getRange: function (col, from, to) {
+            getRange: function(col, from, to) {
                 var ranges = this.ranges,
                     range = null,
                     key = col.$key;
-                ranges.each(function (item) {
+                ranges.each(function(item) {
                     var index = item.days.indexOf(key);
                     if (index !== -1) {
                         item.c = index;
@@ -590,7 +591,7 @@
                 });
                 return range;
             },
-            updateRange: function (col, from, to) {
+            updateRange: function(col, from, to) {
                 var ranges = this.ranges,
                     range = this.getRange(col, from, to);
                 if (range) {
@@ -608,7 +609,7 @@
                 }
                 return range;
             },
-            canMoveRange: function (range, dir) {
+            canMoveRange: function(range, dir) {
                 // rifare !!!
                 var can = true;
                 var row = this;
@@ -627,18 +628,18 @@
                 }
                 return can;
             },
-            moveRange: function (range, dir) {
+            moveRange: function(range, dir) {
                 if (range.items.length) {
                     var row = this;
                     if (row.canMoveRange(range, dir)) {
-                        angular.forEach(range.items, function (item) {
+                        angular.forEach(range.items, function(item) {
                             row.addDays(item, dir);
                         });
                         row.update();
                     }
                 }
             },
-            addDays: function (item, days) {
+            addDays: function(item, days) {
                 // console.log('GanttRow.addDay', item, days);
                 var date = new Date(item.startDate);
                 date.setDate(date.getDate() + days);
@@ -646,31 +647,31 @@
                 item.key = Math.ceil(date.getTime() / oneday);
                 return item;
             },
-            getOffsetKey: function (date, day) {
+            getOffsetKey: function(date, day) {
                 date = new Date(date);
                 date.setDate(date.getDate() + day);
                 var key = Math.ceil(date.getTime() / oneday);
                 return key;
             },
-            getHours: function (key) {
+            getHours: function(key) {
                 var hours = 0;
                 var day = this.days.getId(key);
                 if (day) {
-                    day.tasks.each(function (task) {
+                    day.tasks.each(function(task) {
                         hours += task.hours;
                     });
                 }
                 return hours;
             },
-            toggleOpened: function () {
+            toggleOpened: function() {
                 // console.log('toggleOpened');
                 this.opened = !this.opened;
             },
-            compress: function (key) {
+            compress: function(key) {
                 if (!this.items.length) {
                     return;
                 }
-                this.items.sort(function (a, b) {
+                this.items.sort(function(a, b) {
                     return a.key - b.key;
                 });
                 var item = Utils.where(this.items, { key: key });
@@ -692,7 +693,7 @@
                 this.update();
             },
         };
-        GanttRow.serialNumber = function (number, max) {
+        GanttRow.serialNumber = function(number, max) {
             return new Array((1 + (max.toString().length) - (number.toString().length))).join('0');
         };
         return GanttRow;

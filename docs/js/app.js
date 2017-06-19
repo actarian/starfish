@@ -91,29 +91,29 @@
 }());
 /* global angular */
 
-(function () {
+(function() {
     "use strict";
 
     var app = angular.module('app');
 
-    app.controller('RootCtrl', ['$scope', '$location', 'FirebaseApi', function ($scope, $location, api) {
+    app.controller('RootCtrl', ['$scope', '$location', 'FirebaseApi', function($scope, $location, api) {
 
         $scope.api = api;
 
-        $scope.signout = function () {
+        $scope.signout = function() {
             console.log(api);
-            api.auth.signout().then(function () {
+            api.auth.signout().then(function() {
                 $location.path('/');
             });
         };
 
-        api.current().then(function (user) {
+        api.current().then(function(user) {
             console.log(user);
         });
 
     }]);
 
-    app.controller('HomeCtrl', ['$scope', 'State', 'FirebaseApi', function ($scope, State, api) {
+    app.controller('HomeCtrl', ['$scope', 'State', 'FirebaseApi', function($scope, State, api) {
 
         var state = $scope.state = new State();
 
@@ -121,14 +121,15 @@
 
     }]);
 
-    app.controller('ProfileCtrl', ['$scope', 'State', 'FirebaseApi', function ($scope, State, api) {
+    app.controller('ProfileCtrl', ['$scope', 'State', 'FirebaseApi', function($scope, State, api) {
 
         var state = $scope.state = new State();
 
         var model = $scope.model = {};
 
-        api.current().then(function (user) {
-            angular.extend(model, user);
+        api.current().then(function(user) {
+            model = $scope.model = user;
+            // angular.extend(model, user);
             state.ready();
         });
 
@@ -165,7 +166,7 @@
 
         $scope.glControls = glControls;
 
-        $scope.submit = function () {
+        $scope.submit = function() {
             if (state.busy()) {
                 api.users.save(model).then(function success(response) {
                     state.success();
@@ -177,26 +178,26 @@
 
     }]);
 
-    app.controller('DashboardCtrl', ['$scope', 'State', 'FirebaseApi', function ($scope, State, api) {
+    app.controller('DashboardCtrl', ['$scope', 'State', 'FirebaseApi', function($scope, State, api) {
 
         var state = $scope.state = new State();
 
         state.ready();
 
-        api.items().then(function (items) {
+        api.items().then(function(items) {
             console.log('DashboardCtrl.items', items);
             $scope.items = items;
         });
 
     }]);
 
-    app.controller('SigninCtrl', ['$scope', 'State', 'Router', 'FirebaseApi', function ($scope, State, router, api) {
+    app.controller('SigninCtrl', ['$scope', 'State', 'Router', 'FirebaseApi', function($scope, State, router, api) {
 
         var state = $scope.state = new State();
 
         var model = $scope.model = {};
 
-        $scope.submit = function () {
+        $scope.submit = function() {
             if (state.busy()) {
                 api.auth.signin(model).then(function success(response) {
                     // console.log('SigninCtrl', response);
@@ -211,13 +212,13 @@
 
     }]);
 
-    app.controller('SignupCtrl', ['$scope', 'State', 'Router', 'FirebaseApi', function ($scope, State, router, api) {
+    app.controller('SignupCtrl', ['$scope', 'State', 'Router', 'FirebaseApi', function($scope, State, router, api) {
 
         var state = $scope.state = new State();
 
         var model = $scope.model = {};
 
-        $scope.submit = function () {
+        $scope.submit = function() {
             if (state.busy()) {
                 api.auth.signup(model).then(function success(response) {
                     // console.log('SignupCtrl', path, response);
@@ -232,7 +233,7 @@
 
     }]);
 
-    app.controller('DemoCtrl', ['$scope', '$interval', 'Hash', 'Calendar', 'GanttRow', function ($scope, $interval, Hash, Calendar, GanttRow) {
+    app.controller('DemoCtrl', ['$scope', '$interval', 'Hash', 'Calendar', 'GanttRow', function($scope, $interval, Hash, Calendar, GanttRow) {
 
         var row = $scope.row = new GanttRow({
             activity: {
@@ -246,7 +247,7 @@
             },
         }, []);
 
-        $scope.addItem = function () {
+        $scope.addItem = function() {
             var item = getRandomItem();
             row.slots.add(item);
             row.update();
@@ -255,7 +256,7 @@
             // console.log('addItem', item.id);
             log('addItem', item.id);
         };
-        $scope.updateItem = function () {
+        $scope.updateItem = function() {
             if ($scope.item) {
                 var id = $scope.item.id;
                 item = getRandomItem();
@@ -268,7 +269,7 @@
                 log('updateItem', item.id);
             }
         };
-        $scope.clearItems = function () {
+        $scope.clearItems = function() {
             row.ranges.removeAll();
             row.months.removeAll();
             row.days.removeAll();
@@ -280,11 +281,11 @@
         };
 
         var intervalId;
-        $scope.start = function () {
+        $scope.start = function() {
             $scope.stop();
             intervalId = $interval($scope.addItem, 1000 / 60);
         };
-        $scope.stop = function () {
+        $scope.stop = function() {
             if (intervalId) {
                 $interval.cancel(intervalId);
             }
@@ -365,7 +366,7 @@
     });
 
 
-    app.factory('Calendar', ['Hash', function (Hash) {
+    app.factory('Calendar', ['Hash', function(Hash) {
         var oneday = (24 * 60 * 60 * 1000);
         var today = new Date();
         today.setHours(0);
@@ -382,23 +383,23 @@
         }
         var months = new Hash('mKey');
 
-        function Calendar() { }
-        Calendar.getDate = function (day) {
+        function Calendar() {}
+        Calendar.getDate = function(day) {
             if (typeof day.date.getMonth === 'function') {
                 return day.date;
             } else {
                 return new Date(day.date);
             }
         };
-        Calendar.clearMonth = function (month) {
-            month.days.each(function (day) {
+        Calendar.clearMonth = function(month) {
+            month.days.each(function(day) {
                 if (day) {
                     day.hours = 0;
                     day.tasks = [];
                 }
             });
         };
-        Calendar.getMonth = function (day) {
+        Calendar.getMonth = function(day) {
             today = new Date();
             today.setHours(0);
             today.setMinutes(0);
@@ -423,8 +424,8 @@
                     fromDay: fromDay,
                     days: new Hash('key'),
                 };
-                month.weeks = ArrayFrom(weeks, function (r) {
-                    var days = ArrayFrom(7, function (c) {
+                month.weeks = ArrayFrom(weeks, function(r) {
+                    var days = ArrayFrom(7, function(c) {
                         var item = null;
                         var d = r * 7 + c - (fromDay - 1);
                         if (d >= 0 && d < monthDays) {
@@ -453,18 +454,18 @@
             }
             return month;
         };
-        Calendar.getDay = function (days) {
+        Calendar.getDay = function(days) {
             var date = new Date(today);
             date.setDate(date.getDate() + days);
             return date;
         };
-        Calendar.getKey = function (date) {
+        Calendar.getKey = function(date) {
             return Math.ceil(date.getTime() / oneday);
         };
         return Calendar;
     }]);
 
-    app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function (Hash, Calendar, ganttGroups) {
+    app.factory('GanttRow', ['Hash', 'Calendar', 'ganttGroups', function(Hash, Calendar, ganttGroups) {
         var uid = 1;
 
         var oneday = (24 * 60 * 60 * 1000);
@@ -500,13 +501,13 @@
             this.update();
         }
         GanttRow.prototype = {
-            canSelect: function () {
+            canSelect: function() {
                 return this.type === ganttGroups.ACTIVITY && this.budgetHours > 0;
             },
-            canEdit: function () {
+            canEdit: function() {
                 return this.canSelect() && this.resource.name.toLowerCase().indexOf('nondefinito') === -1;
             },
-            mergeSlot: function (slot) {
+            mergeSlot: function(slot) {
                 var slots = this.slots;
                 if (slot.hours) {
                     slots.add(slot);
@@ -514,7 +515,7 @@
                     slots.remove(slot);
                 }
             },
-            insertSlot: function (key, hours, taskId) {
+            insertSlot: function(key, hours, taskId) {
                 var slot = null;
                 if (this.useBudget) {
                     hours = Math.min(hours, this.budgetHours - this.assignedHours);
@@ -538,9 +539,9 @@
                 this.update();
                 return slot;
             },
-            removeSlots: function (key) {
+            removeSlots: function(key) {
                 var day = this.days.getId(key);
-                day.tasks.each(function (item) {
+                day.tasks.each(function(item) {
                     item.hours = 0;
                 });
                 var slots = day.tasks.slice();
@@ -548,7 +549,7 @@
                 this.update();
                 return slots;
             },
-            toggleSlots: function (key, hours) {
+            toggleSlots: function(key, hours) {
                 if (this.days.has(key)) {
                     return this.removeSlots(key);
                 } else {
@@ -557,7 +558,7 @@
                 }
             },
             // WRITE CANCEL DAY SLOT
-            assign: function (col, value) {
+            assign: function(col, value) {
                 console.log('assign');
                 var slots = this.slots,
                     key = col.$key;
@@ -577,7 +578,7 @@
                 this.update();
                 return this.days.getId(key);
             },
-            write: function (col, value, max) {
+            write: function(col, value, max) {
                 value = Math.min(value, max);
                 if (this.useBudget) {
                     value = Math.min(value, this.budgetHours - this.assignedHours);
@@ -587,12 +588,12 @@
                     return this.assign(col, value);
                 }
             },
-            erase: function (col, value, max) {
+            erase: function(col, value, max) {
                 if (this.days.has(col.$key) && col.$date >= today) {
                     return this.assign(col, null);
                 }
             },
-            toggle: function (col, value, max) {
+            toggle: function(col, value, max) {
                 if (this.days.has(col.$key)) {
                     return this.erase(col, value, max);
                 } else {
@@ -600,13 +601,13 @@
                 }
             },
             // WRITE CANCEL DAY SLOT
-            update: function () {
+            update: function() {
                 var total = 0;
                 var slots = this.slots,
                     days = this.days;
                 days.removeAll();
                 var taskId = null;
-                slots.each(function (item) {
+                slots.each(function(item) {
                     taskId = item.taskId || taskId;
                     total += item ? item.hours : 0;
                     var day = days.add({
@@ -616,7 +617,7 @@
                     });
                     day.tasks = day.tasks || new Hash('id'); // 'taskId'
                     day.tasks.add(angular.copy(item));
-                    day.tasks.each(function (task) {
+                    day.tasks.each(function(task) {
                         day.hours += task.hours;
                     });
                 });
@@ -625,12 +626,12 @@
                 this.assignedHours = total;
                 this.updateRanges();
             },
-            updateMonths: function () {
+            updateMonths: function() {
                 var days = this.days,
                     months = this.months;
                 months.removeAll();
                 var previous;
-                days.each(function (item) {
+                days.each(function(item) {
                     var month = Calendar.getMonth(item);
                     if (month !== previous) {
                         previous = month;
@@ -645,13 +646,13 @@
                 });
                 months.forward(); // sort by key  
             },
-            updateRanges: function () {
+            updateRanges: function() {
                 var days = this.days,
                     ranges = this.ranges;
                 ranges.removeAll();
                 var rKey = 0,
                     lastDay;
-                days.each(function (day, i) {
+                days.each(function(day, i) {
                     if (lastDay) {
                         if (day.key - lastDay.key > 1 || day.tasks.differs(lastDay.tasks)) {
                             rKey++;
@@ -666,11 +667,11 @@
                 });
                 ranges.forward(); // sort by key   
             },
-            getRange: function (col, from, to) {
+            getRange: function(col, from, to) {
                 var ranges = this.ranges,
                     range = null,
                     key = col.$key;
-                ranges.each(function (item) {
+                ranges.each(function(item) {
                     var index = item.days.indexOf(key);
                     if (index !== -1) {
                         item.c = index;
@@ -681,7 +682,7 @@
                 });
                 return range;
             },
-            updateRange: function (col, from, to) {
+            updateRange: function(col, from, to) {
                 var ranges = this.ranges,
                     range = this.getRange(col, from, to);
                 if (range) {
@@ -699,7 +700,7 @@
                 }
                 return range;
             },
-            canMoveRange: function (range, dir) {
+            canMoveRange: function(range, dir) {
                 // rifare !!!
                 var can = true;
                 var row = this;
@@ -718,18 +719,18 @@
                 }
                 return can;
             },
-            moveRange: function (range, dir) {
+            moveRange: function(range, dir) {
                 if (range.items.length) {
                     var row = this;
                     if (row.canMoveRange(range, dir)) {
-                        angular.forEach(range.items, function (item) {
+                        angular.forEach(range.items, function(item) {
                             row.addDays(item, dir);
                         });
                         row.update();
                     }
                 }
             },
-            addDays: function (item, days) {
+            addDays: function(item, days) {
                 // console.log('GanttRow.addDay', item, days);
                 var date = new Date(item.startDate);
                 date.setDate(date.getDate() + days);
@@ -737,31 +738,31 @@
                 item.key = Math.ceil(date.getTime() / oneday);
                 return item;
             },
-            getOffsetKey: function (date, day) {
+            getOffsetKey: function(date, day) {
                 date = new Date(date);
                 date.setDate(date.getDate() + day);
                 var key = Math.ceil(date.getTime() / oneday);
                 return key;
             },
-            getHours: function (key) {
+            getHours: function(key) {
                 var hours = 0;
                 var day = this.days.getId(key);
                 if (day) {
-                    day.tasks.each(function (task) {
+                    day.tasks.each(function(task) {
                         hours += task.hours;
                     });
                 }
                 return hours;
             },
-            toggleOpened: function () {
+            toggleOpened: function() {
                 // console.log('toggleOpened');
                 this.opened = !this.opened;
             },
-            compress: function (key) {
+            compress: function(key) {
                 if (!this.items.length) {
                     return;
                 }
-                this.items.sort(function (a, b) {
+                this.items.sort(function(a, b) {
                     return a.key - b.key;
                 });
                 var item = Utils.where(this.items, { key: key });
@@ -783,7 +784,7 @@
                 this.update();
             },
         };
-        GanttRow.serialNumber = function (number, max) {
+        GanttRow.serialNumber = function(number, max) {
             return new Array((1 + (max.toString().length) - (number.toString().length))).join('0');
         };
         return GanttRow;
@@ -2182,12 +2183,12 @@
 }());
 /* global angular, firebase */
 
-(function () {
+(function() {
     "use strict";
 
     var app = angular.module('app');
 
-    app.service('FirebaseApi', ['$q', '$firebaseAuth', '$firebaseObject', '$firebaseArray', 'LocalStorage', 'Router', function ($q, $firebaseAuth, $firebaseObject, $firebaseArray, storage, router) {
+    app.service('FirebaseApi', ['$q', '$firebaseAuth', '$firebaseObject', '$firebaseArray', 'LocalStorage', 'Router', function($q, $firebaseAuth, $firebaseObject, $firebaseArray, storage, router) {
 
         var firebase = window.firebase || null;
         if (firebase) {
@@ -2214,7 +2215,7 @@
             signout: signout,
         };
         service.users = {
-            save: null,
+            save: userSave,
         };
         service.current = current;
         service.isLoggedOrGoTo = isLoggedOrGoTo;
@@ -2225,12 +2226,12 @@
                 deferred.resolve(service.presence);
             } else {
                 var auth = $firebaseAuth();
-                auth.$signInAnonymously({ remember: 'sessionOnly' }).then(function (logged) {
+                auth.$signInAnonymously({ remember: 'sessionOnly' }).then(function(logged) {
                     var presence = service.presence = {
                         uid: logged.uid,
                     };
                     deferred.resolve(presence);
-                }).catch(function (error) {
+                }).catch(function(error) {
                     console.log('Error', error);
                     deferred.reject(error);
                 });
@@ -2245,23 +2246,42 @@
             } else {
                 var token = storage.get('token');
                 if (token) {
-                    connect().then(function (p) {
+                    connect().then(function(presence) {
+                        getSingle('users', { token: token }).then(function(user) {
+                            var user = service.user = user;
+                            deferred.resolve(user);
+                        }, function(error) {
+                            deferred.reject(error);
+                        });
+                        /*
+                        var users = getArray('users', { token: token }).then(function(users) {
+                            console.log('first', users[0]);
+                        }, function(error) {
+                            deferred.reject(error);
+                        })
                         var root = firebase.database().ref();
                         var usersRef = root.child('users');
-                        usersRef.orderByChild('token').equalTo(token).on('value', function (snap) {
-                            var user = service.user = firstOrDefault(snap);
-                            if (user) {
-                                storage.set('token', user.token);
+                        usersRef.orderByChild('token').equalTo(token).on('value', function(snap) {
+                            var key = firstKey(snap);
+                            if (key) {
+                                var usersRef = root.child('users').child(key);
+                                usersRef.on('value', function(snap) {
+                                    storage.set('token', snap.val().token);
+                                });
+                                var user = service.user = $firebaseObject(usersRef);
                                 deferred.resolve(user);
                             } else {
                                 deferred.reject();
                             }
                         });
-                    }, function () {
-                        deferred.reject();
+                        */
+                    }, function(error) {
+                        deferred.reject(error);
                     });
                 } else {
-                    deferred.reject();
+                    deferred.reject({
+                        message: 'not logged',
+                    });
                 }
             }
             return deferred.promise;
@@ -2274,22 +2294,22 @@
                 console.log('signed', service.user);
                 deferred.resolve(service.user);
             } else {
-                connect().then(function (presence) {
-                    var root = firebase.database().ref();
-                    var usersRef = root.child('users');
-                    usersRef.orderByChild('email').equalTo(model.email).on('value', function (snap) {
-                        var user = service.user = firstOrDefault(snap);
-                        if (user && user.password === model.password) {
+                connect().then(function(presence) {
+                    getSingle('users', { email: model.email }).then(function(user) {
+                        if (user.password === model.password) {
                             storage.set('token', user.token);
+                            service.user = user;
                             deferred.resolve(user);
                         } else {
                             deferred.reject({
                                 message: 'not found',
                             });
                         }
+                    }, function(error) {
+                        deferred.reject(error);
                     });
-                }, function () {
-                    deferred.reject();
+                }, function(error) {
+                    deferred.reject(error);
                 });
             }
             return deferred.promise;
@@ -2298,21 +2318,30 @@
         function signup(model) {
             console.log('FirebaseApi.signup', model);
             var deferred = $q.defer();
-            connect().then(function (p) {
-                console.log('connected', p);
+            connect().then(function(presence) {
+                model.token = presence.uid;
+                addObject('users', model).then(function(user) {
+                    storage.set('token', user.token);
+                    service.user = user;
+                    deferred.resolve(user);
+                }, function(error) {
+                    deferred.reject(error);
+                });
+                /*
                 var root = firebase.database().ref();
                 var usersRef = root.child('users');
                 var userRef = usersRef.push();
-                model.token = service.presence.uid;
+                model.token = presence.uid;
                 storage.set('token', model.token);
                 userRef.set(model);
                 service.user = model;
-                service.updateUser = function () {
+                service.updateUser = function() {
                     userRef.set(model);
                 };
                 deferred.resolve(model);
-            }, function () {
-                deferred.reject();
+                */
+            }, function(error) {
+                deferred.reject(error);
             });
             return deferred.promise;
         }
@@ -2332,11 +2361,23 @@
 
         function isLoggedOrGoTo(path) {
             var deferred = $q.defer();
-            current().then(function (user) {
+            current().then(function(user) {
                 deferred.resolve(service.user);
-            }, function () {
+            }, function() {
                 deferred.reject();
                 router.redirect(path);
+            });
+            return deferred.promise;
+        }
+
+        function userSave(model) {
+            console.log('userSave', model);
+            var deferred = $q.defer();
+            model.$save().then(function(ref) {
+                // ref.key === obj.$id; // true
+                deferred.resolve(model);
+            }, function(error) {
+                deferred.reject(error);
             });
             return deferred.promise;
         }
@@ -2367,7 +2408,7 @@
             }
             var field = fields.shift();
             var items = [];
-            ref.orderByChild(field.key).equalTo(field.value).on('child_added', function (snap) {
+            ref.orderByChild(field.key).equalTo(field.value).on('child_added', function(snap) {
                 var item = snap.val();
                 if (item) {
                     deferred.resolve(item);
@@ -2393,166 +2434,68 @@
             return field;
         }
 
-        function getArray(collection, query, limit) {
+        function getSingle(collection, query, limit) {
             var deferred = $q.defer();
-            var root = firebase.database().ref();
-            var ref = root.child(collection);
-            var array = null;
-            if (query) {
-                var field = getField(query);
-                if (field) {
-                    var queryRef = ref.orderByChild(field.key).equalTo(field.value);
-                    if (limit) {
-                        queryRef = queryRef.limitToLast(limit);
-                    }
-                    array = $firebaseArray(queryRef);
+            var items = getArray(collection, query, limit).then(function(items) {
+                // console.log('getSingle', items.length);
+                if (items.length === 1) {
+                    var key = items[0].$id;
+                    // console.log('getSingle', key);
+                    getObject(collection, key).then(function(item) {
+                        // console.log('getSingle', item);
+                        deferred.resolve(item);
+                    }, function(error) {
+                        deferred.reject();
+                    });
+                } else {
+                    deferred.reject();
                 }
-            }
-            array = array || $firebaseArray(ref);
-            array.$loaded(function (array) {
-                deferred.resolve(array);
-            }, function (error) {
+            }, function(error) {
                 deferred.reject(error);
             });
             return deferred.promise;
         }
 
-        function firstOrDefault(snap) {
-            var item = null;
+        function getObject(collection, key) {
+            var root = firebase.database().ref();
+            var ref = root.child(collection).child(key);
+            return $firebaseObject(ref).$loaded();
+        }
+
+        function getArray(collection, query, limit) {
+            var root = firebase.database().ref();
+            var ref = root.child(collection);
+            var queryOrRef = ref;
+            if (query) {
+                var field = getField(query);
+                if (field) {
+                    queryOrRef = ref.orderByChild(field.key).equalTo(field.value);
+                    if (limit) {
+                        queryOrRef = queryOrRef.limitToLast(limit);
+                    }
+                }
+            }
+            return $firebaseArray(queryOrRef).$loaded();
+        }
+
+        function addObject(collection, model) {
+            var root = firebase.database().ref();
+            var arrayRef = root.child(collection);
+            var ref = arrayRef.push();
+            ref.set(model);
+            return $firebaseObject(ref).$loaded();
+        }
+
+        function firstKey(snap) {
+            var key = null;
             if (snap.numChildren()) {
                 var items = snap.val();
                 var keys = Object.keys(items);
-                item = items[keys[0]];
+                key = keys[0];
             }
-            return item;
+            return key;
         }
 
-        /*
-    
-        this.presences = {
-            getPresences: function () {
-                var deferred = $q.defer();
-                var user = service.user;
-                var root = service.root = firebase.database().ref();
-                var presencesRef = root.child('presences');
-                var userRef = presencesRef.push();
-                var connectedRef = root.child('.info/connected');
-                connectedRef.on('value', function (snap) {
-                    if (snap.val()) {
-                        userRef.onDisconnect().remove();
-                        userRef.set(user);
-                        service.updateUser = function () {
-                            userRef.set(user);
-                        };
-                        deferred.resolve();
-                    }
-                });
-                presencesRef.on('value', function (snap) {
-                    // console.log('# of online users = ', snap.numChildren());
-                    var presences = snap.val(),
-                        items = [];
-                    for (var key in presences) {
-                        var user = presences[key];
-                        if (user.id !== service.user.id) {
-                            items.push(user);
-                        }
-                    }
-                    if (items.length) {
-                        service.options.onPresences(items);
-                    }
-                });
-                service.presences = $firebaseArray(presencesRef);
-                return deferred.promise;
-            },
-        };
-    
-        this.activities = {
-            clearActivities: function () {
-                var min = Number.POSITIVE_INFINITY;
-                angular.forEach(service.presences, function (presence) {
-                    min = Math.min(presence.timestamp, min);
-                });
-                var activities = service.activities;
-                var from = 0,
-                    to = 0;
-                angular.forEach(activities, function (item, index) {
-                    if (item.timestamp < min) {
-                        to = index + 1;
-                    }
-                });
-                removeRange(activities, from, to);
-            },
-            addActivities: function (items) {
-                if (items && items.length) {
-                    var user = service.user;
-                    var root = service.root; // firebase.database().ref();
-                    var lastActivity = null;
-                    var activitiesRef = root.child('activities');
-                    angular.forEach(items, function (item) {
-                        item.userId = user.id;
-                        item.timestamp = Date.now();
-                        lastActivity = item;
-                        var activityRef = activitiesRef.push();
-                        activityRef.set(item);
-                    });
-                    if (lastActivity) {
-                        user.lastActivity = lastActivity;
-                        service.updateUser();
-                    }
-                }
-            },
-            getUniqueActivities: function (items) {
-                items.sort(function (a, b) {
-                    return b.timestamp - a.timestamp; // desc
-                });
-                var pool = {};
-                items = items.filter(function (item) {
-                    if (!pool[item.id]) {
-                        return (pool[item.id] = true);
-                    } else {
-                        return false;
-                    }
-                });
-                items.sort(function (a, b) {
-                    return a.timestamp - b.timestamp; // asc
-                });
-                return items;
-            },
-            getActivities: function () {
-                var deferred = $q.defer();
-                var root = service.root; // firebase.database().ref();
-                var activitiesRef = root.child('activities');
-                var user = service.user;
-                var lastDate = user.timestamp;
-                activitiesRef.on('value', function (snap) {
-                    var activities = snap.val(),
-                        items = [];
-                    var max = Number.NEGATIVE_INFINITY;
-                    for (var key in activities) {
-                        var activity = activities[key];
-                        max = Math.max(max, activity.timestamp);
-                        if (activity.userId !== service.user.id && activity.timestamp > lastDate) {
-                            items.push(activity);
-                        }
-                    }
-                    lastDate = Math.max(lastDate, max);
-                    items = service.getUniqueActivities(items);
-                    if (items.length) {
-                        service.options.onActivities(items);
-                    }
-                });
-                var activities = service.activities = $firebaseArray(activitiesRef);
-                activities.$loaded().then(function () {
-                    service.clearActivities();
-                    deferred.resolve();
-                }).catch(function (error) {
-                    deferred.reject(error);
-                });
-                return deferred.promise;
-            },
-        };
-    
-        */
     }]);
 
 }());

@@ -5,23 +5,26 @@
 </header>
 
 <main>
-
     <div class="content">
         <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()">
+            <!-- <div mapboxgl access-token="pk.eyJ1IjoiYWN0YXJpYW4iLCJhIjoiY2lqNWU3MnBzMDAyZndnbTM1cjMyd2N2MiJ9.CbuEGSvOAfIYggQv854pRQ" gl-style="'mapbox://styles/mapbox/light-v9'" __gl-center="{ autodiscover: true }" gl-controls="glControls"></div> -->
             <div class="container-fluid maxw-lg">
-                <div mapboxgl access-token="pk.eyJ1IjoiYWN0YXJpYW4iLCJhIjoiY2lqNWU3MnBzMDAyZndnbTM1cjMyd2N2MiJ9.CbuEGSvOAfIYggQv854pRQ" gl-style="'mapbox://styles/actarian/cj3vy0luc0ia62rp8s0wduax0'" __gl-center="{ autodiscover: true }" gl-controls="glControls"></div>
                 <section class="container-fluid maxw-sm section-bordered shadow">
                     <h6 class="headline foreground light-60">Accedi</h6>
                     <div class="padding-top-xs-20 padding-bottom-xs-20">
-                        <div form="form" control="email" ng-model="model.email" title="Email" placeholder="la tua email" required="true"></div>
-                        <div form="form" control="password" ng-model="model.password" title="Password" placeholder="la tua password" required="true" min="6"></div>
                         <div form="form" control="text" ng-model="model.shopName" title="Stabilimento" placeholder="il nome dello stabilimento" required="true"></div>
+                        <div form="form" control="text" ng-model="model.address" title="Indirizzo" placeholder="indirizzo dello stabilimento" required="true"></div>
+                        <div form="form" control="text" ng-model="model.latitude" title="Latitudine" placeholder="latitudine" required="true"></div>
+                        <div form="form" control="text" ng-model="model.longitude" title="Longitudine" placeholder="longitudine" required="true"></div>
                         <!-- <div form="form" control="select" ng-model="model.type" title="Type" placeholder="selezione un tipo" required="true" source="[{id:1,name:'1'}, {id:2,name:'2'}]"></div> -->
                         <br>
                         <div ng-include="'partials/errors'"></div>
                         <div class="row">
                             <div class="col-lg-9 offset-lg-3">
-                                <button state="state" on-click="submit()" on-validate="form.$invalid"><span>Salva</span> <i class="icon-user"></i></button>
+                                <button type="button" class="btn btn-primary" ng-class="stateClass()" ng-disabled="stateDisabled()" ng-click="submit()" on-validate="form.$invalid">
+                                    <span>Salva</span>
+                                </button>
+                                <!-- <button state="state" on-click="submit()" on-validate="form.$invalid"><span>Accedi</span> <i class="icon-user"></i></button> -->
                             </div>
                         </div>
                     </div>
@@ -29,5 +32,4 @@
             </div>
         </form>
     </div>
-
 </main>
