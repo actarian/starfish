@@ -2,7 +2,7 @@
 
 "use strict";
 
-var app = angular.module('app', ['ngRoute', 'ngMessages', 'firebase', 'jsonFormatter']);
+var app = angular.module('app', ['ngRoute', 'ngMessages', 'mapboxgl-directive', 'firebase', 'jsonFormatter']);
 
 app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
 
@@ -10,6 +10,16 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         title: 'Homepage',
         templateUrl: 'partials/home.html',
         controller: 'HomeCtrl',
+
+    }).when('/profile', {
+        title: 'Profile',
+        templateUrl: 'partials/profile.html',
+        controller: 'ProfileCtrl',
+        resolve: {
+            user: ['FirebaseApi', function(api) {
+                return api.isLoggedOrGoTo('/signin');
+            }],
+        },
 
     }).when('/signin', {
         title: 'Accedi',

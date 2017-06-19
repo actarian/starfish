@@ -25,13 +25,69 @@ app.controller('HomeCtrl', ['$scope', '$location', '$timeout', 'State', 'Firebas
 
 }]);
 
+app.controller('ProfileCtrl', ['$scope', '$location', '$timeout', 'State', 'FirebaseApi', function($scope, $location, $timeout, State, api) {
+
+    var state = $scope.state = new State();
+
+    var model = $scope.model = {};
+
+    api.current().then(function(user) {
+        angular.extend(model, user);
+        state.ready();
+    });
+
+    var glControls = {
+        navigation: {
+            enabled: true,
+            options: {} // Navigation control options --> https://www.mapbox.com/mapbox-gl-js/api/#Navigation
+        },
+        scale: {
+            enabled: true,
+            options: {} // Scale control options --> https://www.mapbox.com/mapbox-gl-js/api/#Scale
+        },
+        attribution: {
+            enabled: false,
+            options: {} // Attribution control options --> https://www.mapbox.com/mapbox-gl-js/api/#Attribution
+        },
+        geolocate: {
+            enabled: true,
+            options: {} // Geolocate control options --> https://www.mapbox.com/mapbox-gl-js/api/#Geolocate
+        },
+        geocoder: {
+            enabled: true,
+            options: {} // Geocoder control options --> https://github.com/mapbox/mapbox-gl-geocoder/blob/master/API.md
+        },
+        directions: {
+            enabled: false,
+            options: {} // Directions control options --> https://github.com/mapbox/mapbox-gl-directions/blob/master/API.md#mapboxgldirections
+        },
+        draw: {
+            enabled: false,
+            options: {} // Draw control options -> https://github.com/mapbox/mapbox-gl-draw/blob/master/API.md#options
+        }
+    };
+
+    $scope.glControls = glControls;
+
+    $scope.submit = function() {
+        if (state.busy()) {
+            api.users.save(model).then(function success(response) {
+                state.success();
+            }, function error(response) {
+                state.error(response);
+            });
+        }
+    };
+
+}]);
+
 app.controller('DashboardCtrl', ['$scope', '$location', '$timeout', 'State', 'FirebaseApi', function($scope, $location, $timeout, State, api) {
 
     var state = $scope.state = new State();
 
     state.ready();
 
-    api.items().then(function(items){
+    api.items().then(function(items) {
         console.log('DashboardCtrl.items', items);
         $scope.items = items;
     });
@@ -39,7 +95,7 @@ app.controller('DashboardCtrl', ['$scope', '$location', '$timeout', 'State', 'Fi
 }]);
 
 app.controller('SigninCtrl', ['$scope', '$location', '$timeout', 'State', 'FirebaseApi', function($scope, $location, $timeout, State, api) {
-    
+
     var state = $scope.state = new State();
 
     var model = $scope.model = {};
@@ -49,10 +105,10 @@ app.controller('SigninCtrl', ['$scope', '$location', '$timeout', 'State', 'Fireb
             api.auth.signin(model).then(function success(response) {
                 state.success();
                 // $timeout(function() {
-                    var path = $location.$$lastRequestedPath || '/dashboard';
-                    console.log('SigninCtrl', path, response);
-                    $location.path(path);
-                    $location.$$lastRequestedPath = null;
+                var path = $location.$$lastRequestedPath || '/dashboard';
+                console.log('SigninCtrl', path, response);
+                $location.path(path);
+                $location.$$lastRequestedPath = null;
                 // }, 1000);
             }, function error(response) {
                 console.log('SigninCtrl.error', response);
@@ -74,10 +130,10 @@ app.controller('SignupCtrl', ['$scope', '$location', '$timeout', 'State', 'Fireb
             api.auth.signup(model).then(function success(response) {
                 state.success();
                 // $timeout(function() {
-                    var path = $location.$$lastRequestedPath || '/dashboard';
-                    console.log('SignupCtrl', path, response);
-                    $location.path(path);
-                    $location.$$lastRequestedPath = null;
+                var path = $location.$$lastRequestedPath || '/dashboard';
+                console.log('SignupCtrl', path, response);
+                $location.path(path);
+                $location.$$lastRequestedPath = null;
                 // }, 1000);
             }, function error(response) {
                 console.log('SignupCtrl.error', response);

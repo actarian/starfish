@@ -100,7 +100,7 @@ app.directive('control', ['$http', '$templateCache', '$compile', '$parse', funct
                                 default:
                                     type = attributes.control;
                             }
-                            console.log('control.getType', type);
+                            // console.log('control.getType', type);
                             return type;
                         };
                         scope.getClasses = function() {

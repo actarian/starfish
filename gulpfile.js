@@ -46,6 +46,7 @@ var vendors = [
     './bower_components/angular/angular.js',
     './bower_components/angular-route/angular-route.js',
     './bower_components/angular-messages/angular-messages.js',
+    './bower_components/angular-mapboxgl-directive/dist/angular-mapboxgl-directive.js',
     './bower_components/angularfire/dist/angularfire.js',
     './bower_components/json-formatter/dist/json-formatter.js',
 ];
@@ -105,6 +106,7 @@ gulp.task('js:watch', function() {
 
 var cssVendors = [
     './bower_components/json-formatter/dist/json-formatter.css',
+    './bower_components/angular-mapboxgl-directive/dist/angular-mapboxgl-directive.css',
 ];
 gulp.task('css:vendors', function() {
     return gulp.src(cssVendors, {
@@ -118,7 +120,7 @@ gulp.task('css:vendors', function() {
         .pipe(autoprefixer()) // autoprefixer
         .pipe(cssmin())
         .pipe(rename({
-            extname: '.min.js'
+            extname: '.min.css'
         }))
         .pipe(sourcemaps.write('.')) // save .map
         .pipe(gulp.dest('.')); // save .min.js
