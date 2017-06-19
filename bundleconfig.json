@@ -1,0 +1,65 @@
+[
+    {
+        "inputFiles": [
+            "bower_components/json-formatter/dist/json-formatter.css",
+            "bower_components/angular-mapboxgl-directive/dist/angular-mapboxgl-directive.css"
+        ],
+        "outputFileName": "docs/css/vendors.css",
+        "minify": {
+            "enabled": true
+        }
+    },
+    {
+        "inputFiles": [
+            "docs/css/bootstrap.css"
+        ],
+        "outputFileName": "docs/css/bootstrap.css",
+        "minify": {
+            "enabled": true
+        }
+    },
+    {
+        "inputFiles": [
+            "docs/css/app.css"
+        ],
+        "outputFileName": "docs/css/app.css",
+        "minify": {
+            "enabled": true
+        }
+    },
+    {
+        "inputFiles": [
+            "bower_components/angular/angular.js",
+            "bower_components/angular-route/angular-route.js",
+            "bower_components/angular-messages/angular-messages.js",
+            "bower_components/angularfire/dist/angularfire.js",
+            "bower_components/json-formatter/dist/json-formatter.js",
+            "bower_components/angular-mapboxgl-directive/dist/angular-mapboxgl-directive.js"
+        ],
+        "outputFileName": "docs/js/vendors.js",
+        "minify": {
+            "enabled": true
+        }
+    },
+    {
+        "inputFiles": [
+            "app/app.module.js",
+            "app/app.config.js",
+            "app/app.routes.js",
+            "app/controllers/controllers.js",
+            "app/directives/directives.js",
+            "app/extensions/ngclick.directive.js",
+            "app/filters/filters.js",
+            "app/models/state.model.js",
+            "app/models/hash.model.js",
+            "app/services/router.service.js",
+            "app/services/storage.service.js",
+            "app/services/firebase.service.js",
+            "app/ui/ui.service.js"
+        ],
+        "outputFileName": "docs/js/app.js",
+        "minify": {
+            "enabled": true
+        }
+    }
+]

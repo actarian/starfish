@@ -1,5 +1,7 @@
-var gulp = require('gulp'),
-
+var fs = require('fs'),
+    gulp = require('gulp'),
+    gulpif = require('gulp-if'),
+    merge = require("merge-stream"),
     autoprefixer = require('gulp-autoprefixer'),
     coffee = require('gulp-coffee'),
     concat = require('gulp-concat'),
@@ -13,155 +15,50 @@ var gulp = require('gulp'),
     watch = require('gulp-watch'),
     webserver = require('gulp-webserver');
 
-var folder = './';
+// COMPILE
+gulp.task('compile:sass', function() {    
+    var tasks = getCompilers('.scss').map(function (compile) {
+        console.log(compile.inputFile);
+        return gulp.src(compile.inputFile, { base: '.' })
+            .pipe(sass().on('compile:sass.error', function(error) {
+                console.log('compile:sass.error', error);
+            }))
+            .pipe(autoprefixer()) // autoprefixer
+            .pipe(rename(compile.outputFile))            
+            .pipe(gulp.dest('./'));
+    });
+    return merge(tasks);
+});
+gulp.task('compile', ['compile:sass']);
 
-gulp.task('docs:compile', function() {
-    return gulp.src([
-            './docs/sass/**/*.scss',
-            '!/**/_*.scss',
-        ], {
-            base: '.'
-        })
-        .pipe(sass().on('docs:compile.error', function(error) {
-            console.log('docs:compile:error', error);
-        }))
-        .pipe(rename('docs.css'))
-        .pipe(gulp.dest('./docs/css')) // save .css
-        .pipe(autoprefixer()) // autoprefixer
-        .pipe(cssmin())
-        .pipe(rename({
-            extname: '.min.css'
-        }))
-        .pipe(gulp.dest('./docs/css')); // save .min.css
+// BUNDLE
+gulp.task('bundle:css', function() {    
+    var tasks = getBundles('.css').map(function (bundle) {
+        return gulp.src(bundle.inputFiles, { base: '.' })            
+            .pipe(concat(bundle.outputFileName))
+            .pipe(gulp.dest('.'))
+            .pipe(gulpif(bundle.minify && bundle.minify.enabled, cssmin()))
+            .pipe(rename({ extname: '.min.css' }))
+            .pipe(gulp.dest('.'));
+    });
+    return merge(tasks);
 });
-gulp.task('docs:watch', function() {
-    return gulp.watch('./docs/sass/**/*.scss', ['docs:compile'])
-        .on('change', function(e) {
-            console.log(e.type + ' watcher did change path ' + e.path);
-        });
+gulp.task('bundle:js', function() {    
+    var tasks = getBundles('.js').map(function (bundle) {
+        return gulp.src(bundle.inputFiles, { base: '.' })            
+            .pipe(concat(bundle.outputFileName))
+            .pipe(gulp.dest('.'))
+            .pipe(gulpif(bundle.minify && bundle.minify.enabled, uglify()))
+            .pipe(rename({ extname: '.min.js' }))
+            .pipe(gulp.dest('.'));
+    });
+    return merge(tasks);
 });
-gulp.task('docs', ['docs:compile', 'docs:watch']);
+gulp.task('bundle', ['bundle:css', 'bundle:js']);
 
-var vendors = [
-    './bower_components/angular/angular.js',
-    './bower_components/angular-route/angular-route.js',
-    './bower_components/angular-messages/angular-messages.js',
-    './bower_components/angular-mapboxgl-directive/dist/angular-mapboxgl-directive.js',
-    './bower_components/angularfire/dist/angularfire.js',
-    './bower_components/json-formatter/dist/json-formatter.js',
-];
-gulp.task('js:vendors', function() {
-    return gulp.src(vendors, {
-            base: '.'
-        })
-        .pipe(rename({
-            dirname: '', // flatten directory
-        }))
-        .pipe(concat('./docs/js/vendors.js')) // concat bundle
-        .pipe(gulp.dest('.')) // save .js
-        .pipe(sourcemaps.init())
-        .pipe(uglify()) // { preserveComments: 'license' }
-        .pipe(rename({
-            extname: '.min.js'
-        }))
-        .pipe(sourcemaps.write('.')) // save .map
-        .pipe(gulp.dest('.')); // save .min.js
-});
-var app = [
-    './app/app.js',
-    './app/configs/configs.js',
-    './app/controllers/controllers.js',
-    './app/directives/directives.js',
-    './app/filters/filters.js',
-    './app/models/models.js',
-    './app/services/services.js',
-    './module/e.js',
-];
-gulp.task('js:app', function() {
-    return gulp.src(app, {
-            base: '.'
-        })
-        .pipe(rename({
-            dirname: '', // flatten directory
-        }))
-        .pipe(concat('./docs/js/app.js')) // concat bundle
-        .pipe(gulp.dest('.')) // save .js
-        .pipe(sourcemaps.init())
-        .pipe(uglify()) // { preserveComments: 'license' }
-        .pipe(rename({
-            extname: '.min.js'
-        }))
-        .pipe(sourcemaps.write('.')) // save .map
-        .pipe(gulp.dest('.')); // save .min.js
-});
-gulp.task('js:bundles', ['js:vendors', 'js:app'], function(done) {
-    done();
-});
-gulp.task('js:watch', function() {
-    return gulp.watch(app, ['js:app'])
-        .on('change', function(e) {
-            console.log(e.type + ' watcher did change path ' + e.path);
-        });
-});
-
-var cssVendors = [
-    './bower_components/json-formatter/dist/json-formatter.css',
-    './bower_components/angular-mapboxgl-directive/dist/angular-mapboxgl-directive.css',
-];
-gulp.task('css:vendors', function() {
-    return gulp.src(cssVendors, {
-            base: '.'
-        })
-        .pipe(rename({
-            dirname: '', // flatten directory
-        }))
-        .pipe(concat('./docs/css/vendors.css')) // concat bundle
-        .pipe(gulp.dest('.')) // save .js
-        .pipe(autoprefixer()) // autoprefixer
-        .pipe(cssmin())
-        .pipe(rename({
-            extname: '.min.css'
-        }))
-        .pipe(sourcemaps.write('.')) // save .map
-        .pipe(gulp.dest('.')); // save .min.js
-});
-gulp.task('css:bundles', ['css:vendors'], function(done) {
-    done();
-});
-
-gulp.task('sass:compile', function() {
-    return gulp.src([
-            './sass/**/*.scss',
-            '!/**/_*.scss',
-        ], {
-            base: '.'
-        })
-        .pipe(sass().on('sass:compile.error', function(error) {
-            console.log('sass:compile:error', error);
-        }))
-        .pipe(rename({ dirname: '' }))
-        .pipe(gulp.dest('./docs/css')) // save .css
-        .pipe(autoprefixer()) // autoprefixer
-        .pipe(cssmin())
-        .pipe(rename({
-            extname: '.min.css'
-        }))
-        .pipe(gulp.dest('./docs/css')); // save .min.css
-});
-gulp.task('sass:watch', function() {
-    return gulp.watch('./sass/**/*.scss', ['sass:compile'])
-        .on('change', function(e) {
-            console.log(e.type + ' watcher did change path ' + e.path);
-        });
-});
-gulp.task('sass', ['sass:compile', 'sass:watch']);
-
-gulp.task('watch', ['sass:watch', 'js:watch'], function(done) {
-    done();
-});
-
+// WEBSERVER
 gulp.task('webserver', function() {
-    return gulp.src(folder)
+    return gulp.src('./')
         .pipe(webserver({
             livereload: true,
             directoryListing: true,
@@ -171,8 +68,49 @@ gulp.task('webserver', function() {
         }));
 });
 
-gulp.task('compile', ['sass:compile', 'css:bundles', 'js:bundles'], function(done) {
+// WATCH
+gulp.task('watch', function (done) {
+    function log(e) {
+        console.log(e.type, e.path);
+    }
+    getCompilers('.scss').forEach(function (compiler) {
+        gulp.watch(compiler.inputFile, ['compile:sass']).on('change', log);
+    });
+    getBundles('.css').forEach(function (bundle) {
+        gulp.watch(bundle.inputFiles, ['bundle:css']).on('change', log);
+    });
+    getBundles('.js').forEach(function (bundle) {
+        gulp.watch(bundle.inputFiles, ['bundle:js']).on('change', log);
+    });        
+    gulp.watch('./compilerconfig.json', ['compile', 'bundle']).on('change', log);
+    gulp.watch('./bundleconfig.json', ['bundle']).on('change', log);
     done();
 });
 
-gulp.task('default', ['compile', 'webserver', 'watch']);
+gulp.task('default', ['compile', 'bundle', 'webserver', 'watch']);
+
+// UTILS
+function getCompilers(ext) {
+    var data = getJson('./compilerconfig.json');
+    return data.filter(function (compile) {  
+        return new RegExp(`${ext}$`).test(compile.inputFile);
+    });
+}
+function getBundles(ext) {
+    var data = getJson('./bundleconfig.json');
+    return data.filter(function (bundle) {
+        return new RegExp(`${ext}$`).test(bundle.outputFileName);
+    });
+}
+function stripBom(text) {
+    text = text.toString()
+    if (text.charCodeAt(0) === 0xFEFF) {
+        text = text.slice(1);
+    }
+    return text; 
+}
+function getJson(path) {    
+    var text = fs.readFileSync(path, 'utf8');
+    // console.log('getJson', path, text);
+    return JSON.parse(stripBom(text));
+}

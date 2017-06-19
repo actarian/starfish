@@ -1,12 +1,28 @@
-﻿/* global angular, app */
+﻿/* global angular */
 
-app.factory('State', ['$timeout', function($timeout) {
-    function State() {
-        this.isReady = false;
-        this.idle();
-    }
-    State.prototype = {
-        idle: function() {
+(function () {
+    "use strict";
+
+    var app = angular.module('app');
+
+    app.factory('State', ['$timeout', function ($timeout) {
+        function State() {
+            this.isReady = false;
+            this.idle();
+        }
+        State.prototype = {
+            idle: idle,
+            busy: busy,
+            enabled: enabled,
+            error: error,
+            ready: ready,
+            success: success,
+            errorMessage: errorMessage,
+            submitClass: submitClass,
+            submitMessage: submitMessage,
+        };
+        return State;
+        function idle() {
             this.isBusy = false;
             this.isError = false;
             this.isErroring = false;
@@ -14,11 +30,11 @@ app.factory('State', ['$timeout', function($timeout) {
             this.isSuccessing = false;
             this.button = null;
             this.errors = [];
-        },
-        enabled: function() {
+        }
+        function enabled() {
             return !this.isBusy && !this.isErroring && !this.isSuccessing;
-        },
-        busy: function() {
+        }
+        function busy() {
             if (!this.isBusy) {
                 this.isBusy = true;
                 this.isError = false;
@@ -31,39 +47,39 @@ app.factory('State', ['$timeout', function($timeout) {
             } else {
                 return false;
             }
-        },
-        success: function() {
+        }
+        function success() {
             this.isBusy = false;
             this.isError = false;
             this.isErroring = false;
             this.isSuccess = true;
             this.isSuccessing = true;
             this.errors = [];
-            $timeout(function() {
+            $timeout(function () {
                 this.isSuccessing = false;
                 this.button = null;
             }.bind(this), 1000);
-        },
-        error: function(error) {
+        }
+        function error(error) {
             this.isBusy = false;
             this.isError = true;
             this.isErroring = true;
             this.isSuccess = false;
             this.isSuccessing = false;
             this.errors.push(error);
-            $timeout(function() {
+            $timeout(function () {
                 this.isErroring = false;
                 this.button = null;
             }.bind(this), 1000);
-        },
-        ready: function() {
+        }
+        function ready() {
             this.isReady = true;
             this.success();
-        },
-        errorMessage: function() {
+        }
+        function errorMessage() {
             return this.isError ? this.errors[this.errors.length - 1] : null;
-        },
-        submitClass: function() {
+        }
+        function submitClass() {
             return {
                 busy: this.isBusy,
                 ready: this.isReady,
@@ -72,8 +88,8 @@ app.factory('State', ['$timeout', function($timeout) {
                 errorring: this.isErroring,
                 error: this.isError,
             };
-        },
-        submitMessage: function(idleMessage, busyMessage, successMessage, errorMessage) {
+        }
+        function submitMessage(idleMessage, busyMessage, successMessage, errorMessage) {
             idleMessage = idleMessage || 'Submit';
             if (this.isBusy) {
                 return busyMessage || idleMessage;
@@ -84,7 +100,7 @@ app.factory('State', ['$timeout', function($timeout) {
             } else {
                 return idleMessage;
             }
-        },
-    };
-    return State;
-}]);
+        }
+    }]);
+
+}());

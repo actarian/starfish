@@ -1,6 +1,7 @@
 ﻿
-@import "../custom";
-@import "../../bower_components/bootstrap/scss/variables";
+@import "./bower_components/bootstrap/scss/variables";
+@import "./bower_components/bootstrap/scss/mixins/breakpoints";
+@import "clearfix";
 
 @mixin _assert-ascending($map, $map-name) {
     $prev-key: null;
@@ -22,8 +23,6 @@
     }
 }
 
-@import "../../bower_components/bootstrap/scss/mixins/breakpoints";
-@import "clearfix";
 
 $grid-use-flex: false !default;
 $grid-container-widths: ( sm: 576px, md: 720px, lg: 940px, xl: 1140px ) !default;

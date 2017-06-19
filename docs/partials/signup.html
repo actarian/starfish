@@ -20,7 +20,13 @@
                         <div ng-include="'partials/errors'"></div>
                         <div class="row">
                             <div class="col-lg-9 offset-lg-3">
-                                <button state="state" on-click="submit()" on-validate="form.$invalid"><span>Registrati</span> <i class="icon-user"></i></button>
+                                <button type="button" class="btn btn-primary" ng-class="stateClass()" ng-disabled="stateDisabled()" ng-click="submit()" on-validate="form.$invalid">
+                                    <span>Registrati</span> <i class="icon-user"></i>
+                                </button>
+                                <a class="btn btn-outline-primary" ng-href="#/signin">
+                                    <span>Accedi</span>
+                                </a>
+                                <!-- <button state="state" on-click="submit()" on-validate="form.$invalid"><span>Registrati</span> <i class="icon-user"></i></button> -->
                             </div>
                         </div>
                     </div>
