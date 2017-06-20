@@ -1,26 +1,18 @@
-﻿
-@import "./bower_components/bootstrap/scss/mixins";
+﻿@import "./bower_components/bootstrap/scss/mixins";
 @import "./bower_components/bootstrap/scss/variables";
 @import "mixins";
-
 $form-control: #51565a;
 $form-placeholder: #aeb0b2;
 $form-disabled: #eceeef;
-
 $form-danger: #f2dede; // color('foreground', -0.1) $brand-danger;
 $form-danger-foreground: #a94442;
-
 $form-success: color('success', -0.1); // $brand-success;
 $form-warning: color('warning', -0.1); // $brand-warning;
-
 $form-label-size: 12px;
 $form-control-size: 14px;
 $form-icon-size: 12px;
-
 form {
-
     @include media-breakpoint-up(lg) {
-
         label {
             text-align: right;
         }
@@ -30,13 +22,11 @@ form {
         }
         */
     }
-
     table {
         .row {
             margin-bottom: 0;
         }
     }
-
     sup {
         color: color('primary');
         font-size: $form-label-size;
@@ -91,63 +81,72 @@ input {
 }
 
 .form-control {
+    /*
     border-radius: 0;
     border: 2px solid #eee;
     padding: 3px 6px;
     line-height: 20px;
     font-size: $form-control-size;
     text-transform: inherit;
-
+    */
+    border: 0;
+    background: #f0f0f0;
+    padding: 10px;
+    margin: 0;
+    line-height: 20px;
+    border-radius: 0;
+    font-size: 16px;
+    font-weight: 100;
+    background: white;
+    box-shadow: 0 8px 10px -5px rgba(0, 0, 0, 0.2);
     p {
         margin: 0;
     }
-
     &:not([type="text"]) {
         -webkit-appearance: none;
     }
-
-    &:active, &:focus {
+    &:active,
+    &:focus {
         -webkit-appearance: none;
         outline: 0;
         background-color: #fff;
         border-color: color('primary');
         color: color('foreground');
     }
-
-    &[readonly], &[disabled], .disabled & {
+    &[readonly],
+    &[disabled],
+    .disabled & {
         border-color: $form-disabled;
         color: $form-control;
     }
-
     &.ng-empty {
         text-transform: lowercase;
     }
-
     .control-error & {
         border-color: $form-danger-foreground; // color-darken($form-danger, 20);
     }
-
-    &[readonly], .col-static & {
+    &[readonly],
+    .col-static & {
         background-color: transparent;
         opacity: 1;
         border-width: 0 0 2px 0;
         cursor: default;
     }
-
-    &[readonly], &[disabled], &.readonly, &.disabled {
+    &[readonly],
+    &[disabled],
+    &.readonly,
+    &.disabled {
         pointer-events: none;
         // cursor: not-allowed;
     }
-
-    &[disabled], &.disabled {
+    &[disabled],
+    &.disabled {
         background-color: $form-disabled;
         opacity: 1;
     }
-
     .icon-calendar {
         float: right;
     }
-
     @include transition(border-color);
 }
 
@@ -155,16 +154,13 @@ input {
     display: inline-block;
     position: relative;
     width: calc(50% - 5px);
-
     [ng-messages] {
         left: 0;
     }
-
     sup {
         left: -10px;
         right: initial;
     }
-
     &.form-control-range-min {
         margin-right: 10px;
     }
@@ -182,11 +178,11 @@ input {
         }
     }
     */
-    input, div {
+    input,
+    div {
         // border: none;
         width: 100%;
     }
-
     @include media-breakpoint-down(md) {
         sup {
             top: 0;
@@ -195,10 +191,11 @@ input {
 }
 
 .col-static {
-    [ng-click], [link-to], [ng-mouseover] {
+    [ng-click],
+    [link-to],
+    [ng-mouseover] {
         cursor: pointer;
         border-color: color('primary');
-
         i {
             color: color('primary');
         }
@@ -218,11 +215,9 @@ input {
 
 select {
     cursor: pointer;
-
     &.ng-not-empty {
         text-transform: uppercase;
     }
-
     &.form-control:not([size]):not([multiple]) {
         height: 30px;
         padding: 3px 26px 3px 6px;
@@ -231,7 +226,6 @@ select {
 
 .col-select {
     position: relative;
-
     &:after {
         content: 'b';
         text-transform: lowercase;
@@ -259,21 +253,17 @@ select {
     font-weight: 400;
     color: inherit; // #444;
     line-height: 12px;
-
     i {
         text-transform: none;
     }
-
     [ng-messages] {
         font-size: $form-label-size;
         font-weight: 700;
         float: none;
     }
-
     @include media-breakpoint-down(md) {
         text-align: left;
     }
-
     @include media-breakpoint-down(sm) {
         font-size: 10px;
         font-weight: 900;
@@ -304,24 +294,21 @@ select {
         top: 50%;
         margin-top: -15px;
     }
-
     .custom-control-input {
-        &:not(:checked) ~ .custom-control-indicator {
+        &:not(:checked)~.custom-control-indicator {
             background-image: url("../../img/plus.svg");
         }
-
-        &:checked ~ .custom-control-indicator {
+        &:checked~.custom-control-indicator {
             background-image: url("../../img/check.svg");
         }
     }
-
     @include transition();
-
     &.active {
         background: color('primary');
         color: white;
     }
 }
+
 
 /*
 .custom-option {
@@ -334,14 +321,13 @@ select {
 */
 
 .custom-control-input {
-    &:checked ~ .custom-control-indicator {
+    &:checked~.custom-control-indicator {
         color: color('background');
         background-color: color('primary');
     }
-
-    &:focus ~ .custom-control-indicator {
-        -webkit-box-shadow: 0 0 0 .075rem color('background'),0 0 0 .2rem color('primary');
-        box-shadow: 0 0 0 .075rem color('background'),0 0 0 .2rem color('primary');
+    &:focus~.custom-control-indicator {
+        -webkit-box-shadow: 0 0 0 .075rem color('background'), 0 0 0 .2rem color('primary');
+        box-shadow: 0 0 0 .075rem color('background'), 0 0 0 .2rem color('primary');
     }
 }
 
@@ -360,7 +346,6 @@ select {
 .custom-option {
     padding: 0 2px;
     margin-bottom: 4px;
-
     &.grid-item {
         padding: 0;
         margin-bottom: 0;
@@ -388,46 +373,40 @@ select {
         width: 100%;
         padding: 2px 25px 2px 55px;
         height: 60px;
-
         .custom-control-description {
             display: table-cell;
             vertical-align: middle;
         }
-
         &.custom-support {
             padding: 10px 25px 10px 55px;
             height: 86px;
         }
     }
-
     .custom-control-indicator {
         left: 13px;
     }
-
     .uib-datepicker-popup.dropdown-menu {
         margin-top: 64px;
         margin-left: 0;
     }
-
-    &.active, &:hover {
+    &.active,
+    &:hover {
         &.grid-item {
             border-color: color('primary');
         }
-
         .custom-control {
             border-color: color('primary');
         }
     }
 }
 
-.custom-control-input:active ~ .custom-control-indicator,
-.custom-control-input:focus ~ .custom-control-indicator {
+.custom-control-input:active~.custom-control-indicator,
+.custom-control-input:focus~.custom-control-indicator {
     @include box-shadow(none);
 }
 
 [control-row] {
     margin-bottom: 0;
-
     @include media-breakpoint-up(md) {
         margin-bottom: 14px;
     }
@@ -441,14 +420,12 @@ select {
     background-color: #ececec;
 }
 
-
 .divline {
     position: relative;
     padding: 10px 0 10px 0;
     width: 100%;
     text-align: center;
     margin-top: 10px;
-
     &:before {
         content: '';
         display: block;
@@ -459,7 +436,6 @@ select {
         right: 10px;
         background: #f0f0f0;
     }
-
     & span {
         background: white;
         color: #999;
@@ -475,7 +451,9 @@ select {
     }
 }
 
-input[type="date"], input[type="datetime"], input[type="datetime-local"] {
+input[type="date"],
+input[type="datetime"],
+input[type="datetime-local"] {
     &::-webkit-input-placeholder {
         visibility: hidden !important;
     }
@@ -489,17 +467,15 @@ input[type="date"], input[type="datetime"], input[type="datetime-local"] {
 .uib-datepicker-popup {
     line-height: 10px;
     padding: 0;
-
     &.dropdown-menu {
         display: block;
         float: none;
         margin-top: 61px;
         margin-left: -15px;
-
         @include transition (none);
     }
-
-    .small, small {
+    .small,
+    small {
         text-transform: uppercase;
     }
 }
@@ -510,7 +486,6 @@ input[type="date"], input[type="datetime"], input[type="datetime-local"] {
     border-radius: 3px;
     margin: 2px 0;
     font-size: 12px;
-
     i {
         font-size: 20px;
         position: relative;
@@ -534,14 +509,13 @@ input[type="date"], input[type="datetime"], input[type="datetime-local"] {
     margin-right: -15px;
     margin-top: -20px;
     margin-bottom: 14px;
-
-    & > [class^="icon-"] {
+    &>[class^="icon-"] {
         vertical-align: middle;
         margin-right: 3px;
     }
 }
 
-.headline + .headline {
+.headline+.headline {
     margin-top: -14px;
 }
 
@@ -576,7 +550,6 @@ h6.headline {
 
 option {
     text-transform: uppercase;
-
     &:first-child {
         text-transform: lowercase;
     }
@@ -592,7 +565,6 @@ option {
 
 [control-autocomplete] {
     position: relative;
-
     ul {
         list-style: none;
         margin: 0;
@@ -602,19 +574,17 @@ option {
         z-index: 100;
         background: white;
         width: 100%;
-        box-shadow: 0 8px 30px -6px rgba(0,0,0,0.2);
-
-        & > li {
+        box-shadow: 0 8px 30px -6px rgba(0, 0, 0, 0.2);
+        &>li {
             padding: 4px 8px;
             font-size: 12px;
             text-transform: lowercase;
             cursor: pointer;
             @include transition();
-
-            &:hover, &.active {
+            &:hover,
+            &.active {
                 background: #f0f0f0;
             }
-
             .token {
                 font-weight: 900;
             }
@@ -625,20 +595,16 @@ option {
 .rzslider {
     height: 40px;
     margin: 12px 0 0 0;
-
     .rz-bubble {
         bottom: 0;
         padding: 0 6px;
         font-size: 12px;
     }
-
     .rz-bar {
         background: #f0f0f0;
     }
-
     .rz-pointer {
         background-color: color('primary');
-
         &.rz-active:after {
             background-color: white; // color('primary');
         }
@@ -652,53 +618,46 @@ option {
 
 .switch {
     width: 70px;
-
     &.checked {
         background: color('primary');
         border-color: color('primary');
-
         small {
             left: 41px;
         }
     }
-
-    .off, .on {
+    .off,
+    .on {
         font-size: 14px;
         top: 50%;
         margin-top: -10px;
     }
-
     &.xs {
         $width: 45px;
         $height: 18px;
-
         display: inline-block;
         vertical-align: middle;
         width: $width;
         height: $height;
-
         small {
             width: $height;
             height: $height;
         }
-
         &.checked {
-
             small {
                 left: $width - $height;
             }
-
             .switch-text {
                 color: white;
             }
         }
-
-        .off, .on {
+        .off,
+        .on {
             font-size: $height / 2;
             margin-top: - $height / 4 - 1px;
         }
     }
 }
+
 
 /*
 <div class="tooltip tooltip-top" role="tooltip">
@@ -719,12 +678,10 @@ option {
     left: 0;
     width: 100%;
     background: light('foreground', 6);
-
     &.progress-top {
         top: 0; // 58px;
         height: 4px; // 2px;
     }
-
     &.progress-bottom {
         bottom: 0;
         // height: 4px;
@@ -733,27 +690,26 @@ option {
         width: calc(100% - 10px);
         border-radius: 4px;
         overflow: hidden;
-
-        @include box-shadow(0 7px 5px -5px rgba(0,0,0,0.3));
-
+        @include box-shadow(0 7px 5px -5px rgba(0,
+        0,
+        0,
+        0.3));
         @include transform(translateY(40px));
         @include transition-transform();
-
         &.in {
             @include transform(translateY(0));
         }
     }
-
     div {
         width: 100%;
         height: 100%;
         position: relative;
         background: color('primary');
         @include transform-origin(0 50%);
-        @include transform(scale(0,1));
+        @include transform(scale(0,
+        1));
         @include transition-transform();
     }
-
     label {
         display: block;
         position: absolute;
@@ -765,7 +721,6 @@ option {
         font-weight: 900;
         color: white;
         padding: 0 5px;
-
         i {
             font-size: 14px;
             vertical-align: middle;
@@ -808,7 +763,6 @@ form {
             padding-left: 21px;
             font-size: 10px;
         }
-
         sup {
             width: 6px;
             background: color('primary');
@@ -822,29 +776,23 @@ form {
             height: 36px;
         }
     }
-
     .control-error sup {
         background: $form-danger-foreground;
     }
-
     .form-control {
         border-radius: 2px;
         padding: 6px 6px;
     }
-
     select.form-control:not([size]):not([multiple]) {
         height: 36px;
     }
-
     .col-select:after {
         top: 9px;
     }
-
     [control-row] {
         margin-bottom: 10px;
     }
 }
-
 
 @include media-breakpoint-down(sm) {
     form {
@@ -855,28 +803,22 @@ form {
 }
 
 .form-control {
-
     &::-webkit-input-placeholder {
         color: $form-placeholder !important;
     }
-
     &::-moz-placeholder {
         color: $form-placeholder !important;
     }
-
     &:-ms-input-placeholder {
         color: $form-placeholder !important;
     }
-
     &[disabled] {
         &::-webkit-input-placeholder {
             color: $form-disabled !important;
         }
-
         &::-moz-placeholder {
             color: $form-disabled !important;
         }
-
         &:-ms-input-placeholder {
             color: $form-disabled !important;
         }
@@ -901,6 +843,7 @@ form {
         }
     }
 }
+
 
 /*
 [control] {

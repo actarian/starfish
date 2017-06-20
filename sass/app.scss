@@ -4,7 +4,6 @@
 
 @import "app/mixins";
 @import "app/forms";
-
 [ng-click] {
     cursor: pointer;
     outline: none;
@@ -19,11 +18,29 @@ header {
     margin-bottom: 30px;
 }
 
+mapbox {
+    display: block;
+    width: 100%;
+    height: 300px;
+}
+
+.mapboxgl-ctrl {
+    display: none;
+}
+
+.container-form {
+    max-width: 720px;
+    border: 1px solid #eee;
+    padding: 30px 80px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+}
 
 .material {
     position: relative;
     overflow: hidden;
-    & > material {
+    &>material {
         display: block;
         position: absolute;
         top: 50%;
@@ -31,20 +48,21 @@ header {
         width: 640px;
         height: 640px;
         border-radius: 50%;
-        background: rgba(0,0,0,0.25);
+        background: rgba(0, 0, 0, 0.25);
         visibility: hidden;
         opacity: 1;
         transform: translateX(-50%) translateY(-50%) scale(0.01);
     }
     &.animate {
-        & > material {            
+        &>material {
             visibility: visible;
             transform: translateX(-50%) translateY(-50%) scale(1);
             opacity: 0;
-            transition: all 1000ms ease-in-out;    
+            transition: all 1000ms ease-in-out;
         }
     }
 }
+
 
 /*
 

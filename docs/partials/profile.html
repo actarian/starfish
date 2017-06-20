@@ -7,13 +7,14 @@
 <main>
     <div class="content">
         <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()">
-            <!-- <div mapboxgl access-token="pk.eyJ1IjoiYWN0YXJpYW4iLCJhIjoiY2lqNWU3MnBzMDAyZndnbTM1cjMyd2N2MiJ9.CbuEGSvOAfIYggQv854pRQ" gl-style="'mapbox://styles/mapbox/light-v9'" __gl-center="{ autodiscover: true }" gl-controls="glControls"></div> -->
-            <div class="container-fluid maxw-lg">
+            <div class="container-fluid container-form">
                 <section class="container-fluid maxw-sm section-bordered shadow">
-                    <h6 class="headline foreground light-60">Accedi</h6>
+                    <!-- <div mapboxgl access-token="pk.eyJ1IjoiYWN0YXJpYW4iLCJhIjoiY2lqNWU3MnBzMDAyZndnbTM1cjMyd2N2MiJ9.CbuEGSvOAfIYggQv854pRQ" gl-style="'mapbox://styles/mapbox/light-v9'" __gl-center="{ autodiscover: true }" gl-controls="glControls"></div> -->
+                    <!-- <h6 class="headline foreground light-60">Accedi</h6> -->
+                    <mapbox ng-if="model"></mapbox>
                     <div class="padding-top-xs-20 padding-bottom-xs-20">
                         <div form="form" control="text" ng-model="model.shopName" title="Stabilimento" placeholder="il nome dello stabilimento" required="true"></div>
-                        <div form="form" control="text" ng-model="model.address" title="Indirizzo" placeholder="indirizzo dello stabilimento" required="true"></div>
+                        <div form="form" control="text" ng-model="model.address" title="Indirizzo" placeholder="indirizzo dello stabilimento" required="true" options="{ allowInvalid: false, debounce: 1000 }"></div>
                         <div form="form" control="text" ng-model="model.postCode" title="Cap" placeholder="inserisci il cap" required="true"></div>
                         <div form="form" control="text" ng-model="model.city" title="Città" placeholder="inserisci la città" required="true"></div>
                         <div form="form" control="text" ng-model="model.country" title="Stato" placeholder="seleziona lo stato" required="true"></div>

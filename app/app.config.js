@@ -1,13 +1,13 @@
 /* global angular */
 
-(function () {
+(function() {
     "use strict";
 
     var app = angular.module('app');
 
-    app.config(['$httpProvider', function ($httpProvider) {
+    app.config(['$httpProvider', function($httpProvider) {
 
-        $httpProvider.defaults.withCredentials = true;
+        // $httpProvider.defaults.withCredentials = true;
 
     }]);
 

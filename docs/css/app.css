@@ -437,12 +437,24 @@ input {
   border-radius: 0 0 2px 2px; }
 
 .form-control {
-  border-radius: 0;
-  border: 2px solid #eee;
-  padding: 3px 6px;
+  /*
+    border-radius: 0;
+    border: 2px solid #eee;
+    padding: 3px 6px;
+    line-height: 20px;
+    font-size: $form-control-size;
+    text-transform: inherit;
+    */
+  border: 0;
+  background: #f0f0f0;
+  padding: 10px;
+  margin: 0;
   line-height: 20px;
-  font-size: 14px;
-  text-transform: inherit;
+  border-radius: 0;
+  font-size: 16px;
+  font-weight: 100;
+  background: white;
+  box-shadow: 0 8px 10px -5px rgba(0, 0, 0, 0.2);
   transition-property: border-color;
   transition-duration: 250ms;
   transition-delay: 0ms;
@@ -459,14 +471,16 @@ input {
     background-color: #fff;
     border-color: #03a9f4;
     color: #24292e; }
-  .form-control[readonly], .form-control[disabled], .disabled .form-control {
+  .form-control[readonly], .form-control[disabled],
+  .disabled .form-control {
     border-color: #eceeef;
     color: #51565a; }
   .form-control.ng-empty {
     text-transform: lowercase; }
   .control-error .form-control {
     border-color: #a94442; }
-  .form-control[readonly], .col-static .form-control {
+  .form-control[readonly],
+  .col-static .form-control {
     background-color: transparent;
     opacity: 1;
     border-width: 0 0 2px 0;
@@ -504,16 +518,21 @@ input {
     right: initial; }
   .form-control-range.form-control-range-min {
     margin-right: 10px; }
-  .form-control-range input, .form-control-range div {
+  .form-control-range input,
+  .form-control-range div {
     width: 100%; }
   @media (max-width: 991px) {
     .form-control-range sup {
       top: 0; } }
 
-.col-static [ng-click], .col-static [link-to], .col-static [ng-mouseover] {
+.col-static [ng-click],
+.col-static [link-to],
+.col-static [ng-mouseover] {
   cursor: pointer;
   border-color: #03a9f4; }
-  .col-static [ng-click] i, .col-static [link-to] i, .col-static [ng-mouseover] i {
+  .col-static [ng-click] i,
+  .col-static [link-to] i,
+  .col-static [ng-mouseover] i {
     color: #03a9f4; }
 
 .form-control-hidden {
@@ -728,7 +747,9 @@ select {
 .input-group-btn .btn {
   line-height: 20px; }
 
-input[type="date"]::-webkit-input-placeholder, input[type="datetime"]::-webkit-input-placeholder, input[type="datetime-local"]::-webkit-input-placeholder {
+input[type="date"]::-webkit-input-placeholder,
+input[type="datetime"]::-webkit-input-placeholder,
+input[type="datetime-local"]::-webkit-input-placeholder {
   visibility: hidden !important; }
 
 ::-webkit-calendar-picker-indicator {
@@ -749,7 +770,8 @@ input[type="date"]::-webkit-input-placeholder, input[type="datetime"]::-webkit-i
     transition-timing-function: ease-in-out;
     /* Chrome, Safari, Opera */
     transform-style: preserve-3d; }
-  .uib-datepicker-popup .small, .uib-datepicker-popup small {
+  .uib-datepicker-popup .small,
+  .uib-datepicker-popup small {
     text-transform: uppercase; }
 
 .alert {
@@ -872,7 +894,8 @@ option {
     border-color: #03a9f4; }
     .switch.checked small {
       left: 41px; }
-  .switch .off, .switch .on {
+  .switch .off,
+  .switch .on {
     font-size: 14px;
     top: 50%;
     margin-top: -10px; }
@@ -888,7 +911,8 @@ option {
       left: 27px; }
     .switch.xs.checked .switch-text {
       color: white; }
-    .switch.xs .off, .switch.xs .on {
+    .switch.xs .off,
+    .switch.xs .on {
       font-size: 9px;
       margin-top: -5.5px; }
 
@@ -1208,6 +1232,22 @@ form sup {
 header {
   min-height: 80px;
   margin-bottom: 30px; }
+
+mapbox {
+  display: block;
+  width: 100%;
+  height: 300px; }
+
+.mapboxgl-ctrl {
+  display: none; }
+
+.container-form {
+  max-width: 720px;
+  border: 1px solid #eee;
+  padding: 30px 80px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3); }
 
 .material {
   position: relative;
