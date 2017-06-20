@@ -109,6 +109,8 @@
 
         api.current().then(function(user) {
             console.log(user);
+        }, function error(response) {
+            console.log('RootCtrl.error', response);
         });
 
     }]);
@@ -121,17 +123,30 @@
 
     }]);
 
-    app.controller('ProfileCtrl', ['$scope', 'State', 'FirebaseApi', function($scope, State, api) {
+    app.controller('ProfileCtrl', ['$scope', 'State', 'FirebaseApi', 'user', function($scope, State, api, user) {
 
         var state = $scope.state = new State();
 
-        var model = $scope.model = {};
+        var model = $scope.model = {
+            shopName: user.shopName,
+            address: user.address,
+            postCode: user.postCode,
+            city: user.city,
+            country: user.country,
+            latitude: user.latitude,
+            longitude: user.longitude,
+        };
 
-        api.current().then(function(user) {
-            model = $scope.model = user;
-            // angular.extend(model, user);
-            state.ready();
-        });
+        $scope.submit = function() {
+            if (state.busy()) {
+                angular.extend(user, model);
+                api.users.save(user).then(function success(response) {
+                    state.success();
+                }, function error(response) {
+                    state.error(response);
+                });
+            }
+        };
 
         var glControls = {
             navigation: {
@@ -166,19 +181,9 @@
 
         $scope.glControls = glControls;
 
-        $scope.submit = function() {
-            if (state.busy()) {
-                api.users.save(model).then(function success(response) {
-                    state.success();
-                }, function error(response) {
-                    state.error(response);
-                });
-            }
-        };
-
     }]);
 
-    app.controller('DashboardCtrl', ['$scope', 'State', 'FirebaseApi', function($scope, State, api) {
+    app.controller('DashboardCtrl', ['$scope', 'State', 'FirebaseApi', 'user', function($scope, State, api, user) {
 
         var state = $scope.state = new State();
 
