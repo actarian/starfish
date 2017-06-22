@@ -3,7 +3,7 @@
 *********************/
 
 @import "app/mixins";
-@import "app/forms";
+// @import "app/forms";
 [ng-click] {
     cursor: pointer;
     outline: none;
@@ -31,10 +31,23 @@ mapbox {
 .container-form {
     max-width: 720px;
     border: 1px solid #eee;
-    padding: 30px 80px;
     border-radius: 10px;
     margin-bottom: 30px;
     box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+    &>.outer {
+        position: relative;
+        margin: 0 -15px;
+    }
+    &>.inner {
+        padding: 30px 80px;
+    }
+}
+
+.controls {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    padding: 15px;
 }
 
 .material {
@@ -60,6 +73,20 @@ mapbox {
             opacity: 0;
             transition: all 1000ms ease-in-out;
         }
+    }
+}
+
+.marker {
+    background: #0000ff;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    border: 3px solid white;
+    box-shadow: 0 5px 10px -5px rgba(0, 0, 0, 0.25);
+    // transition: all 250ms ease-in-out;
+    &:hover {
+        background: #3333ff;
+        box-shadow: 0 10px 12px -5px rgba(0, 0, 0, 0.45);
     }
 }
 

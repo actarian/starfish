@@ -39,16 +39,24 @@
         var model = $scope.model = {
             shopName: user.shopName,
             address: user.address,
-            postCode: user.postCode,
+            number: user.number,
+            postalCode: user.postalCode,
+            locality: user.locality,
             city: user.city,
+            province: user.province,
+            region: user.region,
             country: user.country,
-            latitude: user.latitude,
-            longitude: user.longitude,
+            position: user.position,
         };
 
         $scope.submit = function() {
             if (state.busy()) {
                 angular.extend(user, model);
+                angular.forEach(model, function(value, key) {
+                    if (value) {
+                        user[key] = value;
+                    }
+                });
                 api.users.save(user).then(function success(response) {
                     state.success();
                 }, function error(response) {
@@ -57,39 +65,40 @@
             }
         };
 
-        var glControls = {
-            navigation: {
-                enabled: true,
-                options: {} // Navigation control options --> https://www.mapbox.com/mapbox-gl-js/api/#Navigation
-            },
-            scale: {
-                enabled: true,
-                options: {} // Scale control options --> https://www.mapbox.com/mapbox-gl-js/api/#Scale
-            },
-            attribution: {
-                enabled: false,
-                options: {} // Attribution control options --> https://www.mapbox.com/mapbox-gl-js/api/#Attribution
-            },
-            geolocate: {
-                enabled: true,
-                options: {} // Geolocate control options --> https://www.mapbox.com/mapbox-gl-js/api/#Geolocate
-            },
-            geocoder: {
-                enabled: true,
-                options: {} // Geocoder control options --> https://github.com/mapbox/mapbox-gl-geocoder/blob/master/API.md
-            },
-            directions: {
-                enabled: false,
-                options: {} // Directions control options --> https://github.com/mapbox/mapbox-gl-directions/blob/master/API.md#mapboxgldirections
-            },
-            draw: {
-                enabled: false,
-                options: {} // Draw control options -> https://github.com/mapbox/mapbox-gl-draw/blob/master/API.md#options
-            }
-        };
+        /*
+                var glControls = {
+                    navigation: {
+                        enabled: true,
+                        options: {} // Navigation control options --> https://www.mapbox.com/mapbox-gl-js/api/#Navigation
+                    },
+                    scale: {
+                        enabled: true,
+                        options: {} // Scale control options --> https://www.mapbox.com/mapbox-gl-js/api/#Scale
+                    },
+                    attribution: {
+                        enabled: false,
+                        options: {} // Attribution control options --> https://www.mapbox.com/mapbox-gl-js/api/#Attribution
+                    },
+                    geolocate: {
+                        enabled: true,
+                        options: {} // Geolocate control options --> https://www.mapbox.com/mapbox-gl-js/api/#Geolocate
+                    },
+                    geocoder: {
+                        enabled: true,
+                        options: {} // Geocoder control options --> https://github.com/mapbox/mapbox-gl-geocoder/blob/master/API.md
+                    },
+                    directions: {
+                        enabled: false,
+                        options: {} // Directions control options --> https://github.com/mapbox/mapbox-gl-directions/blob/master/API.md#mapboxgldirections
+                    },
+                    draw: {
+                        enabled: false,
+                        options: {} // Draw control options -> https://github.com/mapbox/mapbox-gl-draw/blob/master/API.md#options
+                    }
+                };
 
-        $scope.glControls = glControls;
-
+                $scope.glControls = glControls;
+        */
     }]);
 
     app.controller('DashboardCtrl', ['$scope', 'State', 'FirebaseApi', 'user', function($scope, State, api, user) {
