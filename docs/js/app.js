@@ -826,8 +826,10 @@
         }
 
         function link(scope, element, attributes, model) {
-            var lat = scope.model.position.lat;
-            var lng = scope.model.position.lng;
+
+            var position = scope.model.position || {};
+            position.lat = position.lat || 0;
+            position.lng = position.lng || 0;
 
             var node = element[0];
             var map = new mapboxgl.Map({
@@ -835,15 +837,55 @@
                 style: 'mapbox://styles/mapbox/streets-v9',
                 interactive: true,
                 logoPosition: 'bottom-right',
-                center: [lng, lat],
+                center: [position.lng, position.lat],
                 zoom: 9,
             });
             var canvas = map.getCanvasContainer();
+            /*
             var marker = new mapboxgl.Marker()
-                .setLngLat([lng, lat])
+                .setLngLat([position.lng, position.lat])
+                .addTo(map);
+            */
+
+
+            // Holds mousedown state for events. if this
+            // flag is active, we move the point on `mousemove`.
+            var isDragging;
+
+            // Is the cursor over a point? if this
+            // flag is active, we listen for a mousedown event.
+            var isCursorOverPoint;
+
+            // create a DOM element for the marker
+            var el = document.createElement('div');
+            el.id = 'point';
+            el.className = 'marker';
+
+            // add marker to map
+            var marker = new mapboxgl.Marker(el, { offset: [-10, -10] })
+                .setLngLat([
+                    position.lng,
+                    position.lat
+                ])
                 .addTo(map);
 
-            function setLocation(position) {
+            angular.element(el).on('click', function(e) {
+                window.alert('hey!');
+            });
+            angular.element(el).on('mouseenter', function(e) {
+                canvas.style.cursor = 'move';
+                isCursorOverPoint = true;
+                map.dragPan.disable();
+            });
+            angular.element(el).on('mouseleave', function(e) {
+                // map.setPaintProperty('point', 'circle-color', '#3887be');
+                canvas.style.cursor = '';
+                isCursorOverPoint = false;
+                map.dragPan.enable();
+            });
+
+
+            function setLocation() {
                 /*
                 map.setCenter([
                     parseFloat(lng),
@@ -889,9 +931,12 @@
                 console.log(type, label);
                 return label;
             }
+            /*
             scope.$watch('model', function(model) {
-                setLocation(model.position);
+                position = model.position;
+                setLocation();
             });
+            */
             scope.$watch('map.address', function(address) {
                 if (!address) {
                     return;
@@ -901,6 +946,7 @@
                     console.log('setAddress', item);
                     angular.extend(scope.model, item);
                     scope.map.results = null;
+                    setLocation();
                 };
                 $http.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + address + '&key=' + apiKey).then(function(response) {
                     console.log(response.data);
@@ -922,51 +968,17 @@
                                 }
                             };
                         });
+                        /*
                         var first = response.data.results[0];
-                        scope.model.latitude = first.geometry.location.lat;
-                        scope.model.longitude = first.geometry.location.lng;
+                        scope.model.position = first.geometry.location;
                         console.log(scope.model);
-                        setLocation(first.geometry.location);
+                        setLocation();
+                        */
                     }
                 });
             });
 
 
-            // Holds mousedown state for events. if this
-            // flag is active, we move the point on `mousemove`.
-            var isDragging;
-
-            // Is the cursor over a point? if this
-            // flag is active, we listen for a mousedown event.
-            var isCursorOverPoint;
-
-            // create a DOM element for the marker
-            var el = document.createElement('div');
-            el.id = 'point';
-            el.className = 'marker';
-
-            // add marker to map
-            var marker = new mapboxgl.Marker(el, { offset: [-10, -10] })
-                .setLngLat([
-                    lng,
-                    lat
-                ])
-                .addTo(map);
-
-            angular.element(el).on('click', function(e) {
-                window.alert('hey!');
-            });
-            angular.element(el).on('mouseenter', function(e) {
-                canvas.style.cursor = 'move';
-                isCursorOverPoint = true;
-                map.dragPan.disable();
-            });
-            angular.element(el).on('mouseleave', function(e) {
-                // map.setPaintProperty('point', 'circle-color', '#3887be');
-                canvas.style.cursor = '';
-                isCursorOverPoint = false;
-                map.dragPan.enable();
-            });
             /*
             // When the cursor enters a feature in the point layer, prepare for dragging.
             map.on('mouseenter', 'point', function() {
@@ -1029,8 +1041,8 @@
                     geometry: {
                         type: "Point",
                         coordinates: [
-                            lng,
-                            lat
+                            position.lng,
+                            position.lat
                         ]
                     },
                     properties: {
@@ -1042,10 +1054,10 @@
                 }]
             };
 
+            /*
             map.on('load', function() {
 
                 // Add a single point to the map
-                /*
                 map.addSource('Point', {
                     "type": "geojson",
                     "data": geojson
@@ -1059,8 +1071,6 @@
                         "circle-color": "#3887be"
                     }
                 });
-                */
-                /*
                 map.addLayer({
                     id: "point",
                     type: "symbol",
@@ -1075,11 +1085,9 @@
                         "text-anchor": "top"
                     }
                 });
-                  */
 
             });
-
-
+            */
 
         }
     }]);

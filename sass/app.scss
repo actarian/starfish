@@ -4,6 +4,11 @@
 
 @import "app/mixins";
 // @import "app/forms";
+
+body {
+    font-family: 'Poppins';
+}
+
 [ng-click] {
     cursor: pointer;
     outline: none;
