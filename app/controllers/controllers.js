@@ -38,10 +38,12 @@
         var state = $scope.state = new State();
 
         var modes = $scope.MODES = {
-            PLACE: 1,
-            BEACH: 2,
-            PRICES: 3,
-        }
+            BEACH: 1,
+            PRICES: 2,
+            PLACE: 3,
+            OPENING: 4,
+            INFO: 5,
+        };
         var mode = $scope.mode = modes.BEACH;
 
         var model = $scope.model = {

@@ -789,291 +789,291 @@
 /* global angular */
 
 (function() {
-  "use strict";
+    "use strict";
 
-  var app = angular.module('app');
+    var app = angular.module('app');
 
-  app.factory('Events', [function() {
-      
-    function Event(e, element) {
-      var documentNode = (document.documentElement || document.body.parentNode || document.body);
-      var scroll = {
-        x: window.pageXOffset || documentNode.scrollLeft,
-        y: window.pageYOffset || documentNode.scrollTop
-      };
-      if (e.type === 'resize') {
-        var view = {
-          w: this.getWidth(),
-          h: this.getHeight(),
+    app.factory('Events', [function() {
+
+        function Event(e, element) {
+            var documentNode = (document.documentElement || document.body.parentNode || document.body);
+            var scroll = {
+                x: window.pageXOffset || documentNode.scrollLeft,
+                y: window.pageYOffset || documentNode.scrollTop
+            };
+            if (e.type === 'resize') {
+                var view = {
+                    w: this.getWidth(),
+                    h: this.getHeight(),
+                };
+                this.view = view;
+            }
+            var node = getNode(element);
+            var offset = {
+                x: node.offsetLeft,
+                y: node.offsetTop,
+            };
+            var rect = node.getBoundingClientRect();
+            var page = this.getPage(e);
+            if (page) {
+                var relative = {
+                    x: page.x - scroll.x - rect.left,
+                    y: page.y - scroll.y - rect.top,
+                };
+                var absolute = {
+                    x: page.x - scroll.x,
+                    y: page.y - scroll.y,
+                };
+                this.relative = relative;
+                this.absolute = absolute;
+            }
+            if (this.type === 'resize') {
+                console.log(this.type);
+            }
+            this.originalEvent = e;
+            this.element = element;
+            this.node = node;
+            this.offset = offset;
+            this.rect = rect;
+            // console.log('Event', 'page', page, 'scroll', scroll, 'offset', offset, 'rect', rect, 'relative', relative, 'absolute', absolute);
+            // console.log('scroll.y', scroll.y, 'page.y', page.y, 'offset.y', offset.y, 'rect.top', rect.top);
         }
-        this.view = view;
-      }
-      var node = getNode(element);
-      var offset = {
-        x: node.offsetLeft,
-        y: node.offsetTop,
-      };
-      var rect = node.getBoundingClientRect();
-      var page = this.getPage(e);
-      if (page) {
-        var relative = {
-          x: page.x - scroll.x - rect.left,
-          y: page.y - scroll.y - rect.top,
+        Event.prototype = {
+            getPage: getPage,
+            getWidth: getWidth,
+            getHeight: getHeight,
         };
-        var absolute = {
-          x: page.x - scroll.x,
-          y: page.y - scroll.y,
+
+        function getWidth() {
+            if (self.innerWidth) {
+                return self.innerWidth;
+            }
+            if (document.documentElement && document.documentElement.clientWidth) {
+                return document.documentElement.clientWidth;
+            }
+            if (document.body) {
+                return document.body.clientWidth;
+            }
+        }
+
+        function getHeight() {
+            if (self.innerHeight) {
+                return self.innerHeight;
+            }
+            if (document.documentElement && document.documentElement.clientHeight) {
+                return document.documentElement.clientHeight;
+            }
+            if (document.body) {
+                return document.body.clientHeight;
+            }
+        }
+
+        function getPage(e) {
+            var standardEvents = ['click', 'mousedown', 'mouseup', 'mousemove', 'mouseover', 'mouseout', 'mouseenter', 'mouseleave', 'contextmenu'];
+            var touchEvents = ['touchstart', 'touchmove', 'touchend', 'touchcancel'];
+            var page = null;
+            if (touchEvents.indexOf(e.type) !== -1) {
+                var t = null;
+                var event = e.originalEvent ? e.originalEvent : e;
+                var touches = event.touches.length ? event.touches : event.changedTouches;
+                if (touches && touches.length) {
+                    t = touches[0];
+                }
+                if (t) {
+                    page = {
+                        x: t.pageX,
+                        y: t.pageY,
+                    };
+                }
+            } else if (standardEvents.indexOf(e.type) !== -1) {
+                page = {
+                    x: e.pageX,
+                    y: e.pageY,
+                };
+            }
+            this.type = e.type;
+            return page;
+        }
+
+        function Events(element) {
+            this.element = element;
+            this.listeners = {};
+            this.standardEvents = {
+                click: {
+                    key: 'click',
+                    callback: onClick
+                },
+                down: {
+                    key: 'mousedown',
+                    callback: onMouseDown
+                },
+                move: {
+                    key: 'mousemove',
+                    callback: onMouseMove
+                },
+                up: {
+                    key: 'mouseup',
+                    callback: onMouseUp
+                },
+                resize: {
+                    key: 'resize',
+                    callback: onResize
+                },
+            };
+            this.touchEvents = {
+                down: {
+                    key: 'touchstart',
+                    callback: onTouchStart
+                },
+                move: {
+                    key: 'touchmove',
+                    callback: onTouchMove
+                },
+                up: {
+                    key: 'touchend',
+                    callback: onTouchEnd
+                },
+            };
+
+            var scope = this;
+
+            function onClick(e) {
+                // console.log('onClick', e, scope);
+                var event = new Event(e, scope.element);
+                scope.listeners.click.apply(this, [event]);
+            }
+
+            function onMouseDown(e) {
+                // console.log('onMouseDown', e);
+                var event = new Event(e, scope.element);
+                scope.listeners.down.apply(this, [event]);
+                scope.removeTouchEvents();
+            }
+
+            function onMouseMove(e) {
+                // console.log('onMouseMove', e);
+                var event = new Event(e, scope.element);
+                scope.listeners.move.apply(this, [event]);
+            }
+
+            function onMouseUp(e) {
+                // console.log('onMouseUp', e);
+                var event = new Event(e, scope.element);
+                scope.listeners.up.apply(this, [event]);
+            }
+
+            function onResize(e) {
+                console.log('onResize', e);
+                var event = new Event(e, scope.element);
+                scope.listeners.resize.apply(this, [event]);
+            }
+
+            function onTouchStart(e) {
+                // console.log('onTouchStart', e);
+                var event = new Event(e, scope.element);
+                scope.listeners.down.apply(this, [event]);
+                scope.removeStandardEvents();
+            }
+
+            function onTouchMove(e) {
+                // console.log('onTouchMove', e);
+                var event = new Event(e, scope.element);
+                scope.listeners.move.apply(this, [event]);
+            }
+
+            function onTouchEnd(e) {
+                // console.log('onTouchEnd', e);
+                var event = new Event(e, scope.element);
+                scope.listeners.up.apply(this, [event]);
+            }
+        }
+        Events.prototype = {
+            add: onAdd,
+            remove: onRemove,
+            removeStandardEvents: removeStandardEvents,
+            removeTouchEvents: removeTouchEvents,
         };
-        this.relative = relative;
-        this.absolute = absolute;
-      }
-      if (this.type === 'resize') {
-        console.log(this.type);
-      }
-      this.originalEvent = e;
-      this.element = element;
-      this.node = node;
-      this.offset = offset;
-      this.rect = rect;
-      // console.log('Event', 'page', page, 'scroll', scroll, 'offset', offset, 'rect', rect, 'relative', relative, 'absolute', absolute);
-      // console.log('scroll.y', scroll.y, 'page.y', page.y, 'offset.y', offset.y, 'rect.top', rect.top);
-    }
-    Event.prototype = {
-      getPage: getPage,
-      getWidth: getWidth,
-      getHeight: getHeight,
-    };
+        return Events;
 
-    function getWidth() {
-      if (self.innerWidth) {
-        return self.innerWidth;
-      }
-      if (document.documentElement && document.documentElement.clientWidth) {
-        return document.documentElement.clientWidth;
-      }
-      if (document.body) {
-        return document.body.clientWidth;
-      }
-    }
-
-    function getHeight() {
-      if (self.innerHeight) {
-        return self.innerHeight;
-      }
-      if (document.documentElement && document.documentElement.clientHeight) {
-        return document.documentElement.clientHeight;
-      }
-      if (document.body) {
-        return document.body.clientHeight;
-      }
-    }
-
-    function getPage(e) {
-      var standardEvents = ['click', 'mousedown', 'mouseup', 'mousemove', 'mouseover', 'mouseout', 'mouseenter', 'mouseleave', 'contextmenu'];
-      var touchEvents = ['touchstart', 'touchmove', 'touchend', 'touchcancel'];
-      var page = null;
-      if (touchEvents.indexOf(e.type) !== -1) {
-        var t = null;
-        var event = e.originalEvent ? e.originalEvent : e;
-        var touches = event.touches.length ? event.touches : event.changedTouches;
-        if (touches && touches.length) {
-          t = touches[0];
+        function getNode(element) {
+            return element.length ? element[0] : element; // (element.length && (element[0] instanceOf Node || element[0] instanceOf HTMLElement)) ? element[0] : element;
         }
-        if (t) {
-          page = {
-            x: t.pageX,
-            y: t.pageY,
-          };
+
+        function getElement(element) {
+            return element.length ? element : angular.element(element); // (element.length && (element[0] instanceOf Node || element[0] instanceOf HTMLElement)) ? element : angular.element(element);
         }
-      } else if (standardEvents.indexOf(e.type) !== -1) {
-        page = {
-          x: e.pageX,
-          y: e.pageY,
-        };
-      }
-      this.type = e.type;
-      return page;
-    }
 
-    function Events(element) {
-      this.element = element;
-      this.listeners = {};
-      this.standardEvents = {
-        click: {
-          key: 'click',
-          callback: onClick
-        },
-        down: {
-          key: 'mousedown',
-          callback: onMouseDown
-        },
-        move: {
-          key: 'mousemove',
-          callback: onMouseMove
-        },
-        up: {
-          key: 'mouseup',
-          callback: onMouseUp
-        },
-        resize: {
-          key: 'resize',
-          callback: onResize
-        },
-      };
-      this.touchEvents = {
-        down: {
-          key: 'touchstart',
-          callback: onTouchStart
-        },
-        move: {
-          key: 'touchmove',
-          callback: onTouchMove
-        },
-        up: {
-          key: 'touchend',
-          callback: onTouchEnd
-        },
-      };
+        function onAdd(listeners) {
+            var scope = this,
+                standard = this.standardEvents,
+                touch = this.touchEvents;
+            var element = getElement(this.element),
+                windowElement = angular.element(window);
 
-      var scope = this;
-
-      function onClick(e) {
-        // console.log('onClick', e, scope);
-        var event = new Event(e, scope.element);
-        scope.listeners.click.apply(this, [event]);
-      }
-
-      function onMouseDown(e) {
-        // console.log('onMouseDown', e);
-        var event = new Event(e, scope.element);
-        scope.listeners.down.apply(this, [event]);
-        scope.removeTouchEvents();
-      }
-
-      function onMouseMove(e) {
-        // console.log('onMouseMove', e);
-        var event = new Event(e, scope.element);
-        scope.listeners.move.apply(this, [event]);
-      }
-
-      function onMouseUp(e) {
-        // console.log('onMouseUp', e);
-        var event = new Event(e, scope.element);
-        scope.listeners.up.apply(this, [event]);
-      }
-
-      function onResize(e) {
-        console.log('onResize', e);
-        var event = new Event(e, scope.element);
-        scope.listeners.resize.apply(this, [event]);
-      }
-
-      function onTouchStart(e) {
-        // console.log('onTouchStart', e);
-        var event = new Event(e, scope.element);
-        scope.listeners.down.apply(this, [event]);
-        scope.removeStandardEvents();
-      }
-
-      function onTouchMove(e) {
-        // console.log('onTouchMove', e);
-        var event = new Event(e, scope.element);
-        scope.listeners.move.apply(this, [event]);
-      }
-
-      function onTouchEnd(e) {
-        // console.log('onTouchEnd', e);
-        var event = new Event(e, scope.element);
-        scope.listeners.up.apply(this, [event]);
-      }
-    }
-    Events.prototype = {
-      add: onAdd,
-      remove: onRemove,
-      removeStandardEvents: removeStandardEvents,
-      removeTouchEvents: removeTouchEvents,
-    };
-    return Events;
-
-    function getNode(element) {
-      return element.length ? element[0] : element; // (element.length && (element[0] instanceOf Node || element[0] instanceOf HTMLElement)) ? element[0] : element;
-    }
-
-    function getElement(element) {
-      return element.length ? element : angular.element(element); // (element.length && (element[0] instanceOf Node || element[0] instanceOf HTMLElement)) ? element : angular.element(element);
-    }
-
-    function onAdd(listeners) {
-      var scope = this,
-        standard = this.standardEvents,
-        touch = this.touchEvents;
-      var element = getElement(this.element),
-        windowElement = angular.element(window);
-
-      angular.forEach(listeners, function(callback, key) {
-        if (scope.listeners[key]) {
-          var listener = {};
-          listener[key] = scope.listeners[key];
-          onRemove(listener);
+            angular.forEach(listeners, function(callback, key) {
+                if (scope.listeners[key]) {
+                    var listener = {};
+                    listener[key] = scope.listeners[key];
+                    onRemove(listener);
+                }
+                scope.listeners[key] = callback;
+                if (standard[key]) {
+                    if (key === 'resize') {
+                        windowElement.on(standard[key].key, standard[key].callback);
+                    } else {
+                        element.on(standard[key].key, standard[key].callback);
+                    }
+                }
+                if (touch[key]) {
+                    element.on(touch[key].key, touch[key].callback);
+                }
+            });
+            return scope;
         }
-        scope.listeners[key] = callback;
-        if (standard[key]) {
-          if (key === 'resize') {
-            windowElement.on(standard[key].key, standard[key].callback);
-          } else {
-            element.on(standard[key].key, standard[key].callback);
-          }
-        }
-        if (touch[key]) {
-          element.on(touch[key].key, touch[key].callback);
-        }
-      });
-      return scope;
-    }
 
-    function onRemove(listeners) {
-      var scope = this,
-        standard = this.standardEvents,
-        touch = this.touchEvents;
-      var element = getElement(this.element),
-        windowElement = angular.element(window);
-      angular.forEach(listeners, function(callback, key) {
-        if (standard[key]) {
-          if (key === 'resize') {
-            windowElement.off(standard[key].key, standard[key].callback);
-          } else {
-            element.off(standard[key].key, standard[key].callback);
-          }
+        function onRemove(listeners) {
+            var scope = this,
+                standard = this.standardEvents,
+                touch = this.touchEvents;
+            var element = getElement(this.element),
+                windowElement = angular.element(window);
+            angular.forEach(listeners, function(callback, key) {
+                if (standard[key]) {
+                    if (key === 'resize') {
+                        windowElement.off(standard[key].key, standard[key].callback);
+                    } else {
+                        element.off(standard[key].key, standard[key].callback);
+                    }
+                }
+                if (touch[key]) {
+                    element.off(touch[key].key, touch[key].callback);
+                }
+                scope.listeners[key] = null;
+            });
+            return scope;
         }
-        if (touch[key]) {
-          element.off(touch[key].key, touch[key].callback);
+
+        function removeStandardEvents() {
+            var scope = this,
+                standard = scope.standardEvents,
+                touch = scope.touchEvents;
+            var element = getElement(scope.element);
+            element.off('mousedown', standard.down.callback);
+            element.off('mousemove', standard.move.callback);
+            element.off('mouseup', standard.up.callback);
         }
-        scope.listeners[key] = null;
-      });
-      return scope;
-    }
 
-    function removeStandardEvents() {
-      var scope = this,
-        standard = scope.standardEvents,
-        touch = scope.touchEvents;
-      var element = getElement(scope.element);
-      element.off('mousedown', standard.down.callback);
-      element.off('mousemove', standard.move.callback);
-      element.off('mouseup', standard.up.callback);
-    }
+        function removeTouchEvents() {
+            var scope = this,
+                standard = scope.standardEvents,
+                touch = scope.touchEvents;
+            var element = getElement(scope.element);
+            element.off('touchstart', touch.down.callback);
+            element.off('touchmove', touch.move.callback);
+            element.off('touchend', touch.up.callback);
+        }
 
-    function removeTouchEvents() {
-      var scope = this,
-        standard = scope.standardEvents,
-        touch = scope.touchEvents;
-      var element = getElement(scope.element);
-      element.off('touchstart', touch.down.callback);
-      element.off('touchmove', touch.move.callback);
-      element.off('touchend', touch.up.callback);
-    }
-
-  }]);
+    }]);
 
 }());
 /* global angular */
@@ -1279,63 +1279,46 @@
 }());
 /* global angular */
 
-(function () {
+(function() {
     "use strict";
 
     var app = angular.module('app');
 
-    app.directive('ngClick', ['UI', function (ui) {
+    app.directive('ngClick', ['Events', function(Events) {
         return {
             restrict: 'A',
             priority: 0,
             link: link
         };
+
         function link(scope, element, attributes, model) {
             element.addClass('material');
             var material = document.createElement('material');
             element[0].appendChild(material);
 
-            function doMaterial(e) {
-                var down = ui.getTouch(e);
-                var relative = ui.getRelativeTouch(element, down);
+            function onClick(e) {
                 element.removeClass('animate');
                 void element.offsetWidth;
                 // material.style.animationPlayState = "paused";
-                material.style.left = relative.x + 'px';
-                material.style.top = relative.y + 'px';
-                setTimeout(function () {
+                material.style.left = e.relative.x + 'px';
+                material.style.top = e.relative.y + 'px';
+                setTimeout(function() {
                     element.addClass('animate');
-                    setTimeout(function () {
+                    setTimeout(function() {
                         element.removeClass('animate');
                     }, 1000);
-                }, 1);
+                }, 10);
             }
 
-            function onTouchStart(e) {
-                element.off('mousedown', onMouseDown);
-                doMaterial(e);
-            }
+            var listeners = {
+                click: onClick,
+            };
+            var events = new Events(element).add(listeners);
 
-            function onMouseDown(e) {
-                element.off('touchstart', onTouchStart);
-                doMaterial(e);
-            }
-
-            function addListeners() {
-                element.on('touchstart', onTouchStart);
-                element.on('mousedown', onMouseDown);
-            }
-
-            function removeListeners() {
-                element.off('touchstart', onTouchStart);
-                element.off('mousedown', onMouseDown);
-            }
-
-            scope.$on('$destroy', function () {
-                removeListeners();
+            scope.$on('$destroy', function() {
+                events.remove(listeners);
             });
 
-            addListeners();
         }
     }]);
 
@@ -1360,7 +1343,7 @@
             rect.w *= value;
             rect.h *= value;
             return rect;
-        }
+        };
         Rect.prototype = {
             mult: function(value) {
                 return Rect.mult(this, value);
@@ -1533,7 +1516,7 @@
         };
         Color.contrast = function(color) {
             var luma = Color.luma(color);
-            if (luma > .6) {
+            if (luma > 0.6) {
                 return new Color('0x000000');
             } else {
                 return new Color('0xffffff');
@@ -1587,7 +1570,7 @@
                 this.light = Color.lighter(this, 0.3);
                 return this;
             },
-        }
+        };
         return Color;
     }]);
 
@@ -1629,8 +1612,8 @@
                 r = { tl: r, tr: r, br: r, bl: r };
             } else {
                 var defaultRadius = { tl: 0, tr: 0, br: 0, bl: 0 };
-                for (var p in defaultRadius) {
-                    r[p] = r[p] || defaultRadius[p];
+                for (var key in defaultRadius) {
+                    r[key] = r[key] || defaultRadius[key];
                 }
             }
             ctx.moveTo(x + r.tl, y);
@@ -1792,7 +1775,7 @@
             pattern: function(target, key, x, y, w, h, color) {
                 function drawPattern(pattern) {
                     var ctx = target.ctx;
-                    ctx.save()
+                    ctx.save();
                     ctx.translate(x, y);
                     // draw
                     // ctx.beginPath();
@@ -1820,12 +1803,12 @@
                         } else {
                             b.ctx.drawImage(this.painter.canvas, r.x, r.y, r.w, r.h, 0, 0, r.w, r.h);
                         }
-                        var img = new Image();
+                        img = new Image();
                         img.onload = function() {
                             r.img = img;
                             pattern = target.ctx.createPattern(img, "repeat");
                             drawPattern(pattern);
-                        }
+                        };
                         img.src = b.toDataURL();
                     } else {
                         pattern = target.ctx.createPattern(img, "repeat");
@@ -2009,7 +1992,9 @@
                         h = rect.h = t.h;
                     ctx.save();
                     ctx.translate(x, y);
-                    pre ? pre.call(this) : null;
+                    if (pre) {
+                        pre.call(this);
+                    }
                     ctx.drawImage(image, 0, 0);
                     ctx.restore();
                     // console.log('painter.draw', x, y, w, h);
@@ -2030,7 +2015,9 @@
                         h = rect.h = t.h;
                     ctx.save();
                     ctx.translate(x, y);
-                    pre ? pre.call(this) : null;
+                    if (pre) {
+                        pre.call(this);
+                    }
                     ctx.drawImage(image, s.x, s.y, s.w, s.h, 0, 0, t.w, t.h);
                     ctx.restore();
                     // console.log('painter.drawRect', x, y, w, h);
@@ -2044,7 +2031,7 @@
                 ctx.translate(scale.x === -1 ? rect.w : 0, scale.y === -1 ? rect.h : 0);
                 ctx.scale(scale.x, scale.y);
             },
-        }
+        };
         return Painter;
     }]);
 
@@ -2719,7 +2706,7 @@
                 if (token) {
                     connect().then(function(presence) {
                         getSingle('users', { token: token }).then(function(user) {
-                            var user = service.user = user;
+                            service.user = user;
                             deferred.resolve(user);
                         }, function(error) {
                             deferred.reject(error);
@@ -3011,10 +2998,12 @@
         var state = $scope.state = new State();
 
         var modes = $scope.MODES = {
-            PLACE: 1,
-            BEACH: 2,
-            PRICES: 3,
-        }
+            BEACH: 1,
+            PRICES: 2,
+            PLACE: 3,
+            OPENING: 4,
+            INFO: 5,
+        };
         var mode = $scope.mode = modes.BEACH;
 
         var model = $scope.model = {
@@ -3724,7 +3713,7 @@
         return {
             restrict: 'A',
             link: link,
-        }
+        };
 
         function link(scope, element, attributes, model) {
             var over, overItem, down, mode, mouse = { x: 0, y: 0 },
@@ -3776,7 +3765,7 @@
             }
 
             function drawPolygon(x, y) {
-                var r = cell.w * .4;
+                var r = cell.w * 0.4;
                 var sides = 7;
                 var p = painter;
                 p.ctx.beginPath();
@@ -3792,9 +3781,9 @@
                 var pow = {
                     x: (x - mouse.x) / view.w,
                     y: (y - mouse.y) / view.h,
-                }
-                x += cell.w * pow.x * .75;
-                y += cell.h * pow.y * .75;
+                };
+                x += cell.w * pow.x * 0.75;
+                y += cell.h * pow.y * 0.75;
                 var p = painter;
                 p.setFill(p.colors.greyLight);
                 drawPolygon(x, y);
@@ -3860,7 +3849,8 @@
                 while (i < t) {
                     item = items[i];
                     if (item.x === xy.x && item.y === xy.y) {
-                        index = i, i = t;
+                        index = i;
+                        i = t;
                     }
                     i++;
                 }
@@ -4019,25 +4009,25 @@
                 draw();
             });
 
-/*
+            /*
 
-            function addListeners() {
-                element.on('mousedown', onDown);
-                element.on('mousemove', onMove);
-                element.on('mouseup', onUp);
-                element.on('resize', onResize);
-            }
+                        function addListeners() {
+                            element.on('mousedown', onDown);
+                            element.on('mousemove', onMove);
+                            element.on('mouseup', onUp);
+                            element.on('resize', onResize);
+                        }
 
-            function removeListeners() {
-                element.off('mousedown', onDown);
-                element.off('mousemove', onMove);
-                element.off('mouseup', onUp);
-                element.off('resize', onResize);
-            }
-            scope.$on('$destroy', function() {
-                removeListeners();
-            });
-*/
+                        function removeListeners() {
+                            element.off('mousedown', onDown);
+                            element.off('mousemove', onMove);
+                            element.off('mouseup', onUp);
+                            element.off('resize', onResize);
+                        }
+                        scope.$on('$destroy', function() {
+                            removeListeners();
+                        });
+            */
 
         }
     }]);
@@ -4062,13 +4052,11 @@
         return {
             restrict: 'E',
             link: link,
-        }
+        };
 
         function link(scope, element, attributes, model) {
-            var position = scope.model.position || {};
-            position.lat = position.lat || 0;
-            position.lng = position.lng || 0;
 
+            var position = setPosition();
             var node = element[0];
             var map = new mapboxgl.Map({
                 container: node,
@@ -4079,43 +4067,26 @@
                 zoom: 9,
             });
             var canvas = map.getCanvasContainer();
-            /*
-            var marker = new mapboxgl.Marker()
-                .setLngLat([position.lng, position.lat])
-                .addTo(map);
-            */
 
-
-            // Holds mousedown state for events. if this
-            // flag is active, we move the point on `mousemove`.
             var isDragging;
-
-            // Is the cursor over a point? if this
-            // flag is active, we listen for a mousedown event.
             var isCursorOverPoint;
 
-            // create a DOM element for the marker
             var el = document.createElement('div');
             el.id = 'point';
             el.className = 'marker';
-
-            // add marker to map
             var marker = new mapboxgl.Marker(el, { offset: [-10, -10] })
                 .setLngLat([
                     position.lng,
                     position.lat
                 ])
                 .addTo(map);
-            /*
-            angular.element(el).on('click', function(e) {
-            window.alert('hey!');
-            });
-            */
+
             angular.element(el).on('mouseenter', function(e) {
                 canvas.style.cursor = 'move';
                 isCursorOverPoint = true;
                 map.dragPan.disable();
             });
+
             angular.element(el).on('mouseleave', function(e) {
                 // map.setPaintProperty('point', 'circle-color', '#3887be');
                 canvas.style.cursor = '';
@@ -4125,9 +4096,9 @@
 
             window.googleMapInit = function() {
                 geocoder = new google.maps.Geocoder();
-                // var geocoder = new google.maps.Geocoder();
                 console.log('googleMapInit');
-            }
+                window.googleMapInit = null;
+            };
             if (!geocoder) {
                 var script = document.createElement('script');
                 script.setAttribute('async', null);
@@ -4136,13 +4107,32 @@
                 document.body.appendChild(script);
             }
 
+            function setPosition(lat, lng) {
+                position = scope.model.position || {};
+                if (lat && lng) {
+                    position.lat = position.lat || 0;
+                    position.lng = position.lng || 0;
+                } else {
+                    position.lat = position.lat || 0;
+                    position.lng = position.lng || 0;
+                    if (position.lat === 0 && position.lng === 0) {
+                        geolocalize();
+                    }
+                }
+                return position;
+            }
+
             function handleResults(results) {
+                console.log('handleResults', results);
                 if (results.length) {
-                    console.log('handleResults', results);
-                    scope.map.results = results.map(function(item) {
+                    scope.map.results = results.filter(function(item) {
+                        return item.geometry.location_type === 'ROOFTOP' ||
+                            item.geometry.location_type === 'RANGE_INTERPOLATED' ||
+                            item.geometry.location_type === 'GEOMETRIC_CENTER';
+                    }).map(function(item) {
                         return {
                             name: item.formatted_address,
-                            address: getType('address', item),
+                            street: getType('street', item),
                             number: getType('number', item),
                             locality: getType('locality', item),
                             postalCode: getType('postalCode', item),
@@ -4204,12 +4194,9 @@
             function geolocalize() {
                 // Try HTML5 geolocation.
                 if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(function(position) {
+                    navigator.geolocation.getCurrentPosition(function(p) {
                         $timeout(function() {
-                            position = {
-                                lat: position.coords.latitude,
-                                lng: position.coords.longitude
-                            };
+                            position = setPosition(p.coords.latitude, p.coords.longitude);
                             setLocation();
                             reverseGeocode(position);
                         });
@@ -4247,7 +4234,7 @@
 
             function getType(type, item) {
                 var types = {
-                    address: 'route',
+                    street: 'route',
                     number: 'street_number',
                     locality: 'locality',
                     postalCode: 'postal_code',
@@ -4274,27 +4261,34 @@
             });
             */
 
-            scope.$watch('map.address', function(address) {
-                if (!address) {
-                    return;
-                }
-                scope.map.results = null;
-                scope.map.setAddress = function(item) {
-                    console.log('setAddress', item);
-                    angular.extend(scope.model, item);
-                    scope.map.results = null;
-                    setLocation();
-                };
-                geocodeAddress(address);
-                /*
-                return;
-                $http.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + address + '&key=' + apiKey).then(function(response) {
-                    console.log(response.data);
-                    handleResults(response.data.results);
-                });
-                */
-            });
+            /*
+                        scope.$watch('map.address', function(address) {
+                            if (!address) {
+                                return;
+                            }
+                            scope.map.results = null;
+                            scope.map.setAddress = function(item) {
+                                console.log('setAddress', item);
+                                angular.extend(scope.model, item);
+                                scope.map.results = null;
+                                setLocation();
+                            };
+                            geocodeAddress(address);
+                        });
+            */
 
+            scope.map.setAddress = function(item) {
+                console.log('setAddress', item);
+                angular.extend(scope.model, item);
+                scope.map.results = null;
+                position = setPosition(item.position);
+                setLocation();
+            };
+
+            scope.map.search = function() {
+                scope.map.results = null;
+                geocodeAddress(scope.map.address);
+            };
 
             /*
             // When the cursor enters a feature in the point layer, prepare for dragging.
@@ -4325,87 +4319,32 @@
 
             function onMove(e) {
                 if (!isDragging) return;
-                var position = e.lngLat;
+                var p = e.lngLat;
                 // Set a UI indicator for dragging.
                 canvas.style.cursor = 'grabbing';
                 // Update the Point feature in `geojson` coordinates
                 // and call setData to the source layer `point` on it.
                 marker.setLngLat([
-                    position.lng,
-                    position.lat
+                    p.lng,
+                    p.lat
                 ]);
-                // geojson.features[0].geometry.coordinates = [position.lng, position.lat];
+                // geojson.features[0].geometry.coordinates = [p.lng, p.lat];
                 // map.getSource('point').setData(geojson);
             }
 
             function onUp(e) {
                 if (!isDragging) return;
-                var position = e.lngLat;
+                var p = e.lngLat;
                 // Print the coordinates of where the point had
                 // finished being dragged to on the map.
                 // coordinates.style.display = 'block';
-                // coordinates.innerHTML = 'Longitude: ' + position.lng + '<br />Latitude: ' + position.lat;
-                reverseGeocode(position);
+                // coordinates.innerHTML = 'Longitude: ' + p.lng + '<br />Latitude: ' + p.lat;
+                reverseGeocode(p);
                 canvas.style.cursor = '';
                 isDragging = false;
                 // Unbind mouse events
                 map.off('mousemove', onMove);
             }
-
-            var geojson = {
-                type: "FeatureCollection",
-                features: [{
-                    type: "Feature",
-                    geometry: {
-                        type: "Point",
-                        coordinates: [
-                            position.lng,
-                            position.lat
-                        ]
-                    },
-                    properties: {
-                        "marker-color": "#0000ff",
-                        "marker-size": "medium",
-                        "marker-symbol": "circle",
-                        title: "Mapbox DC",
-                    }
-                }]
-            };
-
-            /*
-            map.on('load', function() {
-
-                // Add a single point to the map
-                map.addSource('Point', {
-                    "type": "geojson",
-                    "data": geojson
-                });
-                map.addLayer({
-                    "id": "Point",
-                    "type": "circle",
-                    "source": "Point",
-                    "paint": {
-                        "circle-radius": 10,
-                        "circle-color": "#3887be"
-                    }
-                });
-                map.addLayer({
-                    id: "point",
-                    type: "symbol",
-                    source: {
-                        type: "geojson",
-                        data: geojson
-                    },
-                    layout: {
-                        "text-field": "{title}",
-                        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-                        "text-offset": [0, 0.6],
-                        "text-anchor": "top"
-                    }
-                });
-
-            });
-            */
 
         }
     }]);

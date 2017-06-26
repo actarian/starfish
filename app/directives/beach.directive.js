@@ -9,7 +9,7 @@
         return {
             restrict: 'A',
             link: link,
-        }
+        };
 
         function link(scope, element, attributes, model) {
             var over, overItem, down, mode, mouse = { x: 0, y: 0 },
@@ -61,7 +61,7 @@
             }
 
             function drawPolygon(x, y) {
-                var r = cell.w * .4;
+                var r = cell.w * 0.4;
                 var sides = 7;
                 var p = painter;
                 p.ctx.beginPath();
@@ -77,9 +77,9 @@
                 var pow = {
                     x: (x - mouse.x) / view.w,
                     y: (y - mouse.y) / view.h,
-                }
-                x += cell.w * pow.x * .75;
-                y += cell.h * pow.y * .75;
+                };
+                x += cell.w * pow.x * 0.75;
+                y += cell.h * pow.y * 0.75;
                 var p = painter;
                 p.setFill(p.colors.greyLight);
                 drawPolygon(x, y);
@@ -145,7 +145,8 @@
                 while (i < t) {
                     item = items[i];
                     if (item.x === xy.x && item.y === xy.y) {
-                        index = i, i = t;
+                        index = i;
+                        i = t;
                     }
                     i++;
                 }
@@ -304,25 +305,25 @@
                 draw();
             });
 
-/*
+            /*
 
-            function addListeners() {
-                element.on('mousedown', onDown);
-                element.on('mousemove', onMove);
-                element.on('mouseup', onUp);
-                element.on('resize', onResize);
-            }
+                        function addListeners() {
+                            element.on('mousedown', onDown);
+                            element.on('mousemove', onMove);
+                            element.on('mouseup', onUp);
+                            element.on('resize', onResize);
+                        }
 
-            function removeListeners() {
-                element.off('mousedown', onDown);
-                element.off('mousemove', onMove);
-                element.off('mouseup', onUp);
-                element.off('resize', onResize);
-            }
-            scope.$on('$destroy', function() {
-                removeListeners();
-            });
-*/
+                        function removeListeners() {
+                            element.off('mousedown', onDown);
+                            element.off('mousemove', onMove);
+                            element.off('mouseup', onUp);
+                            element.off('resize', onResize);
+                        }
+                        scope.$on('$destroy', function() {
+                            removeListeners();
+                        });
+            */
 
         }
     }]);

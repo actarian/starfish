@@ -65,7 +65,7 @@
                 if (token) {
                     connect().then(function(presence) {
                         getSingle('users', { token: token }).then(function(user) {
-                            var user = service.user = user;
+                            service.user = user;
                             deferred.resolve(user);
                         }, function(error) {
                             deferred.reject(error);

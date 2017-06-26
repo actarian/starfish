@@ -18,7 +18,7 @@
             rect.w *= value;
             rect.h *= value;
             return rect;
-        }
+        };
         Rect.prototype = {
             mult: function(value) {
                 return Rect.mult(this, value);
@@ -191,7 +191,7 @@
         };
         Color.contrast = function(color) {
             var luma = Color.luma(color);
-            if (luma > .6) {
+            if (luma > 0.6) {
                 return new Color('0x000000');
             } else {
                 return new Color('0xffffff');
@@ -245,7 +245,7 @@
                 this.light = Color.lighter(this, 0.3);
                 return this;
             },
-        }
+        };
         return Color;
     }]);
 
@@ -287,8 +287,8 @@
                 r = { tl: r, tr: r, br: r, bl: r };
             } else {
                 var defaultRadius = { tl: 0, tr: 0, br: 0, bl: 0 };
-                for (var p in defaultRadius) {
-                    r[p] = r[p] || defaultRadius[p];
+                for (var key in defaultRadius) {
+                    r[key] = r[key] || defaultRadius[key];
                 }
             }
             ctx.moveTo(x + r.tl, y);
@@ -450,7 +450,7 @@
             pattern: function(target, key, x, y, w, h, color) {
                 function drawPattern(pattern) {
                     var ctx = target.ctx;
-                    ctx.save()
+                    ctx.save();
                     ctx.translate(x, y);
                     // draw
                     // ctx.beginPath();
@@ -478,12 +478,12 @@
                         } else {
                             b.ctx.drawImage(this.painter.canvas, r.x, r.y, r.w, r.h, 0, 0, r.w, r.h);
                         }
-                        var img = new Image();
+                        img = new Image();
                         img.onload = function() {
                             r.img = img;
                             pattern = target.ctx.createPattern(img, "repeat");
                             drawPattern(pattern);
-                        }
+                        };
                         img.src = b.toDataURL();
                     } else {
                         pattern = target.ctx.createPattern(img, "repeat");
@@ -667,7 +667,9 @@
                         h = rect.h = t.h;
                     ctx.save();
                     ctx.translate(x, y);
-                    pre ? pre.call(this) : null;
+                    if (pre) {
+                        pre.call(this);
+                    }
                     ctx.drawImage(image, 0, 0);
                     ctx.restore();
                     // console.log('painter.draw', x, y, w, h);
@@ -688,7 +690,9 @@
                         h = rect.h = t.h;
                     ctx.save();
                     ctx.translate(x, y);
-                    pre ? pre.call(this) : null;
+                    if (pre) {
+                        pre.call(this);
+                    }
                     ctx.drawImage(image, s.x, s.y, s.w, s.h, 0, 0, t.w, t.h);
                     ctx.restore();
                     // console.log('painter.drawRect', x, y, w, h);
@@ -702,7 +706,7 @@
                 ctx.translate(scale.x === -1 ? rect.w : 0, scale.y === -1 ? rect.h : 0);
                 ctx.scale(scale.x, scale.y);
             },
-        }
+        };
         return Painter;
     }]);
 

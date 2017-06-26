@@ -17,13 +17,11 @@
         return {
             restrict: 'E',
             link: link,
-        }
+        };
 
         function link(scope, element, attributes, model) {
-            var position = scope.model.position || {};
-            position.lat = position.lat || 0;
-            position.lng = position.lng || 0;
 
+            var position = setPosition();
             var node = element[0];
             var map = new mapboxgl.Map({
                 container: node,
@@ -34,43 +32,26 @@
                 zoom: 9,
             });
             var canvas = map.getCanvasContainer();
-            /*
-            var marker = new mapboxgl.Marker()
-                .setLngLat([position.lng, position.lat])
-                .addTo(map);
-            */
 
-
-            // Holds mousedown state for events. if this
-            // flag is active, we move the point on `mousemove`.
             var isDragging;
-
-            // Is the cursor over a point? if this
-            // flag is active, we listen for a mousedown event.
             var isCursorOverPoint;
 
-            // create a DOM element for the marker
             var el = document.createElement('div');
             el.id = 'point';
             el.className = 'marker';
-
-            // add marker to map
             var marker = new mapboxgl.Marker(el, { offset: [-10, -10] })
                 .setLngLat([
                     position.lng,
                     position.lat
                 ])
                 .addTo(map);
-            /*
-            angular.element(el).on('click', function(e) {
-            window.alert('hey!');
-            });
-            */
+
             angular.element(el).on('mouseenter', function(e) {
                 canvas.style.cursor = 'move';
                 isCursorOverPoint = true;
                 map.dragPan.disable();
             });
+
             angular.element(el).on('mouseleave', function(e) {
                 // map.setPaintProperty('point', 'circle-color', '#3887be');
                 canvas.style.cursor = '';
@@ -80,9 +61,9 @@
 
             window.googleMapInit = function() {
                 geocoder = new google.maps.Geocoder();
-                // var geocoder = new google.maps.Geocoder();
                 console.log('googleMapInit');
-            }
+                window.googleMapInit = null;
+            };
             if (!geocoder) {
                 var script = document.createElement('script');
                 script.setAttribute('async', null);
@@ -91,13 +72,32 @@
                 document.body.appendChild(script);
             }
 
+            function setPosition(lat, lng) {
+                position = scope.model.position || {};
+                if (lat && lng) {
+                    position.lat = position.lat || 0;
+                    position.lng = position.lng || 0;
+                } else {
+                    position.lat = position.lat || 0;
+                    position.lng = position.lng || 0;
+                    if (position.lat === 0 && position.lng === 0) {
+                        geolocalize();
+                    }
+                }
+                return position;
+            }
+
             function handleResults(results) {
+                console.log('handleResults', results);
                 if (results.length) {
-                    console.log('handleResults', results);
-                    scope.map.results = results.map(function(item) {
+                    scope.map.results = results.filter(function(item) {
+                        return item.geometry.location_type === 'ROOFTOP' ||
+                            item.geometry.location_type === 'RANGE_INTERPOLATED' ||
+                            item.geometry.location_type === 'GEOMETRIC_CENTER';
+                    }).map(function(item) {
                         return {
                             name: item.formatted_address,
-                            address: getType('address', item),
+                            street: getType('street', item),
                             number: getType('number', item),
                             locality: getType('locality', item),
                             postalCode: getType('postalCode', item),
@@ -159,12 +159,9 @@
             function geolocalize() {
                 // Try HTML5 geolocation.
                 if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(function(position) {
+                    navigator.geolocation.getCurrentPosition(function(p) {
                         $timeout(function() {
-                            position = {
-                                lat: position.coords.latitude,
-                                lng: position.coords.longitude
-                            };
+                            position = setPosition(p.coords.latitude, p.coords.longitude);
                             setLocation();
                             reverseGeocode(position);
                         });
@@ -202,7 +199,7 @@
 
             function getType(type, item) {
                 var types = {
-                    address: 'route',
+                    street: 'route',
                     number: 'street_number',
                     locality: 'locality',
                     postalCode: 'postal_code',
@@ -229,27 +226,34 @@
             });
             */
 
-            scope.$watch('map.address', function(address) {
-                if (!address) {
-                    return;
-                }
-                scope.map.results = null;
-                scope.map.setAddress = function(item) {
-                    console.log('setAddress', item);
-                    angular.extend(scope.model, item);
-                    scope.map.results = null;
-                    setLocation();
-                };
-                geocodeAddress(address);
-                /*
-                return;
-                $http.get('https://maps.googleapis.com/maps/api/geocode/json?address=' + address + '&key=' + apiKey).then(function(response) {
-                    console.log(response.data);
-                    handleResults(response.data.results);
-                });
-                */
-            });
+            /*
+                        scope.$watch('map.address', function(address) {
+                            if (!address) {
+                                return;
+                            }
+                            scope.map.results = null;
+                            scope.map.setAddress = function(item) {
+                                console.log('setAddress', item);
+                                angular.extend(scope.model, item);
+                                scope.map.results = null;
+                                setLocation();
+                            };
+                            geocodeAddress(address);
+                        });
+            */
 
+            scope.map.setAddress = function(item) {
+                console.log('setAddress', item);
+                angular.extend(scope.model, item);
+                scope.map.results = null;
+                position = setPosition(item.position);
+                setLocation();
+            };
+
+            scope.map.search = function() {
+                scope.map.results = null;
+                geocodeAddress(scope.map.address);
+            };
 
             /*
             // When the cursor enters a feature in the point layer, prepare for dragging.
@@ -280,87 +284,32 @@
 
             function onMove(e) {
                 if (!isDragging) return;
-                var position = e.lngLat;
+                var p = e.lngLat;
                 // Set a UI indicator for dragging.
                 canvas.style.cursor = 'grabbing';
                 // Update the Point feature in `geojson` coordinates
                 // and call setData to the source layer `point` on it.
                 marker.setLngLat([
-                    position.lng,
-                    position.lat
+                    p.lng,
+                    p.lat
                 ]);
-                // geojson.features[0].geometry.coordinates = [position.lng, position.lat];
+                // geojson.features[0].geometry.coordinates = [p.lng, p.lat];
                 // map.getSource('point').setData(geojson);
             }
 
             function onUp(e) {
                 if (!isDragging) return;
-                var position = e.lngLat;
+                var p = e.lngLat;
                 // Print the coordinates of where the point had
                 // finished being dragged to on the map.
                 // coordinates.style.display = 'block';
-                // coordinates.innerHTML = 'Longitude: ' + position.lng + '<br />Latitude: ' + position.lat;
-                reverseGeocode(position);
+                // coordinates.innerHTML = 'Longitude: ' + p.lng + '<br />Latitude: ' + p.lat;
+                reverseGeocode(p);
                 canvas.style.cursor = '';
                 isDragging = false;
                 // Unbind mouse events
                 map.off('mousemove', onMove);
             }
-
-            var geojson = {
-                type: "FeatureCollection",
-                features: [{
-                    type: "Feature",
-                    geometry: {
-                        type: "Point",
-                        coordinates: [
-                            position.lng,
-                            position.lat
-                        ]
-                    },
-                    properties: {
-                        "marker-color": "#0000ff",
-                        "marker-size": "medium",
-                        "marker-symbol": "circle",
-                        title: "Mapbox DC",
-                    }
-                }]
-            };
-
-            /*
-            map.on('load', function() {
-
-                // Add a single point to the map
-                map.addSource('Point', {
-                    "type": "geojson",
-                    "data": geojson
-                });
-                map.addLayer({
-                    "id": "Point",
-                    "type": "circle",
-                    "source": "Point",
-                    "paint": {
-                        "circle-radius": 10,
-                        "circle-color": "#3887be"
-                    }
-                });
-                map.addLayer({
-                    id: "point",
-                    type: "symbol",
-                    source: {
-                        type: "geojson",
-                        data: geojson
-                    },
-                    layout: {
-                        "text-field": "{title}",
-                        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-                        "text-offset": [0, 0.6],
-                        "text-anchor": "top"
-                    }
-                });
-
-            });
-            */
 
         }
     }]);

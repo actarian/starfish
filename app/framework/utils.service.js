@@ -1,128 +1,128 @@
 /* global angular */
 
-(function () {
+(function() {
     "use strict";
 
     var app = angular.module('app');
 
-    app.factory('Vector', function () {
+    app.factory('Vector', function() {
         function Vector(x, y) {
             this.x = x || 0;
             this.y = y || 0;
         }
-        Vector.make = function (a, b) {
+        Vector.make = function(a, b) {
             return new Vector(b.x - a.x, b.y - a.y);
         };
-        Vector.size = function (a) {
+        Vector.size = function(a) {
             return Math.sqrt(a.x * a.x + a.y * a.y);
         };
-        Vector.normalize = function (a) {
+        Vector.normalize = function(a) {
             var l = Vector.size(a);
             a.x /= l;
             a.y /= l;
             return a;
         };
-        Vector.incidence = function (a, b) {
+        Vector.incidence = function(a, b) {
             var angle = Math.atan2(b.y, b.x) - Math.atan2(a.y, a.x);
             // if (angle < 0) angle += 2 * Math.PI;
             // angle = Math.min(angle, (Math.PI * 2 - angle));
             return angle;
         };
-        Vector.distance = function (a, b) {
+        Vector.distance = function(a, b) {
             return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
         };
-        Vector.cross = function (a, b) {
+        Vector.cross = function(a, b) {
             return (a.x * b.y) - (a.y * b.x);
         };
-        Vector.difference = function (a, b) {
+        Vector.difference = function(a, b) {
             return new Vector(a.x - b.x, a.y - b.y);
         };
-        Vector.power = function (a, b) {
+        Vector.power = function(a, b) {
             var x = Math.abs(b.x - a.x);
             var y = Math.abs(b.y - a.y);
             return (x + y) / 2;
         };
         Vector.prototype = {
-            size: function () {
+            size: function() {
                 return Vector.size(this);
             },
-            normalize: function () {
+            normalize: function() {
                 return Vector.normalize(this);
             },
-            incidence: function (b) {
+            incidence: function(b) {
                 return Vector.incidence(this, b);
             },
-            cross: function (b) {
+            cross: function(b) {
                 return Vector.cross(this, b);
             },
-            distance: function (b) {
+            distance: function(b) {
                 return Vector.distance(this, b);
             },
-            difference: function (b) {
+            difference: function(b) {
                 return Vector.difference(this, b);
             },
-            power: function () {
+            power: function() {
                 return (Math.abs(this.x) + Math.abs(this.y)) / 2;
             },
-            towards: function (b, friction) {
+            towards: function(b, friction) {
                 friction = friction || 0.125;
                 this.x += (b.x - this.x) * friction;
                 this.y += (b.y - this.y) * friction;
                 return this;
             },
-            add: function (b) {
+            add: function(b) {
                 this.x += b.x;
                 this.y += b.y;
                 return this;
             },
-            friction: function (b) {
+            friction: function(b) {
                 this.x *= b;
                 this.y *= b;
                 return this;
             },
-            copy: function (b) {
+            copy: function(b) {
                 return new Vector(this.x, this.y);
             },
-            toString: function () {
+            toString: function() {
                 return '{' + this.x + ',' + this.y + '}';
             },
         };
         return Vector;
     });
 
-    app.factory('Utils', ['$compile', '$controller', 'Vector', function ($compile, $controller, Vector) {
-        (function () {
+    app.factory('Utils', ['$compile', '$controller', 'Vector', function($compile, $controller, Vector) {
+        (function() {
             // POLYFILL window.requestAnimationFrame
             var lastTime = 0;
             var vendors = ['ms', 'moz', 'webkit', 'o'];
             for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
                 window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
-                window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame']
-                    || window[vendors[x] + 'CancelRequestAnimationFrame'];
+                window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] ||
+                    window[vendors[x] + 'CancelRequestAnimationFrame'];
             }
             if (!window.requestAnimationFrame) {
-                window.requestAnimationFrame = function (callback, element) {
+                window.requestAnimationFrame = function(callback, element) {
                     var currTime = new Date().getTime();
                     var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-                    var id = window.setTimeout(function () { callback(currTime + timeToCall); }, timeToCall);
+                    var id = window.setTimeout(function() { callback(currTime + timeToCall); }, timeToCall);
                     lastTime = currTime + timeToCall;
                     return id;
                 };
             }
             if (!window.cancelAnimationFrame) {
-                window.cancelAnimationFrame = function (id) {
+                window.cancelAnimationFrame = function(id) {
                     clearTimeout(id);
                 };
             }
         }());
-        (function () {
+        (function() {
             // POLYFILL Array.prototype.reduce
             // Production steps of ECMA-262, Edition 5, 15.4.4.21
             // Reference: http://es5.github.io/#x15.4.4.21
             // https://tc39.github.io/ecma262/#sec-array.prototype.reduce
             if (!Array.prototype.reduce) {
                 Object.defineProperty(Array.prototype, 'reduce', {
-                    value: function (callback) {// , initialvalue
+                    value: function(callback) { // , initialvalue
                         if (this === null) {
                             throw new TypeError('Array.prototype.reduce called on null or undefined');
                         }
@@ -155,8 +155,8 @@
                 });
             }
         }());
-        var _isTouch;        
-        var getNow = Date.now || function () {
+        var _isTouch;
+        var getNow = Date.now || function() {
             return new Date().getTime();
         };
         var ua = window.navigator.userAgent.toLowerCase();
@@ -166,8 +166,8 @@
         var mobile = ua.indexOf('mobile') !== -1;
         var isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
         var isSafari = navigator.userAgent.toLowerCase().indexOf('safari') > -1;
-        function Utils() {
-        }
+
+        function Utils() {}
         Utils.reverseSortOn = reverseSortOn;
         Utils.getTouch = getTouch;
         Utils.getRelativeTouch = getRelativeTouch;
@@ -182,7 +182,7 @@
         Utils.reducerAdder = reducerAdder;
         Utils.downloadFile = downloadFile;
         Utils.serverDownload = serverDownload;
-        Utils.toMd5 = function (string) {
+        Utils.toMd5 = function(string) {
             return Md5.encode(string);
         };
         Utils.ua = {
@@ -191,21 +191,23 @@
             chrome: chrome,
             mobile: mobile,
         };
-        angular.forEach(Utils.ua, function (value, key) {
+        angular.forEach(Utils.ua, function(value, key) {
             if (value) {
                 angular.element(document.getElementsByTagName('body')).addClass(key);
             }
         });
         return Utils;
+
         function isTouch() {
             if (!_isTouch) {
                 _isTouch = {
                     value: ('ontouchstart' in window || 'onmsgesturechange' in window)
-                }
+                };
             }
             // console.log(_isTouch);
             return _isTouch.value;
         }
+
         function getTouch(e, previous) {
             var t = new Vector();
             if (e.type === 'touchstart' || e.type === 'touchmove' || e.type === 'touchend' || e.type === 'touchcancel') {
@@ -229,6 +231,7 @@
             t.type = e.type;
             return t;
         }
+
         function getRelativeTouch(node, point) {
             var element = angular.element(node); // passing through jqlite for accepting both
             node = element[0];
@@ -237,9 +240,10 @@
             var e = new Vector(rect.left, rect.top);
             return Vector.difference(point, e);
         }
+
         function getClosest(el, selector) {
             var matchesFn, parent;
-            ['matches', 'webkitMatchesSelector', 'mozMatchesSelector', 'msMatchesSelector', 'oMatchesSelector'].some(function (fn) {
+            ['matches', 'webkitMatchesSelector', 'mozMatchesSelector', 'msMatchesSelector', 'oMatchesSelector'].some(function(fn) {
                 if (typeof document.body[fn] == 'function') {
                     matchesFn = fn;
                     return true;
@@ -258,6 +262,7 @@
             }
             return null;
         }
+
         function getClosestElement(el, target) {
             var matchesFn, parent;
             if (el === target) {
@@ -272,6 +277,7 @@
             }
             return null;
         }
+
         function throttle(func, wait, options) {
             // Returns a function, that, when invoked, will only be triggered at most once
             // during a given window of time. Normally, the throttled function will run
@@ -282,13 +288,13 @@
             var timeout = null;
             var previous = 0;
             if (!options) options = {};
-            var later = function () {
+            var later = function() {
                 previous = options.leading === false ? 0 : getNow();
                 timeout = null;
                 result = func.apply(context, args);
                 if (!timeout) context = args = null;
             };
-            return function () {
+            return function() {
                 var now = getNow();
                 if (!previous && options.leading === false) previous = now;
                 var remaining = wait - (now - previous);
@@ -308,12 +314,13 @@
                 return result;
             };
         }
+
         function where(array, query) {
             var found = null;
             if (array) {
-                angular.forEach(array, function (item) {
+                angular.forEach(array, function(item) {
                     var has = true;
-                    angular.forEach(query, function (value, key) {
+                    angular.forEach(query, function(value, key) {
                         has = has && item[key] === value;
                     });
                     if (has) {
@@ -323,6 +330,7 @@
             }
             return found;
         }
+
         function compileController(scope, element, html, data) {
             // console.log('Utils.compileController', element);
             element.html(html);
@@ -340,8 +348,9 @@
             }
             link(scope);
         }
+
         function reverseSortOn(key) {
-            return function (a, b) {
+            return function(a, b) {
                 if (a[key] < b[key]) {
                     return 1;
                 }
@@ -350,15 +359,16 @@
                 }
                 // a must be equal to b
                 return 0;
-            }
+            };
         }
+
         function format(string, prepend, expression) {
             string = string || '';
             prepend = prepend || '';
             var splitted = string.split(',');
             if (splitted.length > 1) {
                 var formatted = splitted.shift();
-                angular.forEach(splitted, function (value, index) {
+                angular.forEach(splitted, function(value, index) {
                     if (expression) {
                         formatted = formatted.split('{' + index + '}').join('\' + ' + prepend + value + ' + \'');
                     } else {
@@ -374,26 +384,29 @@
                 return prepend + string;
             }
         }
+
         function reducer(o, key) {
             return o[key];
         }
+
         function reducerSetter(o, key, value) {
             if (typeof key == 'string') {
                 return reducerSetter(o, key.split('.'), value);
             } else if (key.length == 1 && value !== undefined) {
-                return o[key[0]] = value;
-            } else if (key.length == 0) {
+                return (o[key[0]] = value);
+            } else if (key.length === 0) {
                 return o;
             } else {
                 return reducerSetter(o[key[0]], key.slice(1), value);
             }
         }
+
         function reducerAdder(o, key, value) {
             if (typeof key == 'string') {
                 return reducerAdder(o, key.split('.'), value);
             } else if (key.length == 1 && value !== undefined) {
                 return (o[key[0]] += value);
-            } else if (key.length == 0) {
+            } else if (key.length === 0) {
                 return o;
             } else {
                 return reducerAdder(o[key[0]], key.slice(1), value);
@@ -406,10 +419,11 @@
             var blob = new Blob([content], { type: type });
             var reader = new window.FileReader();
             reader.readAsDataURL(blob);
-            reader.onloadend = function () {
+            reader.onloadend = function() {
                 base64 = reader.result;
                 download();
-            }
+            };
+
             function download() {
                 // If in Chrome or Safari - download via virtual link click
                 // if (isChrome || isSafari) {
@@ -433,6 +447,7 @@
                 var query = '?download';
                 window.open(base64.indexOf('?') > -1 ? base64 : base64 + query, '_self');
             }
+
             function __download() {
                 var supportsDownloadAttribute = 'download' in document.createElement('a');
                 if (supportsDownloadAttribute) {
@@ -479,6 +494,7 @@
             }
             */
         }
+
         function serverDownload(options) {
             var defaults = {
                 uri: '/api/reports/download',
@@ -494,15 +510,15 @@
             input.name = 'download';
             input.value = content;
             form.appendChild(input);
-            form.action = options.uri,
-                form.method = 'POST';
+            form.action = options.uri;
+            form.method = 'POST';
             form.target = 'ProjectDownloads';
             form.enctype = 'application/x-www-form-urlencoded';
             // form.enctype = 'multipart/form-data';
             // form.enctype = 'text/plain';
             document.body.appendChild(form);
             form.submit();
-            setTimeout(function () {
+            setTimeout(function() {
                 document.body.removeChild(form);
             }, 100);
             // angular.element(form).find('button')[0].click();
