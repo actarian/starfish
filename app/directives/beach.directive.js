@@ -5,7 +5,7 @@
 
     var app = angular.module('app');
 
-    app.directive('beach', ['$http', '$timeout', 'Painter', 'Palette', 'Rect', 'Hash', 'UI', function($http, $timeout, Painter, Palette, Rect, Hash, ui) {
+    app.directive('beach', ['$http', '$timeout', 'Painter', 'Palette', 'Rect', 'Events', 'Hash', 'UI', function($http, $timeout, Painter, Palette, Rect, Events, Hash, ui) {
         return {
             restrict: 'A',
             link: link,
@@ -202,8 +202,11 @@
             }
 
             function onDown(e) {
+                /*
                 var point = ui.getTouch(e);
                 var relative = ui.getRelativeTouch(element, point);
+                */
+                var relative = e.relative;
                 var xy = {
                     x: Math.floor(relative.x / cell.w),
                     y: Math.floor(relative.y / cell.h),
@@ -215,8 +218,12 @@
             }
 
             function onMove(e) {
+                /*
                 var point = ui.getTouch(e);
                 var relative = ui.getRelativeTouch(element, point);
+                */
+                // console.log('relative', e.relative, 'absolute', e.absolute, 'offset', e.offset, 'rect', e.rect);
+                var relative = e.relative;
                 mouse = {
                     x: relative.x,
                     y: relative.y,
@@ -249,30 +256,13 @@
                 }
             }
 
-            function onResize() {
+            function onResize(e) {
                 var w = element[0].offsetWidth,
                     h = element[0].offsetHeight;
                 view.w = w;
                 view.h = h;
                 draw();
             }
-
-            function addListeners() {
-                element.on('mousedown', onDown);
-                element.on('mousemove', onMove);
-                element.on('mouseup', onUp);
-                element.on('resize', onResize);
-            }
-
-            function removeListeners() {
-                element.off('mousedown', onDown);
-                element.off('mousemove', onMove);
-                element.off('mouseup', onUp);
-                element.off('resize', onResize);
-            }
-            scope.$on('$destroy', function() {
-                removeListeners();
-            });
 
             controls.setCenter = function() {
                 if (beach.rows && beach.cols) {
@@ -295,12 +285,44 @@
                 draw();
             };
 
-            onResize();
-            addListeners();
+            var listeners = {
+                down: onDown,
+                move: onMove,
+                up: onUp,
+                resize: onResize,
+            };
 
+            var events = new Events(element);
+            events.add(listeners);
+
+            scope.$on('$destroy', function() {
+                events.remove();
+            });
+
+            onResize();
             $timeout(function() {
                 draw();
             });
+
+/*
+
+            function addListeners() {
+                element.on('mousedown', onDown);
+                element.on('mousemove', onMove);
+                element.on('mouseup', onUp);
+                element.on('resize', onResize);
+            }
+
+            function removeListeners() {
+                element.off('mousedown', onDown);
+                element.off('mousemove', onMove);
+                element.off('mouseup', onUp);
+                element.off('resize', onResize);
+            }
+            scope.$on('$destroy', function() {
+                removeListeners();
+            });
+*/
 
         }
     }]);
