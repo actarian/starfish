@@ -61,9 +61,11 @@
     <!-- HEADER -->
     <script type="text/ng-template" id="partials/header">
         <div class="container-fluid maxw-lg">
-            <nav class="navbar navbar-toggleable-md navbar-light">
-                <a class="navbar-brand" href="#/">brand</a>
+            <nav class="navbar sticky-top navbar-toggleable-md navbar-light">
+                <a class="navbar-brand" href="#/">RIVA<small>.book</small></a>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <div class="mr-auto"></div>
+                    <!--
                     <ul class="navbar-nav mr-auto">
                         <li class="nav-item active">
                             <a class="nav-link" href="#/">home</a>
@@ -72,6 +74,7 @@
                             <a class="nav-link" href="#/dashboard">dashboard</a>
                         </li>
                     </ul>
+                    -->
                     <div class="form-inline my-2 my-lg-0" ng-if="!api.user">
                         <a class="btn btn-outline-primary my-2 my-sm-0 mr-2" href="#/signin">accedi</a>
                         <a class="btn btn-outline-primary my-2 my-sm-0" href="#/signup">registra</a>

@@ -17,6 +17,7 @@
         };
 
         api.current().then(function(user) {
+            $scope.user = user;
             console.log(user);
         }, function error(response) {
             console.log('RootCtrl.error', response);
@@ -36,6 +37,13 @@
 
         var state = $scope.state = new State();
 
+        var modes = $scope.MODES = {
+            PLACE: 1,
+            BEACH: 2,
+            PRICES: 3,
+        }
+        var mode = $scope.mode = modes.BEACH;
+
         var model = $scope.model = {
             shopName: user.shopName,
             address: user.address,
@@ -49,20 +57,38 @@
             position: user.position,
         };
 
+        var map = $scope.map = {};
+
+        var beach = $scope.beach = user.beach || {
+            items: [],
+            cols: 0,
+            rows: 0,
+        };
+
+        var controls = $scope.controls = {
+
+        };
+
         $scope.submit = function() {
             if (state.busy()) {
-                angular.extend(user, model);
+                // angular.extend(user, model);
                 angular.forEach(model, function(value, key) {
                     if (value) {
                         user[key] = value;
                     }
                 });
+                user.beach = beach;
                 api.users.save(user).then(function success(response) {
+                    console.log('response', response);
                     state.success();
                 }, function error(response) {
                     state.error(response);
                 });
             }
+        };
+
+        $scope.saveItems = function() {
+            $scope.submit();
         };
 
         /*

@@ -4,10 +4,24 @@
 
 @import "app/mixins";
 // @import "app/forms";
-
 body {
     font-family: 'Poppins';
+    /*
+    background: rgb(98, 88, 242);
+    background: -moz-linear-gradient(-45deg, rgba(98, 88, 242, 1) 0%, rgba(62, 0, 225, 1) 100%);
+    background: -webkit-linear-gradient(-45deg, rgba(98, 88, 242, 1) 0%, rgba(62, 0, 225, 1) 100%);
+    background: linear-gradient(135deg, rgba(98, 88, 242, 1) 0%, rgba(62, 0, 225, 1) 100%);
+    // filter: progid: DXImageTransform.Microsoft.gradient( startColorstr='#6258f2', endColorstr='#3e00e1', GradientType=1);
+    */
 }
+
+
+/*
+header {
+    min-height: 80px;
+    margin-bottom: 30px;
+}
+*/
 
 [ng-click] {
     cursor: pointer;
@@ -16,11 +30,6 @@ body {
 
 .maxw-lg {
     max-width: 1320px;
-}
-
-header {
-    min-height: 80px;
-    margin-bottom: 30px;
 }
 
 mapbox {
@@ -93,6 +102,11 @@ mapbox {
         background: #3333ff;
         box-shadow: 0 10px 12px -5px rgba(0, 0, 0, 0.45);
     }
+}
+
+[beach] {
+    width: 100%;
+    height: 480px;
 }
 
 

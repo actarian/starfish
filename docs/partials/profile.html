@@ -5,6 +5,24 @@
 </header>
 
 <main>
+    <ul class="nav nav-tabs justify-content-center">
+        <li class="nav-item">
+            <a class="nav-link" ng-class="{ active: mode == MODES.PLACE }" ng-click="mode = MODES.PLACE">Posizione</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" ng-class="{ active: mode == MODES.BEACH }" ng-click="mode = MODES.BEACH">Spiaggia</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" ng-class="{ active: mode == MODES.PRICES }" ng-click="mode = MODES.PRICES">Tariffe</a>
+        </li>
+    </ul>
+    <div ng-if="mode == MODES.PLACE" ng-include="'partials/profile/place'"></div>
+    <div ng-if="mode == MODES.BEACH" ng-include="'partials/profile/beach'"></div>
+    <div ng-if="mode == MODES.PRICES" ng-include="'partials/profile/prices'"></div>
+</main>
+
+<!-- PLACE -->
+<script type="text/ng-template" id="partials/profile/place">
     <div class="content">
         <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()">
             <section class="container-fluid container-form">
@@ -51,4 +69,56 @@
             </section>
         </form>
     </div>
-</main>
+</script>
+
+<!-- BEACH -->
+<script type="text/ng-template" id="partials/profile/beach">
+    <div class="container-fluid maxw-lg">
+        <nav class="navbar sticky-top navbar-toggleable-md navbar-light">
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="nav nav-pills mr-auto">
+                    <!--
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">Active</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Link</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Link</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#">Disabled</a>
+                </li>
+                -->
+                    <li class="nav-item p-1">
+                        Ombrelloni <span ng-bind="beach.items.length"></span>
+                    </li>
+                    <li class="nav-item p-1">
+                        File <span ng-bind="beach.cols"></span>
+                    </li>
+                    <li class="nav-item p-1">
+                        Righe <span ng-bind="beach.rows"></span>
+                    </li>
+                </ul>
+                <button type="button" class="btn btn-secondary mr-2" ng-click="controls.setCenter()">centra</button>
+                <button type="button" class="btn btn-primary" ng-click="saveItems()">salva</button>
+            </div>
+        </nav>
+    </div>
+    <canvas beach></canvas>
+
+</script>
+
+<!-- PRICES -->
+<script type="text/ng-template" id="partials/profile/prices">
+    <div class="content">
+        <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()">
+            <section class="container-fluid container-form">
+                <div class="outer">
+                    prices
+                </div>
+            </section>
+        </form>
+    </div>
+</script>

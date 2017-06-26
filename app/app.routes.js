@@ -1,27 +1,32 @@
 /* global angular */
 
-(function () {
+(function() {
     "use strict";
 
     var app = angular.module('app');
 
-    app.config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
+    app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
 
         $routeProvider.when('/', {
             title: 'Homepage',
             templateUrl: 'partials/home.html',
             controller: 'HomeCtrl',
+            resolve: {
+                user: ['FirebaseApi', function(api) {
+                    return api.current();
+                }],
+            },
 
         }).when('/profile', {
             title: 'Profile',
             templateUrl: 'partials/profile.html',
             controller: 'ProfileCtrl',
             resolve: {
-                user: ['FirebaseApi', function (api) {
+                user: ['FirebaseApi', function(api) {
                     return api.isLoggedOrGoTo('/signin');
                 }],
             },
-            
+
         }).when('/signin', {
             title: 'Accedi',
             templateUrl: 'partials/signin.html',
@@ -37,7 +42,7 @@
             templateUrl: 'partials/dashboard.html',
             controller: 'DashboardCtrl',
             resolve: {
-                user: ['FirebaseApi', function (api) {
+                user: ['FirebaseApi', function(api) {
                     return api.isLoggedOrGoTo('/signin');
                 }],
             },
@@ -47,7 +52,7 @@
             templateUrl: 'partials/user.html',
             controller: 'UserCtrl',
             resolve: {
-                user: ['FirebaseApi', function (api) {
+                user: ['FirebaseApi', function(api) {
                     return api.isLoggedOrGoTo('/signin');
                 }],
             },
@@ -58,7 +63,7 @@
 
         });
 
-        // $routeProvider.otherwise('/'); // stream
+        $routeProvider.otherwise('/'); // stream
 
         // HTML5 MODE url writing method (false: #/anchor/use, true: /html5/url/use)
         $locationProvider.html5Mode(false);

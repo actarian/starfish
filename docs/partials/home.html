@@ -6,11 +6,23 @@
 
 <main>
     <div class="content">
-        <div class="container-fluid maxw-lg text-center">
-            <p>home</p>
-            <button type="button" class="btn btn-primary btn-block" ng-click="test()">TEST</button>
-            <!-- <a ng-href="#/signin" class="btn btn-outline-success">Accedi</a> -->
-        </div>
+        <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()">
+            <section class="container-fluid container-form">
+                <div class="inner">
+                    <div ng-if="user">
+                        homepage
+                    </div>
+                    <div ng-if="!user">
+                        <a class="btn btn-primary btn-block" href="/#signin">
+                            <span>Accedi</span>
+                        </a>
+                        <a class="btn btn-primary btn-block" href="/#signup">
+                            <span>Registrati</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </form>
     </div>
 </main>
 

@@ -194,6 +194,7 @@
                 // ref.key === obj.$id; // true
                 deferred.resolve(model);
             }, function(error) {
+                console.log('userSave', error);
                 deferred.reject(error);
             });
             return deferred.promise;

@@ -1,5 +1,4 @@
-[
-    {
+[{
         "inputFiles": [
             "bower_components/json-formatter/dist/json-formatter.css",
             "bower_components/angular-mapboxgl-directive/dist/angular-mapboxgl-directive.css"
@@ -48,10 +47,13 @@
             "app/app.routes.js",
             "app/controllers/controllers.js",
             "app/directives/directives.js",
+            "app/directives/beach.directive.js",
+            "app/directives/mapbox.directive.js",
             "app/extensions/ngclick.directive.js",
             "app/filters/filters.js",
             "app/models/state.model.js",
             "app/models/hash.model.js",
+            "app/services/painter.service.js",
             "app/services/router.service.js",
             "app/services/storage.service.js",
             "app/services/firebase.service.js",
