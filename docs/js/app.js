@@ -33,11 +33,6 @@
             title: 'Homepage',
             templateUrl: 'partials/home.html',
             controller: 'HomeCtrl',
-            resolve: {
-                user: ['FirebaseApi', function(api) {
-                    return api.current();
-                }],
-            },
 
         }).when('/profile', {
             title: 'Profile',
