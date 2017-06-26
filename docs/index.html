@@ -62,8 +62,11 @@
     <script type="text/ng-template" id="partials/header">
         <div class="container-fluid maxw-lg">
             <nav class="navbar sticky-top navbar-toggleable-md navbar-light">
+                <button type="button" class="navbar-toggler navbar-toggler-right" ng-click="mainNavToggle = !mainNavToggle" data-toggle="collapse" data-target="#mainNavToggle" aria-controls="mainNavToggle" aria-expanded="{{mainNavToggle ? 'true' : 'false'}}" aria-label="apri menu principale">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
                 <a class="navbar-brand" href="#/">RIVA<small>.book</small></a>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <div class="navbar-collapse collapse" ng-class="{ show: mainNavToggle }" id="mainNavToggle">
                     <div class="mr-auto"></div>
                     <!--
                     <ul class="navbar-nav mr-auto">
