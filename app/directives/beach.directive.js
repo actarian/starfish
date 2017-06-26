@@ -296,7 +296,7 @@
             events.add(listeners);
 
             scope.$on('$destroy', function() {
-                events.remove();
+                events.remove(listeners);
             });
 
             onResize();

@@ -61,7 +61,7 @@
     <!-- HEADER -->
     <script type="text/ng-template" id="partials/header">
         <div class="container-fluid maxw-lg">
-            <nav class="navbar sticky-top navbar-toggleable-md navbar-light">
+            <nav class="navbar sticky-top navbar-toggleable-md navbar-light" ng-class="{ collapsed: !mainNavToggle }" >
                 <button type="button" class="navbar-toggler navbar-toggler-right" ng-click="mainNavToggle = !mainNavToggle" data-toggle="collapse" data-target="#mainNavToggle" aria-controls="mainNavToggle" aria-expanded="{{mainNavToggle ? 'true' : 'false'}}" aria-label="apri menu principale">
                     <span class="navbar-toggler-icon"></span>
                 </button>
