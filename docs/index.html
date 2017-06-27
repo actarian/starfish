@@ -93,8 +93,25 @@
         </div>
     </script>
 
-    <!-- CONTROL -->
-    <script type="text/ng-template" id="partials/control">
+    <!-- CONTROL -->    
+    <script type="text/ng-template" id="partials/forms/control">
+        <div class="form-group">
+            <div class="form-group form-control-{{type}}" ng-class="getClasses()">
+                <label for="{{field}}" class="col-form-label">
+                    <span ng-bind="title"></span><sup>✽</sup>
+                </label>
+                <div class="input-group">
+                    <input type="{{getType()}}" name="{{field}}" class="form-control" ng-model="ngModel" ng-model-options="options" placeholder="{{placeholder}}" ng-minlength="minLength" ng-maxlength="maxLength" ng-required="required" ng-disabled="disabled" ng-readonly="readonly" ng-change="onChange" ng-focus="focus = true" ng-blur="focus = false">
+                    <span class="input-group-addon" ng-if="type == 'password' && ngModel">
+                        <span class="icon-eye" ng-click="visible = !visible"></span>
+                    </span>
+                </div>
+                <control-messages></control-messages>
+            </div>
+            <!-- <input + options + formFocus + validate + format + precision + '> -->
+        </div>
+    </script>
+    <script type="text/ng-template" id="partials/forms/grid/control">
         <div class="form-group">
             <div class="row" ng-class="getClasses()">
                 <label for="{{field}}" class="col-lg-3 col-form-label">
@@ -116,7 +133,21 @@
     </script>
 
     <!-- CONTROL-SELECT -->
-    <script type="text/ng-template" id="partials/control-select">
+    <script type="text/ng-template" id="partials/forms/control-select">
+        <div class="form-group">
+            <div class="form-group form-control-{{type}}" ng-class="getClasses()">
+                <label for="{{field}}" class="col-form-label">
+                    <span ng-bind="title"></span><sup>✽</sup>
+                </label>
+                <select name="{{field}}" class="form-control" ng-model="ngModel" ng-options="{{options}}" ng-required="required" ng-disabled="disabled" ng-readonly="readonly" ng-change="onChange" ng-focus="focus = true" ng-blur="focus = false">
+                    <option value="" disabled selected hidden>{{placeholder}}</option>
+                </select>
+                <control-messages></control-messages>
+            </div>
+            <!-- <input + options + formFocus + validate + format + precision + '> -->
+        </div>
+    </script>
+    <script type="text/ng-template" id="partials/forms/grid/control-select">
         <div class="form-group">
             <div class="row" ng-class="getClasses()">
                 <label for="{{field}}" class="col-lg-3 col-form-label">
@@ -163,9 +194,9 @@
         <table role="grid" aria-labelledby="{{::uniqueId}}-title" aria-activedescendant="{{activeDateId}}">
             <thead>
                 <tr>
-                    <th><button type="button" class="btn btn-xs btn-default pull-left uib-left" ng-click="move(-1)" tabindex="-1"><i aria-hidden="true" class="icon-arrow-left"></i><span class="sr-only">previous</span></button></th>
-                    <th colspan="{{::5 + showWeeks}}"><button id="{{::uniqueId}}-title" role="heading" aria-live="assertive" aria-atomic="true" type="button" class="btn btn-xs btn-default uib-title" ng-click="toggleMode()" ng-disabled="datepickerMode === maxMode" tabindex="-1"><strong>{{title}}</strong></button></th>
-                    <th><button type="button" class="btn btn-xs btn-default pull-right uib-right" ng-click="move(1)" tabindex="-1"><i aria-hidden="true" class="icon-next"></i><span class="sr-only">next</span></button></th>
+                    <th><button type="button" class="btn btn-sm btn-secondary pull-left uib-left" ng-click="move(-1)" tabindex="-1"><i aria-hidden="true" class="icon-arrow-left"></i><span class="sr-only">previous</span></button></th>
+                    <th colspan="{{::5 + showWeeks}}"><button id="{{::uniqueId}}-title" role="heading" aria-live="assertive" aria-atomic="true" type="button" class="btn btn-sm btn-secondary uib-title" ng-click="toggleMode()" ng-disabled="datepickerMode === maxMode" tabindex="-1"><strong>{{title}}</strong></button></th>
+                    <th><button type="button" class="btn btn-sm btn-secondary pull-right uib-right" ng-click="move(1)" tabindex="-1"><i aria-hidden="true" class="icon-next"></i><span class="sr-only">next</span></button></th>
                 </tr>
                 <tr>
                     <th ng-if="showWeeks" class="text-xs-center"></th>
@@ -178,7 +209,7 @@
                 <tr class="uib-weeks" ng-repeat="row in rows track by $index" role="row">
                     <td ng-if="showWeeks" class="text-xs-center text-primary"><em>{{weekNumbers[$index]}}</em></td>
                     <td ng-repeat="dt in row" class="uib-day text-xs-center" role="gridcell" id="{{::dt.uid}}" ng-class="::dt.customClass">
-                        <button type="button" class="btn btn-xs btn-default" uib-is-class="'btn-outline-primary' for selectedDt, 'btn-outline-primary' for activeDt on dt" ng-click="select(dt.date)" ng-disabled="::dt.disabled" tabindex="-1">
+                        <button type="button" class="btn btn-sm btn-secondary" uib-is-class="'btn-outline-primary' for selectedDt, 'btn-outline-primary' for activeDt on dt" ng-click="select(dt.date)" ng-disabled="::dt.disabled" tabindex="-1">
                             <span ng-class="::{'text-muted': dt.secondary, 'text-info' : dt.current}">{{::dt.label}}</span>
                         </button>
                     </td>
@@ -192,15 +223,15 @@
         <table role="grid" aria-labelledby="{{::uniqueId}}-title" aria-activedescendant="{{activeDateId}}">
             <thead>
                 <tr>
-                    <th><button type="button" class="btn btn-xs btn-default pull-left uib-left" ng-click="move(-1)" tabindex="-1"><i aria-hidden="true" class="icon-arrow-left"></i><span class="sr-only">previous</span></button></th>
-                    <th colspan="{{::yearHeaderColspan}}"><button id="{{::uniqueId}}-title" role="heading" aria-live="assertive" aria-atomic="true" type="button" class="btn btn-xs btn-default uib-title" ng-click="toggleMode()" ng-disabled="datepickerMode === maxMode" tabindex="-1"><strong>{{title}}</strong></button></th>
-                    <th><button type="button" class="btn btn-xs btn-default pull-right uib-right" ng-click="move(1)" tabindex="-1"><i aria-hidden="true" class="icon-next"></i><span class="sr-only">next</span></button></th>
+                    <th><button type="button" class="btn btn-sm btn-secondary pull-left uib-left" ng-click="move(-1)" tabindex="-1"><i aria-hidden="true" class="icon-arrow-left"></i><span class="sr-only">previous</span></button></th>
+                    <th colspan="{{::yearHeaderColspan}}"><button id="{{::uniqueId}}-title" role="heading" aria-live="assertive" aria-atomic="true" type="button" class="btn btn-sm btn-secondary uib-title" ng-click="toggleMode()" ng-disabled="datepickerMode === maxMode" tabindex="-1"><strong>{{title}}</strong></button></th>
+                    <th><button type="button" class="btn btn-sm btn-secondary pull-right uib-right" ng-click="move(1)" tabindex="-1"><i aria-hidden="true" class="icon-next"></i><span class="sr-only">next</span></button></th>
                 </tr>
             </thead>
             <tbody>
                 <tr class="uib-months" ng-repeat="row in rows track by $index" role="row">
                     <td ng-repeat="dt in row" class="uib-month text-xs-center" role="gridcell" id="{{::dt.uid}}" ng-class="::dt.customClass">
-                        <button type="button" class="btn btn-xs btn-default" uib-is-class="'btn-outline-primary' for selectedDt, 'btn-outline-primary' for activeDt on dt" ng-click="select(dt.date)" ng-disabled="::dt.disabled" tabindex="-1">
+                        <button type="button" class="btn btn-sm btn-secondary" uib-is-class="'btn-outline-primary' for selectedDt, 'btn-outline-primary' for activeDt on dt" ng-click="select(dt.date)" ng-disabled="::dt.disabled" tabindex="-1">
                             <span ng-class="::{'text-info': dt.current}">{{::dt.label}}</span>
                         </button>
                     </td>
@@ -214,15 +245,15 @@
         <table role="grid" aria-labelledby="{{::uniqueId}}-title" aria-activedescendant="{{activeDateId}}">
             <thead>
                 <tr>
-                    <th><button type="button" class="btn btn-xs btn-default pull-left uib-left" ng-click="move(-1)" tabindex="-1"><i aria-hidden="true" class="icon-arrow-left"></i><span class="sr-only">previous</span></button></th>
-                    <th colspan="{{::columns - 2}}"><button id="{{::uniqueId}}-title" role="heading" aria-live="assertive" aria-atomic="true" type="button" class="btn btn-xs btn-default uib-title" ng-click="toggleMode()" ng-disabled="datepickerMode === maxMode" tabindex="-1"><strong>{{title}}</strong></button></th>
-                    <th><button type="button" class="btn btn-xs btn-default pull-right uib-right" ng-click="move(1)" tabindex="-1"><i aria-hidden="true" class="icon-next"></i><span class="sr-only">next</span></button></th>
+                    <th><button type="button" class="btn btn-sm btn-secondary pull-left uib-left" ng-click="move(-1)" tabindex="-1"><i aria-hidden="true" class="icon-arrow-left"></i><span class="sr-only">previous</span></button></th>
+                    <th colspan="{{::columns - 2}}"><button id="{{::uniqueId}}-title" role="heading" aria-live="assertive" aria-atomic="true" type="button" class="btn btn-sm btn-secondary uib-title" ng-click="toggleMode()" ng-disabled="datepickerMode === maxMode" tabindex="-1"><strong>{{title}}</strong></button></th>
+                    <th><button type="button" class="btn btn-sm btn-secondary pull-right uib-right" ng-click="move(1)" tabindex="-1"><i aria-hidden="true" class="icon-next"></i><span class="sr-only">next</span></button></th>
                 </tr>
             </thead>
             <tbody>
                 <tr class="uib-years" ng-repeat="row in rows track by $index" role="row">
                     <td ng-repeat="dt in row" class="uib-year text-xs-center" role="gridcell" id="{{::dt.uid}}" ng-class="::dt.customClass">
-                        <button type="button" class="btn btn-xs btn-default" uib-is-class="'btn-outline-primary' for selectedDt, 'btn-outline-primary' for activeDt on dt" ng-click="select(dt.date)" ng-disabled="::dt.disabled" tabindex="-1">
+                        <button type="button" class="btn btn-sm btn-secondary" uib-is-class="'btn-outline-primary' for selectedDt, 'btn-outline-primary' for activeDt on dt" ng-click="select(dt.date)" ng-disabled="::dt.disabled" tabindex="-1">
                             <span ng-class="::{'text-info': dt.current}">{{::dt.label}}</span>
                         </button>
                     </td>
@@ -236,9 +267,9 @@
         <ul role="presentation" class="uib-datepicker-popup dropdown-menu uib-position-measure" dropdown-nested ng-if="isOpen" ng-keydown="keydown($event)" ng-click="$event.stopPropagation()">
             <li ng-transclude></li>
             <li ng-if="showButtonBar" class="uib-button-bar">
-                <button type="button" class="btn btn-xs btn-outline-primary uib-datepicker-current" ng-click="select('today', $event)" ng-disabled="isDisabled('today')">{{getText('current')}}</button>
-                <button type="button" class="btn btn-xs btn-outline-danger uib-clear" ng-click="select(null, $event)">{{getText('clear')}}</button>
-                <button type="button" class="btn btn-xs btn-outline-success pull-right uib-close" ng-click="close($event)">{{getText('close')}}</button>
+                <button type="button" class="btn btn-sm btn-outline-primary uib-datepicker-current" ng-click="select('today', $event)" ng-disabled="isDisabled('today')">{{getText('current')}}</button>
+                <button type="button" class="btn btn-sm btn-outline-danger uib-clear" ng-click="select(null, $event)">{{getText('clear')}}</button>
+                <button type="button" class="btn btn-sm btn-outline-success pull-right uib-close" ng-click="close($event)">{{getText('close')}}</button>
             </li>
         </ul>
     </script>

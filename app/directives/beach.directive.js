@@ -5,7 +5,7 @@
 
     var app = angular.module('app');
 
-    app.directive('beach', ['$http', '$timeout', 'Painter', 'Palette', 'Rect', 'Events', 'Hash', 'UI', function($http, $timeout, Painter, Palette, Rect, Events, Hash, ui) {
+    app.directive('beach', ['$http', '$timeout', 'Painter', 'Palette', 'Rect', 'Events', 'Hash', function($http, $timeout, Painter, Palette, Rect, Events, Hash) {
         return {
             restrict: 'A',
             link: link,
