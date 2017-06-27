@@ -1,8 +1,8 @@
 ﻿/* global angular */
 
-(function () {
+(function() {
     "use strict";
 
-    var app = angular.module('app', ['ngRoute', 'ngMessages', 'mapboxgl-directive', 'firebase', 'jsonFormatter']);
+    var app = angular.module('app', ['ngRoute', 'ngMessages', 'ui.bootstrap', 'mapboxgl-directive', 'firebase', 'jsonFormatter']);
 
 }());

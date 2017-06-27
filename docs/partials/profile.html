@@ -25,6 +25,7 @@
     <div ng-if="mode == MODES.BEACH" ng-include="'partials/profile/beach'"></div>
     <div ng-if="mode == MODES.PRICES" ng-include="'partials/profile/prices'"></div>
     <div ng-if="mode == MODES.PLACE" ng-include="'partials/profile/place'"></div>
+    <div ng-if="mode == MODES.OPENING" ng-include="'partials/profile/opening'"></div>
 </main>
 
 <!-- PLACE -->
@@ -128,4 +129,21 @@
             </section>
         </form>
     </div>
+</script>
+
+<!-- OPENING -->
+<script type="text/ng-template" id="partials/profile/opening">
+    <p class="fields">
+        <span class="field-control">
+                <span ng-click="flags.dateFrom = true" is-open="flags.dateFrom" ng-model="filters.dateFrom" ng-change="source.setDateFrom(filters.dateFrom)" uib-datepicker-popup datepicker-template-url="uib/template/datepicker/datepicker.html" show-button-bar="false" current-text="Oggi" clear-text="Rimuovi" close-text="Chiudi">
+                    <span ng-bind="filters.dateFrom || 'seleziona' | date : 'dd-MM-yyyy'"></span> <i class="icon-remove" ng-if="filters.dateFrom" ng-click="stop($event) && (filters.dateFrom = null)"></i> <i class="icon-calendar"></i>
+        </span>
+        </span><span class="field-control">
+                <span ng-click="flags.dateTo = true" is-open="flags.dateTo" ng-model="filters.dateTo" ng-change="source.setDateTo(filters.dateTo)" uib-datepicker-popup datepicker-template-url="uib/template/datepicker/datepicker.html" show-button-bar="false" current-text="Oggi" clear-text="Rimuovi" close-text="Chiudi">
+                    <span ng-bind="filters.dateTo || 'seleziona' | date : 'dd-MM-yyyy'"></span> <i class="icon-remove" ng-if="filters.dateTo" ng-click="stop($event) && (filters.dateTo = null)"></i> <i class="icon-calendar"></i>
+        </span>
+        </span><span class="field" ng-class="{ 'active' : table.has('compare') }" ng-click="table.toggle('compare') && source.update()">
+                <span>Confronto anno precedente</span> <i class="icon-check-mark"></i>
+        </span>
+    </p>
 </script>

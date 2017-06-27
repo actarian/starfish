@@ -77,6 +77,8 @@
                 angular.forEach(model, function(value, key) {
                     if (value) {
                         user[key] = value;
+                    } else {
+                        delete user[key];
                     }
                 });
                 user.beach = beach;

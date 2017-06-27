@@ -1,9 +1,9 @@
 /* global angular */
 
-(function () {
+(function() {
     "use strict";
 
-    var app = angular.module('app', ['ngRoute', 'ngMessages', 'mapboxgl-directive', 'firebase', 'jsonFormatter']);
+    var app = angular.module('app', ['ngRoute', 'ngMessages', 'ui.bootstrap', 'mapboxgl-directive', 'firebase', 'jsonFormatter']);
 
 }());
 /* global angular */
@@ -3037,6 +3037,8 @@
                 angular.forEach(model, function(value, key) {
                     if (value) {
                         user[key] = value;
+                    } else {
+                        delete user[key];
                     }
                 });
                 user.beach = beach;
