@@ -59,9 +59,10 @@
                 placeholder: '@',
             },
             require: 'ngModel',
+            /*
             link: function(scope, element, attributes, model) {
-
             },
+            */
             compile: function(element, attributes) {
                     return {
                         pre: function(scope, element, attributes) {
@@ -80,6 +81,10 @@
                             var title = scope.title = scope.title || 'untitled';
                             var placeholder = scope.placeholder = scope.placeholder || title;
                             var field = scope.field = title.replace(/[^0-9a-zA-Z]/g, "").split(' ').join('') + (++uniqueId);
+                            scope.validate = attributes.validate || attributes.control;
+                            scope.format = attributes.format || null;
+                            scope.precision = attributes.precision || null;
+                            scope.validate = attributes.validate || attributes.control;
                             scope.minLength = attributes.min || 0;
                             scope.maxLength = attributes.max || Number.POSITIVE_INFINITY;
                             scope.options = $parse(attributes.options)(scope) || {};

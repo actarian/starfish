@@ -46,11 +46,11 @@
                                 value = Number(value);
                                 model.$setValidity('number', true);
                                 model.$setValidity('positive', true);
-                                if (attributes.min !== undefined) { 
-                                    model.$setValidity('range', true); 
+                                if (attributes.min !== undefined) {
+                                    model.$setValidity('range', true);
                                 }
-                                if (attributes.max !== undefined) { 
-                                    model.$setValidity('range', true); 
+                                if (attributes.max !== undefined) {
+                                    model.$setValidity('range', true);
                                 }
                             }
                             return value;

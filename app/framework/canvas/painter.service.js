@@ -338,7 +338,7 @@
         */
         black: '0x14191e',
         white: '0xffffff',
-        blue: '0x03a9f4',
+        blue: '0x0023FF',
         red: '0xF21500',
         lightBlue: '0x79ccf2',
         lightYellow: '0xfff79a',

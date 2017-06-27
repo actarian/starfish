@@ -3,7 +3,7 @@
 *********************/
 
 @import "app/mixins";
-// @import "app/forms";
+@import "framework/forms";
 body {
     font-family: 'Poppins';
     /*
@@ -109,8 +109,8 @@ mapbox {
 
 [beach] {
     width: 100%;
-    height: 480px; 
-    cursor: pointer;   
+    height: 480px;
+    cursor: pointer;
 }
 
 [unselectable] {

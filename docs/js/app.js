@@ -949,7 +949,7 @@
         function link(scope, element, attributes, model) {
 
             var map, marker, geocoder, position, canvas, dragging, overing;
-            
+
             function newMap() {
                 position = setPosition();
                 var map = new mapboxgl.Map({
@@ -966,7 +966,7 @@
                     console.log('setAddress', item);
                     angular.extend(scope.model, item);
                     scope.map.results = null;
-                    position = setPosition(item.position);
+                    position = setPosition(item.position.lat, item.position.lng);
                     setLocation();
                 };
                 scope.map.search = function() {
@@ -1002,10 +1002,10 @@
             }
 
             function setPosition(lat, lng) {
-                position = scope.model.position || {};
+                var position = scope.model.position || {};
                 if (lat && lng) {
-                    position.lat = position.lat || 0;
-                    position.lng = position.lng || 0;
+                    position.lat = lat;
+                    position.lng = lng;
                 } else {
                     position.lat = position.lat || 0;
                     position.lng = position.lng || 0;
@@ -1013,10 +1013,11 @@
                         geolocalize();
                     }
                 }
+                console.log('setPosition', lat, lng);
                 return position;
             }
 
-            function geocodeAddress(address) {            
+            function geocodeAddress(address) {
                 geocoder.geocode({ 'address': address }, function(results, status) {
                     $timeout(function() {
                         if (status === 'OK') {
@@ -1026,11 +1027,11 @@
                             alert('Geocode was not successful for the following reason: ' + status);
                         }
                     });
-                });                
+                });
             }
 
             function reverseGeocode(position) {
-                // console.log(position);
+                console.log('reverseGeocode', position);
                 geocoder.geocode({ 'location': position }, function(results, status) {
                     // console.log(results);
                     $timeout(function() {
@@ -1163,7 +1164,10 @@
                 // finished being dragged to on the map.
                 // coordinates.style.display = 'block';
                 // coordinates.innerHTML = 'Longitude: ' + p.lng + '<br />Latitude: ' + p.lat;
-                reverseGeocode(p);
+                $timeout(function() {
+                    position = setPosition(p.lat, p.lng);
+                    reverseGeocode(p);
+                });
                 canvas.style.cursor = '';
                 dragging = false;
                 // Unbind mouse events
@@ -1203,6 +1207,7 @@
                 window.googleMapsInit = function() {
                     deferred.resolve(window.google.maps);
                     window.googleMapsInit = null;
+                    _init = true;
                 };
                 var script = document.createElement('script');
                 script.setAttribute('async', null);
@@ -1626,7 +1631,7 @@
         */
         black: '0x14191e',
         white: '0xffffff',
-        blue: '0x03a9f4',
+        blue: '0x0023FF',
         red: '0xF21500',
         lightBlue: '0x79ccf2',
         lightYellow: '0xfff79a',
@@ -2404,9 +2409,10 @@
                 placeholder: '@',
             },
             require: 'ngModel',
+            /*
             link: function(scope, element, attributes, model) {
-
             },
+            */
             compile: function(element, attributes) {
                     return {
                         pre: function(scope, element, attributes) {
@@ -2425,6 +2431,10 @@
                             var title = scope.title = scope.title || 'untitled';
                             var placeholder = scope.placeholder = scope.placeholder || title;
                             var field = scope.field = title.replace(/[^0-9a-zA-Z]/g, "").split(' ').join('') + (++uniqueId);
+                            scope.validate = attributes.validate || attributes.control;
+                            scope.format = attributes.format || null;
+                            scope.precision = attributes.precision || null;
+                            scope.validate = attributes.validate || attributes.control;
                             scope.minLength = attributes.min || 0;
                             scope.maxLength = attributes.max || Number.POSITIVE_INFINITY;
                             scope.options = $parse(attributes.options)(scope) || {};
@@ -2517,6 +2527,157 @@
                 function removeListeners() {
                     angular.element(nodeRemove).off('touchstart mousedown', onRemove);
                     angular.element(nodeAdd).off('touchstart mousedown', onAdd);
+                }
+                scope.$on('$destroy', function() {
+                    removeListeners();
+                });
+                addListeners();
+            }
+        };
+    }]);
+
+}());
+/* global angular */
+
+(function() {
+    "use strict";
+
+    var app = angular.module('app');
+
+    app.directive('validate', ['$filter', function($filter) {
+        return {
+            require: 'ngModel',
+            link: function(scope, element, attributes, model) {
+                var type = attributes.validate;
+                var format = attributes.format || '';
+                var precision = attributes.precision || 2;
+                var focus = false;
+                switch (type) {
+                    case 'date':
+                    case 'datetime':
+                    case 'datetime-local':
+                        model.$formatters.push(function(value) {
+                            if (value) {
+                                return $filter('date')(value, format);
+                            } else {
+                                return null;
+                            }
+                        });
+                        break;
+                    case 'number':
+                        model.$parsers.unshift(function(value) {
+                            var valid = false;
+                            if (value !== undefined && value !== "") {
+                                valid = String(value).indexOf(Number(value).toString()) !== -1; // isFinite(value); // 
+                                value = Number(value);
+                                model.$setValidity('number', valid);
+                                if (valid) {
+                                    model.$setValidity('positive', value >= 0.01);
+                                    if (attributes.min !== undefined) {
+                                        model.$setValidity('range', value >= Number(attributes.min));
+                                    }
+                                    if (attributes.max !== undefined) {
+                                        model.$setValidity('range', value <= Number(attributes.max));
+                                    }
+                                }
+                            } else {
+                                valid = true;
+                                value = Number(value);
+                                model.$setValidity('number', true);
+                                model.$setValidity('positive', true);
+                                if (attributes.min !== undefined) {
+                                    model.$setValidity('range', true);
+                                }
+                                if (attributes.max !== undefined) {
+                                    model.$setValidity('range', true);
+                                }
+                            }
+                            return value;
+                        });
+                        model.$formatters.push(function(value) {
+                            if (value) {
+                                return $filter('number')(value, precision) + ' ' + format;
+                            } else {
+                                return null;
+                            }
+                        });
+                        break;
+                    case 'anynumber':
+                        model.$parsers.unshift(function(value) {
+                            var valid = false;
+                            if (value !== undefined && value !== "") {
+                                valid = String(value).indexOf(Number(value).toString()) !== -1; // isFinite(value); // 
+                                value = Number(value);
+                                model.$setValidity('number', valid);
+                                if (valid) {
+                                    if (attributes.min !== undefined) {
+                                        model.$setValidity('range', value >= Number(attributes.min));
+                                    }
+                                    if (attributes.max !== undefined) {
+                                        model.$setValidity('range', value <= Number(attributes.max));
+                                    }
+                                }
+                            } else {
+                                valid = true;
+                                value = Number(value);
+                                model.$setValidity('number', true);
+                                if (attributes.min !== undefined) {
+                                    model.$setValidity('range', true);
+                                }
+                                if (attributes.max !== undefined) {
+                                    model.$setValidity('range', true);
+                                }
+                            }
+                            return value;
+                        });
+                        model.$formatters.push(function(value) {
+                            if (value || value === 0) {
+                                return $filter('number')(value, precision) + ' ' + format;
+                            } else {
+                                return null;
+                            }
+                        });
+                        break;
+                }
+
+                function onFocus() {
+                    focus = true;
+                    if (format) {
+                        element[0].value = model.$modelValue || null;
+                        if (!model.$modelValue) {
+                            model.$setViewValue(null);
+                        }
+                    }
+                }
+
+                function doBlur() {
+                    if (format && !model.$invalid) {
+                        switch (type) {
+                            case 'date':
+                            case 'datetime':
+                            case 'datetime-local':
+                                element[0].value = model.$modelValue ? $filter('date')(model.$modelValue, format) : ' ';
+                                break;
+                            default:
+                                element[0].value = model.$modelValue ? $filter('number')(model.$modelValue, precision) + ' ' + format : ' ';
+                                break;
+                        }
+                    }
+                }
+
+                function onBlur() {
+                    focus = false;
+                    doBlur();
+                }
+
+                function addListeners() {
+                    element.on('focus', onFocus);
+                    element.on('blur', onBlur);
+                }
+
+                function removeListeners() {
+                    element.off('focus', onFocus);
+                    element.off('blur', onBlur);
                 }
                 scope.$on('$destroy', function() {
                     removeListeners();

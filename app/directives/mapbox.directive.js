@@ -19,7 +19,7 @@
         function link(scope, element, attributes, model) {
 
             var map, marker, geocoder, position, canvas, dragging, overing;
-            
+
             function newMap() {
                 position = setPosition();
                 var map = new mapboxgl.Map({
@@ -36,7 +36,7 @@
                     console.log('setAddress', item);
                     angular.extend(scope.model, item);
                     scope.map.results = null;
-                    position = setPosition(item.position);
+                    position = setPosition(item.position.lat, item.position.lng);
                     setLocation();
                 };
                 scope.map.search = function() {
@@ -72,10 +72,10 @@
             }
 
             function setPosition(lat, lng) {
-                position = scope.model.position || {};
+                var position = scope.model.position || {};
                 if (lat && lng) {
-                    position.lat = position.lat || 0;
-                    position.lng = position.lng || 0;
+                    position.lat = lat;
+                    position.lng = lng;
                 } else {
                     position.lat = position.lat || 0;
                     position.lng = position.lng || 0;
@@ -83,10 +83,11 @@
                         geolocalize();
                     }
                 }
+                console.log('setPosition', lat, lng);
                 return position;
             }
 
-            function geocodeAddress(address) {            
+            function geocodeAddress(address) {
                 geocoder.geocode({ 'address': address }, function(results, status) {
                     $timeout(function() {
                         if (status === 'OK') {
@@ -96,11 +97,11 @@
                             alert('Geocode was not successful for the following reason: ' + status);
                         }
                     });
-                });                
+                });
             }
 
             function reverseGeocode(position) {
-                // console.log(position);
+                console.log('reverseGeocode', position);
                 geocoder.geocode({ 'location': position }, function(results, status) {
                     // console.log(results);
                     $timeout(function() {
@@ -233,7 +234,10 @@
                 // finished being dragged to on the map.
                 // coordinates.style.display = 'block';
                 // coordinates.innerHTML = 'Longitude: ' + p.lng + '<br />Latitude: ' + p.lat;
-                reverseGeocode(p);
+                $timeout(function() {
+                    position = setPosition(p.lat, p.lng);
+                    reverseGeocode(p);
+                });
                 canvas.style.cursor = '';
                 dragging = false;
                 // Unbind mouse events
@@ -273,6 +277,7 @@
                 window.googleMapsInit = function() {
                     deferred.resolve(window.google.maps);
                     window.googleMapsInit = null;
+                    _init = true;
                 };
                 var script = document.createElement('script');
                 script.setAttribute('async', null);

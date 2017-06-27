@@ -30,7 +30,7 @@
 
 <!-- PLACE -->
 <script type="text/ng-template" id="partials/profile/place">
-    <div class="content">
+    <div class="content mt-3">
         <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()">
             <section class="container-fluid container-form">
                 <!-- <div mapboxgl access-token="pk.eyJ1IjoiYWN0YXJpYW4iLCJhIjoiY2lqNWU3MnBzMDAyZndnbTM1cjMyd2N2MiJ9.CbuEGSvOAfIYggQv854pRQ" gl-style="'mapbox://styles/mapbox/light-v9'" __gl-center="{ autodiscover: true }" gl-controls="glControls"></div> -->
@@ -41,7 +41,7 @@
                         <div class="input-group">
                             <input type="text" class="form-control" placeholder="ricerca indirizzo..." ng-model="map.address" ng-model-options="{ allowInvalid: false, debounce: 1000 }">
                             <span class="input-group-btn">
-                                <button class="btn btn-secondary" type="button" ng-click="map.search()">Cerca</button>
+                                <button class="btn btn-primary" type="button" ng-click="map.search()">Cerca</button>
                             </span>
                         </div>
                         <div class="dropdown-menu" ng-style="{ display: map.results.length ? 'block' : 'none' }" style="position: static;">
@@ -52,8 +52,8 @@
                 </div>
                 <div class="inner">
                     <div form="form" control="text" ng-model="model.shopName" title="Stabilimento" placeholder="il nome dello stabilimento" required="true"></div>
-                    <div form="form" control="text" ng-model="model.position.lat" title="Latitudine" placeholder="latitudine" required="true"></div>
-                    <div form="form" control="text" ng-model="model.position.lng" title="Longitudine" placeholder="longitudine" required="true"></div>
+                    <div form="form" control="text" ng-model="model.position.lat" title="Latitudine" placeholder="latitudine" validate="number" precision="20" required="true"></div>
+                    <div form="form" control="text" ng-model="model.position.lng" title="Longitudine" placeholder="longitudine" validate="number" precision="20" required="true"></div>
                     <div form="form" control="text" ng-model="model.street" title="Via" placeholder="via dello stabilimento" required="false"></div>
                     <div form="form" control="text" ng-model="model.locality" title="Località" placeholder="località dello stabilimento" required="false"></div>
                     <div form="form" control="text" ng-model="model.number" title="N° Civico" placeholder="numero civico" required="false"></div>
@@ -65,13 +65,11 @@
                     <!-- <div form="form" control="select" ng-model="model.type" title="Type" placeholder="selezione un tipo" required="true" source="[{id:1,name:'1'}, {id:2,name:'2'}]"></div> -->
                     <br>
                     <div ng-include="'partials/errors'"></div>
-                    <div class="row">
-                        <div class="col-lg-9 offset-lg-3">
-                            <button type="button" class="btn btn-primary" ng-class="stateClass()" ng-disabled="stateDisabled()" ng-click="submit()" on-validate="form.$invalid">
-                                    <span>Salva</span>
-                                </button>
-                            <!-- <button state="state" on-click="submit()" on-validate="form.$invalid"><span>Accedi</span> <i class="icon-user"></i></button> -->
-                        </div>
+                    <div class="text-center">
+                        <button type="button" class="btn btn-primary" ng-class="stateClass()" ng-disabled="stateDisabled()" ng-click="submit()" on-validate="form.$invalid">
+                            <span>Salva</span>
+                        </button>
+                        <!-- <button state="state" on-click="submit()" on-validate="form.$invalid"><span>Accedi</span> <i class="icon-user"></i></button> -->
                     </div>
                 </div>
             </section>
@@ -82,8 +80,8 @@
 <!-- BEACH -->
 <script type="text/ng-template" id="partials/profile/beach">
     <div class="container-fluid maxw-lg">
-        <nav class="navbar navbar-light">
-            <div class="collapse navbar-collapse">
+        <nav class="navbar navbar-toggleable-md navbar-light">
+            <div class="collapse navbar-collapse show">
                 <ul class="nav nav-pills mr-auto">
                     <!--
                 <li class="nav-item">
@@ -120,7 +118,7 @@
 
 <!-- PRICES -->
 <script type="text/ng-template" id="partials/profile/prices">
-    <div class="content">
+    <div class="content mt-3">
         <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()">
             <section class="container-fluid container-form">
                 <div class="outer">

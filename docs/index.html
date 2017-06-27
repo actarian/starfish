@@ -93,91 +93,87 @@
         </div>
     </script>
 
-    <!-- CONTROL -->    
+    <!-- CONTROL -->
     <script type="text/ng-template" id="partials/forms/control">
-        <div class="form-group">
-            <div class="form-group form-control-{{type}}" ng-class="getClasses()">
-                <label for="{{field}}" class="col-form-label">
-                    <span ng-bind="title"></span><sup>✽</sup>
-                </label>
-                <div class="input-group">
-                    <input type="{{getType()}}" name="{{field}}" class="form-control" ng-model="ngModel" ng-model-options="options" placeholder="{{placeholder}}" ng-minlength="minLength" ng-maxlength="maxLength" ng-required="required" ng-disabled="disabled" ng-readonly="readonly" ng-change="onChange" ng-focus="focus = true" ng-blur="focus = false">
-                    <span class="input-group-addon" ng-if="type == 'password' && ngModel">
-                        <span class="icon-eye" ng-click="visible = !visible"></span>
-                    </span>
-                </div>
-                <control-messages></control-messages>
+        <div class="form-group form-group-{{type}}" ng-class="getClasses()">
+            <label for="{{field}}" class="form-label">
+                <span ng-bind="title"></span><sup>✽</sup>
+            </label>
+            <div class="input-group">
+                <input type="{{getType()}}" name="{{field}}" class="form-control" ng-model="ngModel" ng-model-options="options" placeholder="{{placeholder}}" validate="{{validate}}" format="{{format}}" precision="{{precision}}" ng-minlength="minLength" ng-maxlength="maxLength" ng-required="required" ng-disabled="disabled" ng-readonly="readonly" ng-change="onChange" ng-focus="focus = true" ng-blur="focus = false">
+                <span class="input-group-addon" ng-if="type == 'password' && ngModel">
+                    <span class="icon-eye" ng-click="visible = !visible"></span>
+                </span>
             </div>
-            <!-- <input + options + formFocus + validate + format + precision + '> -->
+            <control-messages></control-messages>
         </div>
+    <!-- <input + options + formFocus + validate + format + precision + '> -->
     </script>
-    <script type="text/ng-template" id="partials/forms/grid/control">
-        <div class="form-group">
-            <div class="row" ng-class="getClasses()">
-                <label for="{{field}}" class="col-lg-3 col-form-label">
-                    <span ng-bind="title"></span><sup>✽</sup>
-                </label>
-                <div class="col-lg-9 col-{{type}}">
-                    <div class="input-group">
-                        <input type="{{getType()}}" name="{{field}}" class="form-control" ng-model="ngModel" ng-model-options="options" placeholder="{{placeholder}}" ng-minlength="minLength" ng-maxlength="maxLength" ng-required="required" ng-disabled="disabled" ng-readonly="readonly" ng-change="onChange"
-                            ng-focus="focus = true" ng-blur="focus = false">
-                        <span class="input-group-addon" ng-if="type == 'password' && ngModel">
-                            <span class="icon-eye" ng-click="visible = !visible"></span>
-                        </span>
+        <script type="text/ng-template" id="partials/forms/grid/control">
+            <div class="form-group">
+                <div class="row" ng-class="getClasses()">
+                    <label for="{{field}}" class="col-lg-3 col-form-label">
+                        <span ng-bind="title"></span><sup>✽</sup>
+                    </label>
+                    <div class="col-lg-9 col-{{type}}">
+                        <div class="input-group">
+                            <input type="{{getType()}}" name="{{field}}" class="form-control" ng-model="ngModel" ng-model-options="options" placeholder="{{placeholder}}" validate="{{validate}}" ng-minlength="minLength" ng-maxlength="maxLength" ng-required="required" ng-disabled="disabled" ng-readonly="readonly" ng-change="onChange"
+                                ng-focus="focus = true" ng-blur="focus = false">
+                            <span class="input-group-addon" ng-if="type == 'password' && ngModel">
+                                <span class="icon-eye" ng-click="visible = !visible"></span>
+                            </span>
+                        </div>
+                        <control-messages></control-messages>
                     </div>
-                    <control-messages></control-messages>
                 </div>
+                <!-- <input + options + formFocus + validate + format + precision + '> -->
             </div>
-            <!-- <input + options + formFocus + validate + format + precision + '> -->
-        </div>
-    </script>
+        </script>
 
     <!-- CONTROL-SELECT -->
     <script type="text/ng-template" id="partials/forms/control-select">
-        <div class="form-group">
-            <div class="form-group form-control-{{type}}" ng-class="getClasses()">
-                <label for="{{field}}" class="col-form-label">
-                    <span ng-bind="title"></span><sup>✽</sup>
-                </label>
-                <select name="{{field}}" class="form-control" ng-model="ngModel" ng-options="{{options}}" ng-required="required" ng-disabled="disabled" ng-readonly="readonly" ng-change="onChange" ng-focus="focus = true" ng-blur="focus = false">
-                    <option value="" disabled selected hidden>{{placeholder}}</option>
-                </select>
-                <control-messages></control-messages>
-            </div>
-            <!-- <input + options + formFocus + validate + format + precision + '> -->
-        </div>
+    <div class="form-group form-group-{{type}}" ng-class="getClasses()">
+        <label for="{{field}}" class="form-label">
+        <span ng-bind="title"></span><sup>✽</sup>
+        </label>
+        <select name="{{field}}" class="form-control" ng-model="ngModel" ng-options="{{options}}" validate="{{validate}}" format="{{format}}" precision="{{precision}}" ng-required="required" ng-disabled="disabled" ng-readonly="readonly" ng-change="onChange" ng-focus="focus = true" ng-blur="focus = false">
+        <option value="" disabled selected hidden>{{placeholder}}</option>
+        </select>
+        <control-messages></control-messages>
+    </div>
+    <!-- <input + options + formFocus + validate + format + precision + '> -->
     </script>
-    <script type="text/ng-template" id="partials/forms/grid/control-select">
-        <div class="form-group">
-            <div class="row" ng-class="getClasses()">
-                <label for="{{field}}" class="col-lg-3 col-form-label">
-                    <span ng-bind="title"></span><sup>✽</sup>
-                </label>
-                <div class="col-lg-9 col-{{type}}">
-                    <select name="{{field}}" class="form-control" ng-model="ngModel" ng-options="{{options}}" ng-required="required" ng-disabled="disabled" ng-readonly="readonly" ng-change="onChange" ng-focus="focus = true" ng-blur="focus = false">
-                        <option value="" disabled selected hidden>{{placeholder}}</option>
-                    </select>
-                    <control-messages></control-messages>
+        <script type="text/ng-template" id="partials/forms/grid/control-select">
+            <div class="form-group">
+                <div class="row" ng-class="getClasses()">
+                    <label for="{{field}}" class="col-lg-3 col-form-label">
+                        <span ng-bind="title"></span><sup>✽</sup>
+                    </label>
+                    <div class="col-lg-9 col-{{type}}">
+                        <select name="{{field}}" class="form-control" ng-model="ngModel" ng-options="{{options}}" validate="{{validate}}" ng-required="required" ng-disabled="disabled" ng-readonly="readonly" ng-change="onChange" ng-focus="focus = true" ng-blur="focus = false">
+                            <option value="" disabled selected hidden>{{placeholder}}</option>
+                        </select>
+                        <control-messages></control-messages>
+                    </div>
                 </div>
             </div>
-        </div>
-    </script>
+        </script>
 
-    <!-- CONTROL-MESSAGES -->
-    <script type="text/ng-template" id="partials/control-messages">
-        <span ng-messages="getMessages()" role="alert">
+        <!-- CONTROL-MESSAGES -->
+        <script type="text/ng-template" id="partials/control-messages">
+            <span ng-messages="getMessages()" role="alert">
             <span ng-message="required" class="label-error animated flash">obbligatorio</span>
-        <span ng-message="minlength" class="label-error animated flash" ng-if="type == 'password'">almeno 6 caratteri</span>
-        <span ng-message="email" class="label-error animated flash" ng-if="type == 'email'">valore non corretto</span>
-        <span ng-message="positive" class="label-error animated flash" ng-if="type == 'number' || type == 'range'">solo valori positivi</span>
-        <span ng-message="number" class="label-error animated flash" ng-if="type == 'number' || type == 'range'">solo valori numerici</span>
-        <span ng-message="match" class="label-error animated flash" ng-if="match">non corrispondente</span>
-        </span>
-    </script>
+            <span ng-message="minlength" class="label-error animated flash" ng-if="type == 'password'">almeno 6 caratteri</span>
+            <span ng-message="email" class="label-error animated flash" ng-if="type == 'email'">valore non corretto</span>
+            <span ng-message="positive" class="label-error animated flash" ng-if="validate == 'number' || validate == 'range'">solo valori positivi</span>
+            <span ng-message="number" class="label-error animated flash" ng-if="validate == 'number' || validate == 'range'">solo valori numerici</span>
+            <span ng-message="match" class="label-error animated flash" ng-if="match">non corrispondente</span>
+            </span>
+        </script>
 
-    <!-- STATE BUTTON -->
-    <script type="text/ng-template" id="partials/state">
-        <button type="button" class="btn btn-sm btn-primary" ng-class="stateClass()" ng-disabled="stateDisabled()"><span ng-transclude></span></button>
+        <!-- STATE BUTTON -->
+        <script type="text/ng-template" id="partials/state">
+            <button type="button" class="btn btn-sm btn-primary" ng-class="stateClass()" ng-disabled="stateDisabled()"><span ng-transclude></span></button>
     </script>
 
     <!-- DATEPICKER -->
@@ -210,8 +206,8 @@
                     <td ng-if="showWeeks" class="text-xs-center text-primary"><em>{{weekNumbers[$index]}}</em></td>
                     <td ng-repeat="dt in row" class="uib-day text-xs-center" role="gridcell" id="{{::dt.uid}}" ng-class="::dt.customClass">
                         <button type="button" class="btn btn-sm btn-secondary" uib-is-class="'btn-outline-primary' for selectedDt, 'btn-outline-primary' for activeDt on dt" ng-click="select(dt.date)" ng-disabled="::dt.disabled" tabindex="-1">
-                            <span ng-class="::{'text-muted': dt.secondary, 'text-info' : dt.current}">{{::dt.label}}</span>
-                        </button>
+                                <span ng-class="::{'text-muted': dt.secondary, 'text-info' : dt.current}">{{::dt.label}}</span>
+                            </button>
                     </td>
                 </tr>
             </tbody>
@@ -232,8 +228,8 @@
                 <tr class="uib-months" ng-repeat="row in rows track by $index" role="row">
                     <td ng-repeat="dt in row" class="uib-month text-xs-center" role="gridcell" id="{{::dt.uid}}" ng-class="::dt.customClass">
                         <button type="button" class="btn btn-sm btn-secondary" uib-is-class="'btn-outline-primary' for selectedDt, 'btn-outline-primary' for activeDt on dt" ng-click="select(dt.date)" ng-disabled="::dt.disabled" tabindex="-1">
-                            <span ng-class="::{'text-info': dt.current}">{{::dt.label}}</span>
-                        </button>
+                                <span ng-class="::{'text-info': dt.current}">{{::dt.label}}</span>
+                            </button>
                     </td>
                 </tr>
             </tbody>
@@ -254,8 +250,8 @@
                 <tr class="uib-years" ng-repeat="row in rows track by $index" role="row">
                     <td ng-repeat="dt in row" class="uib-year text-xs-center" role="gridcell" id="{{::dt.uid}}" ng-class="::dt.customClass">
                         <button type="button" class="btn btn-sm btn-secondary" uib-is-class="'btn-outline-primary' for selectedDt, 'btn-outline-primary' for activeDt on dt" ng-click="select(dt.date)" ng-disabled="::dt.disabled" tabindex="-1">
-                            <span ng-class="::{'text-info': dt.current}">{{::dt.label}}</span>
-                        </button>
+                                <span ng-class="::{'text-info': dt.current}">{{::dt.label}}</span>
+                            </button>
                     </td>
                 </tr>
             </tbody>
@@ -281,7 +277,6 @@
     </script>
 
     <script type="text/ng-template" id="uib/template/tooltip/tooltip-popup.html">
-
         <div class="tooltip-arrow"></div>
         <div class="tooltip-inner" ng-bind="content"></div>
     </script>
@@ -303,9 +298,9 @@
     <link href="//api.mapbox.com/mapbox-gl-js/v0.38.0/mapbox-gl.css" rel="stylesheet" />
     <script src="//api.mapbox.com/mapbox-gl-js/v0.38.0/mapbox-gl.js"></script>
     <!--
-    <script src='//api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.1.0/mapbox-gl-geocoder.min.js'></script>
-    <link href='//api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.1.0/mapbox-gl-geocoder.css' rel='stylesheet' type='text/css' />
--->
+        <script src='//api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.1.0/mapbox-gl-geocoder.min.js'></script>
+        <link href='//api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v2.1.0/mapbox-gl-geocoder.css' rel='stylesheet' type='text/css' />
+    -->
     <script src="//www.gstatic.com/firebasejs/4.1.2/firebase.js"></script>
     <script src="js/vendors.js" type="text/javascript"></script>
     <script src="js/app.js" type="text/javascript"></script>
