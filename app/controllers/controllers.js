@@ -71,8 +71,8 @@
 
         };
 
-        $scope.submit = function() {
-            if (state.busy()) {
+        $scope.submit = function(key) {
+            if (state.busy(key)) {
                 // angular.extend(user, model);
                 angular.forEach(model, function(value, key) {
                     if (value) {
@@ -91,8 +91,8 @@
             }
         };
 
-        $scope.saveItems = function() {
-            $scope.submit();
+        $scope.saveItems = function(key) {
+            $scope.submit(key);
         };
 
         /*
@@ -150,8 +150,8 @@
 
         var model = $scope.model = {};
 
-        $scope.submit = function() {
-            if (state.busy()) {
+        $scope.submit = function(key) {
+            if (state.busy(key)) {
                 api.auth.signin(model).then(function success(response) {
                     // console.log('SigninCtrl', response);
                     state.success();
@@ -171,8 +171,8 @@
 
         var model = $scope.model = {};
 
-        $scope.submit = function() {
-            if (state.busy()) {
+        $scope.submit = function(key) {
+            if (state.busy(key)) {
                 api.auth.signup(model).then(function success(response) {
                     // console.log('SignupCtrl', path, response);
                     state.success();

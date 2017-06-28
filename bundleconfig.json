@@ -1,5 +1,6 @@
 [{
         "inputFiles": [
+            "bower_components/animate.css/animate.css",
             "bower_components/json-formatter/dist/json-formatter.css",
             "bower_components/angular-mapboxgl-directive/dist/angular-mapboxgl-directive.css"
         ],

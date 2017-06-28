@@ -40,8 +40,32 @@
                     setLocation();
                 };
                 scope.map.search = function() {
+                    console.log('address', scope.map.address);
                     scope.map.results = null;
                     geocodeAddress(scope.map.address);
+                    return true;
+                };
+                scope.map.styles = {
+                    RIVA: 1,
+                    SATELLITE: 2,
+                };
+                scope.map.style = scope.map.styles.RIVA;
+                scope.map.styleToggle = function() {
+                    if (scope.map.style === scope.map.styles.RIVA) {
+                        scope.map.style = scope.map.styles.SATELLITE;
+                        map.setStyle('mapbox://styles/mapbox/satellite-v9');
+                    } else {
+                        scope.map.style = scope.map.styles.RIVA;
+                        map.setStyle('mapbox://styles/mapbox/streets-v9');
+                    }
+                };
+                scope.map.setStyle = function(style) {
+                    scope.map.style = style;
+                    if (scope.map.style === scope.map.styles.RIVA) {
+                        map.setStyle('mapbox://styles/mapbox/streets-v9');
+                    } else {
+                        map.setStyle('mapbox://styles/mapbox/satellite-v9');
+                    }
                 };
                 return map;
             }
@@ -327,9 +351,9 @@
             var items = null;
             if (results.length) {
                 items = results.filter(function(item) {
-                    return item.geometry.location_type === 'ROOFTOP' ||
-                        item.geometry.location_type === 'RANGE_INTERPOLATED' ||
-                        item.geometry.location_type === 'GEOMETRIC_CENTER';
+                    return true; // item.geometry.location_type === 'ROOFTOP' ||
+                    // item.geometry.location_type === 'RANGE_INTERPOLATED' ||
+                    // item.geometry.location_type === 'GEOMETRIC_CENTER';
                 }).map(function(item) {
                     return {
                         name: item.formatted_address,

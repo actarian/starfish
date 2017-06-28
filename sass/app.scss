@@ -58,10 +58,37 @@ mapbox {
 }
 
 .controls {
+    .input-group {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        right: 15px;
+        width: auto;
+    }
+    .dropdown-menu {
+        position: absolute;
+        top: 60px;
+        left: 15px;
+        right: 15px;
+    }
+    .btn-group {
+        position: absolute;
+        bottom: 6px;
+        right: 15px;
+    }
+    /*
     position: absolute;
     width: 100%;
     top: 0;
+    bottom: 0;
     padding: 15px;
+    .btn-group {
+        position: absolute;
+        bottom: 6px;
+        right: 15px;
+        margin: 0;
+    }
+    */
 }
 
 .material {

@@ -35,19 +35,26 @@
             <section class="container-fluid container-form">
                 <!-- <div mapboxgl access-token="pk.eyJ1IjoiYWN0YXJpYW4iLCJhIjoiY2lqNWU3MnBzMDAyZndnbTM1cjMyd2N2MiJ9.CbuEGSvOAfIYggQv854pRQ" gl-style="'mapbox://styles/mapbox/light-v9'" __gl-center="{ autodiscover: true }" gl-controls="glControls"></div> -->
                 <!-- <h6 class="headline foreground light-60">Accedi</h6> -->
-                <div class="outer">
+                <div class="outer controls">
                     <mapbox ng-if="model"></mapbox>
-                    <div class="container-fluid controls">
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="ricerca indirizzo..." ng-model="map.address" ng-model-options="{ allowInvalid: false, debounce: 1000 }">
-                            <span class="input-group-btn">
+                    <div class="input-group">
+                        <!-- ng-model-options="{ allowInvalid: false, debounce: 1000 }" -->
+                        <input type="text" class="form-control" placeholder="ricerca indirizzo..." ng-model="map.address" ng-keyup="$event.keyCode == 13 && map.search() && $event.preventDefault()">
+                        <span class="input-group-btn">
                                 <button class="btn btn-primary" type="button" ng-click="map.search()">Cerca</button>
                             </span>
-                        </div>
-                        <div class="dropdown-menu" ng-style="{ display: map.results.length ? 'block' : 'none' }" style="position: static;">
-                            <h6 class="dropdown-header">trovati {{map.results.length}} indirizzi</h6>
-                            <span class="dropdown-item" ng-click="map.setAddress(item)" ng-repeat="item in map.results track by $index" ng-bind="item.name"></span>
-                        </div>
+                    </div>
+                    <div class="dropdown-menu" ng-style="{ display: map.results.length ? 'block' : 'none' }">
+                        <h6 class="dropdown-header">trovati {{map.results.length}} indirizzi</h6>
+                        <span class="dropdown-item" ng-click="map.setAddress(item)" ng-repeat="item in map.results track by $index" ng-bind="item.name"></span>
+                    </div>
+                    <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-primary btn-sm" ng-class="{ active: map.style == map.styles.RIVA }" ng-click="map.setStyle(map.styles.RIVA)">
+                                <input type="radio" name="options" autocomplete="off" ng-checked="map.style == map.styles.RIVA"> strade
+                            </label>
+                        <label class="btn btn-primary btn-sm" ng-class="{ active: map.style == map.styles.SATELLITE }" ng-click="map.setStyle(map.styles.SATELLITE)">
+                                <input type="radio" name="options" autocomplete="off" ng-checked="map.style == map.styles.SATELLITE"> satellite
+                            </label>
                     </div>
                 </div>
                 <div class="inner">
@@ -66,10 +73,8 @@
                     <br>
                     <div ng-include="'partials/errors'"></div>
                     <div class="text-center">
-                        <button type="button" class="btn btn-primary" ng-click="form.$valid && submit('save')" ng-class="state.classes('save')" ng-disabled="state.disabled('save')">
-                            <span>Salva</span> <i class="icon-user"></i>
-                        </button>
-                        <!-- <button state="state" on-click="submit()" on-validate="form.$invalid"><span>Accedi</span> <i class="icon-user"></i></button> -->
+                        <button type="button" class="btn btn-primary animated infinite" ng-click="form.$valid && submit('save')" ng-class="state.classes('save', { busy: 'bounce', error: 'shake', success: 'pulse' })" ng-bind="state.labels('save', { ready: 'salva', busy: '...', 'error': 'errore', success: 'salvato' })"
+                            ng-disabled="state.disabled('save')">salva</button>
                     </div>
                 </div>
             </section>
@@ -108,7 +113,8 @@
                     </li>
                 </ul>
                 <button type="button" class="btn btn-secondary mr-2" ng-click="controls.setCenter()">centra</button>
-                <button type="button" class="btn btn-primary" ng-click="saveItems('save')" ng-class="state.classes('save')" ng-disabled="state.disabled('save')">salva</button>
+                <button type="button" class="btn btn-primary animated infinite" ng-click="saveItems('save')" ng-class="state.classes('save', { busy: 'bounce', error: 'shake', success: 'pulse' })" ng-bind="state.labels('save', { ready: 'salva', busy: '...', 'error': 'errore', success: 'salvato' })"
+                    ng-disabled="state.disabled('save')">salva</button>
             </div>
         </nav>
     </div>

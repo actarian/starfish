@@ -23,13 +23,11 @@
                         <div ng-include="'partials/errors'"></div>
                         <div class="row">
                             <div class="col-lg-9 offset-lg-3">
-                                <button type="button" class="btn btn-primary" ng-click="form.$valid && submit('signin')" ng-class="state.classes('signin')" ng-disabled="state.disabled('signin')">
-                                    <span>Accedi</span> <i class="icon-user"></i>
-                                </button>
+                                <button type="button" class="btn btn-primary animated infinite" ng-click="form.$valid && submit('signin')" ng-class="state.classes('signin', { busy: 'bounce', error: 'shake', success: 'pulse' })" ng-bind="state.labels('signin', { ready: 'accedi', busy: '...', 'error': 'errore', success: 'successo' })"
+                                    ng-disabled="state.disabled('signin')">accedi</button>
                                 <a class="btn btn-outline-primary" ng-href="#/signup">
                                     <span>Registrati</span>
                                 </a>
-                                <!-- <button state="state" on-click="submit()" on-validate="form.$invalid"><span>Accedi</span> <i class="icon-user"></i></button> -->
                             </div>
                         </div>
                     </div>

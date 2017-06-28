@@ -1,11 +1,11 @@
 ﻿/* global angular */
 
-(function () {
+(function() {
     "use strict";
 
     var app = angular.module('app');
 
-    app.factory('State', ['$timeout', function ($timeout) {
+    app.factory('State', ['$timeout', function($timeout) {
         var DELAY = 2000;
 
         function State() {
@@ -21,7 +21,7 @@
             success: success,
             errorMessage: errorMessage,
             submitClass: submitClass,
-            message: message,
+            labels: labels,
             classes: classes,
             disabled: disabled
         };
@@ -64,7 +64,7 @@
             this.isSuccess = true;
             this.isSuccessing = true;
             this.errors = [];
-            $timeout(function () {
+            $timeout(function() {
                 this.isSuccessing = false;
                 this.key = null;
             }.bind(this), DELAY);
@@ -77,7 +77,7 @@
             this.isSuccess = false;
             this.isSuccessing = false;
             this.errors.push(error);
-            $timeout(function () {
+            $timeout(function() {
                 this.isErroring = false;
                 this.key = null;
             }.bind(this), DELAY);
@@ -103,24 +103,37 @@
             };
         }
 
-        function message(idleMessage, busyMessage, successMessage, errorMessage) {
-            idleMessage = idleMessage || 'Submit';
-            if (this.isBusy) {
-                return busyMessage || idleMessage;
-            } else if (this.isSuccess) {
-                return successMessage || idleMessage;
-            } else if (this.isError) {
-                return errorMessage || idleMessage;
-            } else {
-                return idleMessage;
+        function labels(key, addons) {
+            var scope = this;
+            var defaults = {
+                ready: 'submit',
+                busy: 'sending',
+                error: 'error',
+                success: 'success',
+            };
+            if (addons) {
+                angular.extend(defaults, addons);
             }
+            var label = defaults.ready;
+            // console.log('labels', scope.key, key);
+            if (this.key === key) {
+                if (this.isBusy) {
+                    label = defaults.busy;
+                } else if (this.isSuccess) {
+                    label = defaults.success;
+                } else if (this.isError) {
+                    label = defaults.error;
+                }
+            }
+            return label;
         }
 
-        function classes(key) {
-            var scope = this;
-            console.log('stateClass', scope.key, key);
+        function classes(key, addons) {
+            var scope = this,
+                classes = null;
+            // console.log('stateClass', scope.key, key);
             if (this.key === key) {
-                var sclass = {
+                classes = {
                     ready: scope.isReady,
                     busy: scope.isBusy,
                     successing: scope.isSuccessing,
@@ -128,11 +141,14 @@
                     errorring: scope.isErroring,
                     error: scope.isError,
                 };
-                // console.log('stateClass', sclass);
-                return sclass;
-            } else {
-                return null;
+                if (addons) {
+                    angular.forEach(addons, function(value, key) {
+                        classes[value] = classes[key];
+                    });
+                }
             }
+            // console.log('stateClass', classes);
+            return classes;
         }
 
         function disabled(key) {

@@ -481,8 +481,8 @@
 
         };
 
-        $scope.submit = function() {
-            if (state.busy()) {
+        $scope.submit = function(key) {
+            if (state.busy(key)) {
                 // angular.extend(user, model);
                 angular.forEach(model, function(value, key) {
                     if (value) {
@@ -501,8 +501,8 @@
             }
         };
 
-        $scope.saveItems = function() {
-            $scope.submit();
+        $scope.saveItems = function(key) {
+            $scope.submit(key);
         };
 
         /*
@@ -560,8 +560,8 @@
 
         var model = $scope.model = {};
 
-        $scope.submit = function() {
-            if (state.busy()) {
+        $scope.submit = function(key) {
+            if (state.busy(key)) {
                 api.auth.signin(model).then(function success(response) {
                     // console.log('SigninCtrl', response);
                     state.success();
@@ -581,8 +581,8 @@
 
         var model = $scope.model = {};
 
-        $scope.submit = function() {
-            if (state.busy()) {
+        $scope.submit = function(key) {
+            if (state.busy(key)) {
                 api.auth.signup(model).then(function success(response) {
                     // console.log('SignupCtrl', path, response);
                     state.success();
@@ -970,8 +970,32 @@
                     setLocation();
                 };
                 scope.map.search = function() {
+                    console.log('address', scope.map.address);
                     scope.map.results = null;
                     geocodeAddress(scope.map.address);
+                    return true;
+                };
+                scope.map.styles = {
+                    RIVA: 1,
+                    SATELLITE: 2,
+                };
+                scope.map.style = scope.map.styles.RIVA;
+                scope.map.styleToggle = function() {
+                    if (scope.map.style === scope.map.styles.RIVA) {
+                        scope.map.style = scope.map.styles.SATELLITE;
+                        map.setStyle('mapbox://styles/mapbox/satellite-v9');
+                    } else {
+                        scope.map.style = scope.map.styles.RIVA;
+                        map.setStyle('mapbox://styles/mapbox/streets-v9');
+                    }
+                };
+                scope.map.setStyle = function(style) {
+                    scope.map.style = style;
+                    if (scope.map.style === scope.map.styles.RIVA) {
+                        map.setStyle('mapbox://styles/mapbox/streets-v9');
+                    } else {
+                        map.setStyle('mapbox://styles/mapbox/satellite-v9');
+                    }
                 };
                 return map;
             }
@@ -1257,9 +1281,9 @@
             var items = null;
             if (results.length) {
                 items = results.filter(function(item) {
-                    return item.geometry.location_type === 'ROOFTOP' ||
-                        item.geometry.location_type === 'RANGE_INTERPOLATED' ||
-                        item.geometry.location_type === 'GEOMETRIC_CENTER';
+                    return true; // item.geometry.location_type === 'ROOFTOP' ||
+                    // item.geometry.location_type === 'RANGE_INTERPOLATED' ||
+                    // item.geometry.location_type === 'GEOMETRIC_CENTER';
                 }).map(function(item) {
                     return {
                         name: item.formatted_address,
@@ -2695,73 +2719,9 @@
 
     var app = angular.module('app');
 
-    app.directive('state', ['$timeout', function($timeout) {
-        return {
-            restrict: 'EA',
-            templateUrl: 'partials/state',
-            transclude: true,
-            replace: true,
-            scope: {
-                state: '=',
-            },
-            link: function(scope, element, attributes, model) {
-                scope.stateClass = function() {
-                    if (scope.state.button === element) {
-                        var sclass = {
-                            busy: scope.state.isBusy,
-                            successing: scope.state.isSuccessing,
-                            success: scope.state.isSuccess,
-                            errorring: scope.state.isErroring,
-                            error: scope.state.isError,
-                        };
-                        // console.log('stateClass', sclass);
-                        return sclass;
-                    } else {
-                        return null;
-                    }
-                };
-                scope.stateDisabled = function() {
-                    var disabled = (scope.state.button && scope.state.button !== element); // || scope.$parent.$eval(attributes.onValidate);
-                    // console.log('stateDisabled', disabled);
-                    return disabled;
-                };
+    app.factory('State', ['$timeout', function($timeout) {
+        var DELAY = 2000;
 
-                function onClick() {
-                    $timeout(function() {
-                        if (!scope.$parent.$eval(attributes.onValidate)) {
-                            // console.log('state.onClick', attributes.onValidate, attributes.onClick);
-                            scope.state.button = element;
-                            return scope.$parent.$eval(attributes.onClick);
-                        } else {
-                            scope.$parent.$eval('form.$setSubmitted()');
-                        }
-                    });
-                }
-
-                function addListeners() {
-                    element.on('touchstart click', onClick);
-                }
-
-                function removeListeners() {
-                    element.off('touchstart click', onClick);
-                }
-                scope.$on('$destroy', function() {
-                    removeListeners();
-                });
-                addListeners();
-            }
-        };
-    }]);
-
-}());
-/* global angular */
-
-(function () {
-    "use strict";
-
-    var app = angular.module('app');
-
-    app.factory('State', ['$timeout', function ($timeout) {
         function State() {
             this.isReady = false;
             this.idle();
@@ -2775,9 +2735,12 @@
             success: success,
             errorMessage: errorMessage,
             submitClass: submitClass,
-            submitMessage: submitMessage,
+            labels: labels,
+            classes: classes,
+            disabled: disabled
         };
         return State;
+
         function idle() {
             this.isBusy = false;
             this.isError = false;
@@ -2787,10 +2750,12 @@
             this.button = null;
             this.errors = [];
         }
+
         function enabled() {
             return !this.isBusy && !this.isErroring && !this.isSuccessing;
         }
-        function busy() {
+
+        function busy(key) {
             if (!this.isBusy) {
                 this.isBusy = true;
                 this.isError = false;
@@ -2798,12 +2763,14 @@
                 this.isSuccess = false;
                 this.isSuccessing = false;
                 this.errors = [];
+                this.key = key;
                 // console.log('State.busy', this);
                 return true;
             } else {
                 return false;
             }
         }
+
         function success() {
             this.isBusy = false;
             this.isError = false;
@@ -2811,11 +2778,12 @@
             this.isSuccess = true;
             this.isSuccessing = true;
             this.errors = [];
-            $timeout(function () {
+            $timeout(function() {
                 this.isSuccessing = false;
-                this.button = null;
-            }.bind(this), 1000);
+                this.key = null;
+            }.bind(this), DELAY);
         }
+
         function error(error) {
             this.isBusy = false;
             this.isError = true;
@@ -2823,18 +2791,21 @@
             this.isSuccess = false;
             this.isSuccessing = false;
             this.errors.push(error);
-            $timeout(function () {
+            $timeout(function() {
                 this.isErroring = false;
-                this.button = null;
-            }.bind(this), 1000);
+                this.key = null;
+            }.bind(this), DELAY);
         }
+
         function ready() {
             this.isReady = true;
             this.success();
         }
+
         function errorMessage() {
             return this.isError ? this.errors[this.errors.length - 1] : null;
         }
+
         function submitClass() {
             return {
                 busy: this.isBusy,
@@ -2845,17 +2816,57 @@
                 error: this.isError,
             };
         }
-        function submitMessage(idleMessage, busyMessage, successMessage, errorMessage) {
-            idleMessage = idleMessage || 'Submit';
-            if (this.isBusy) {
-                return busyMessage || idleMessage;
-            } else if (this.isSuccess) {
-                return successMessage || idleMessage;
-            } else if (this.isError) {
-                return errorMessage || idleMessage;
-            } else {
-                return idleMessage;
+
+        function labels(key, addons) {
+            var scope = this;
+            var defaults = {
+                ready: 'submit',
+                busy: 'sending',
+                error: 'error',
+                success: 'success',
+            };
+            if (addons) {
+                angular.extend(defaults, addons);
             }
+            var label = defaults.ready;
+            // console.log('labels', scope.key, key);
+            if (this.key === key) {
+                if (this.isBusy) {
+                    label = defaults.busy;
+                } else if (this.isSuccess) {
+                    label = defaults.success;
+                } else if (this.isError) {
+                    label = defaults.error;
+                }
+            }
+            return label;
+        }
+
+        function classes(key, addons) {
+            var scope = this,
+                classes = null;
+            // console.log('stateClass', scope.key, key);
+            if (this.key === key) {
+                classes = {
+                    ready: scope.isReady,
+                    busy: scope.isBusy,
+                    successing: scope.isSuccessing,
+                    success: scope.isSuccess,
+                    errorring: scope.isErroring,
+                    error: scope.isError,
+                };
+                if (addons) {
+                    angular.forEach(addons, function(value, key) {
+                        classes[value] = classes[key];
+                    });
+                }
+            }
+            // console.log('stateClass', classes);
+            return classes;
+        }
+
+        function disabled(key) {
+            return (this.key && this.key !== key);
         }
     }]);
 

@@ -194,7 +194,10 @@ Scrollbar
 */
 .form-group {
   position: relative;
-  padding-top: 20px; }
+  padding-top: 20px;
+  border: 1px solid #eee;
+  border-radius: .25rem;
+  overflow: hidden; }
 
 .form-label {
   display: block;
@@ -293,6 +296,36 @@ control-messages {
     letter-spacing: .075rem;
     line-height: 20px; }
 
+.btn {
+  cursor: pointer;
+  -webkit-appearance: none;
+  outline: none;
+  box-shadow: none; }
+  .btn:focus {
+    -webkit-appearance: none;
+    outline: none;
+    box-shadow: none; }
+  .btn.busy {
+    position: relative;
+    z-index: 10;
+    background: #0275d8;
+    border-color: #0275d8; }
+  .btn.error {
+    background: #d9534f;
+    border-color: #d9534f; }
+  .btn.success {
+    background: #5cb85c;
+    border-color: #5cb85c; }
+
+.input-group-addon {
+  position: relative;
+  cursor: pointer;
+  background: transparent; }
+  .input-group-addon [class^='icon-'] {
+    font-size: 15px;
+    line-height: 20px;
+    color: #0275d8; }
+
 body {
   font-family: 'Poppins';
   /*
@@ -337,10 +370,34 @@ mapbox {
     padding: 30px 80px; }
 
 .controls {
-  position: absolute;
-  width: 100%;
-  top: 0;
-  padding: 15px; }
+  /*
+    position: absolute;
+    width: 100%;
+    top: 0;
+    bottom: 0;
+    padding: 15px;
+    .btn-group {
+        position: absolute;
+        bottom: 6px;
+        right: 15px;
+        margin: 0;
+    }
+    */ }
+  .controls .input-group {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    width: auto; }
+  .controls .dropdown-menu {
+    position: absolute;
+    top: 60px;
+    left: 15px;
+    right: 15px; }
+  .controls .btn-group {
+    position: absolute;
+    bottom: 6px;
+    right: 15px; }
 
 .material {
   position: relative;
