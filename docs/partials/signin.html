@@ -23,7 +23,7 @@
                         <div ng-include="'partials/errors'"></div>
                         <div class="row">
                             <div class="col-lg-9 offset-lg-3">
-                                <button type="button" class="btn btn-primary" ng-class="stateClass()" ng-disabled="stateDisabled()" ng-click="submit()" on-validate="form.$invalid">
+                                <button type="button" class="btn btn-primary" ng-click="form.$valid && submit('signin')" ng-class="state.classes('signin')" ng-disabled="state.disabled('signin')">
                                     <span>Accedi</span> <i class="icon-user"></i>
                                 </button>
                                 <a class="btn btn-outline-primary" ng-href="#/signup">

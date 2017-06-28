@@ -56,7 +56,6 @@
             "app/framework/filters/filters.js",
             "app/framework/forms/control.directive.js",
             "app/framework/forms/validate.directive.js",
-            "app/framework/state/state.directive.js",
             "app/framework/state/state.model.js",
             "app/framework/storage/storage.service.js",
             "app/framework/hash.model.js",

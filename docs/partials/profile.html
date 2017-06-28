@@ -66,8 +66,8 @@
                     <br>
                     <div ng-include="'partials/errors'"></div>
                     <div class="text-center">
-                        <button type="button" class="btn btn-primary" ng-class="stateClass()" ng-disabled="stateDisabled()" ng-click="submit()" on-validate="form.$invalid">
-                            <span>Salva</span>
+                        <button type="button" class="btn btn-primary" ng-click="form.$valid && submit('save')" ng-class="state.classes('save')" ng-disabled="state.disabled('save')">
+                            <span>Salva</span> <i class="icon-user"></i>
                         </button>
                         <!-- <button state="state" on-click="submit()" on-validate="form.$invalid"><span>Accedi</span> <i class="icon-user"></i></button> -->
                     </div>
@@ -108,7 +108,7 @@
                     </li>
                 </ul>
                 <button type="button" class="btn btn-secondary mr-2" ng-click="controls.setCenter()">centra</button>
-                <button type="button" class="btn btn-primary" ng-click="saveItems()">salva</button>
+                <button type="button" class="btn btn-primary" ng-click="saveItems('save')" ng-class="state.classes('save')" ng-disabled="state.disabled('save')">salva</button>
             </div>
         </nav>
     </div>
