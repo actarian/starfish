@@ -13,6 +13,7 @@
                 var format = attributes.format || '';
                 var precision = attributes.precision || 2;
                 var focus = false;
+                // console.log('validate', type);
                 switch (type) {
                     case 'date':
                     case 'datetime':

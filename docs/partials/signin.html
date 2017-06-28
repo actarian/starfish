@@ -12,26 +12,22 @@
             <button type="button" class="btn btn-sm btn-primary" ng-click="api.signout()">esci</button>
         </div>
         <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()" ng-if="!api.user">
-            <div class="container-fluid container-form">
-                <section class="container-fluid maxw-sm section-bordered shadow">
-                    <h6 class="headline foreground light-60">Accedi</h6>
-                    <div class="padding-top-xs-20 padding-bottom-xs-20">
-                        <div form="form" control="email" ng-model="model.email" title="Email" placeholder="la tua email" required="true"></div>
-                        <div form="form" control="password" ng-model="model.password" title="Password" placeholder="la tua password" required="true" min="6"></div>
-                        <!-- <div form="form" control="select" ng-model="model.type" title="Type" placeholder="selezione un tipo" required="true" source="[{id:1,name:'1'}, {id:2,name:'2'}]"></div> -->
-                        <br>
-                        <div ng-include="'partials/errors'"></div>
-                        <div class="row">
-                            <div class="col-lg-9 offset-lg-3">
-                                <button type="button" class="btn btn-primary animated infinite" ng-click="form.$valid && submit('signin')" ng-class="state.classes('signin', { busy: 'bounce', error: 'shake', success: 'pulse' })" ng-bind="state.labels('signin', { ready: 'accedi', busy: '...', 'error': 'errore', success: 'successo' })"
-                                    ng-disabled="state.disabled('signin')">accedi</button>
-                                <a class="btn btn-outline-primary" ng-href="#/signup">
-                                    <span>Registrati</span>
-                                </a>
-                            </div>
-                        </div>
+            <div class="container-fluid container-form pt-5 pb-3">
+                <h6 class="headline foreground light-60">Accedi</h6>
+                <div class="padding-top-xs-20 padding-bottom-xs-20">
+                    <div form="form" control="email" ng-model="model.email" title="Email" placeholder="la tua email" required="true"></div>
+                    <div form="form" control="password" ng-model="model.password" title="Password" placeholder="la tua password" required="true" min="6"></div>
+                    <!-- <div form="form" control="select" ng-model="model.type" title="Type" placeholder="selezione un tipo" required="true" source="[{id:1,name:'1'}, {id:2,name:'2'}]"></div> -->
+                    <br>
+                    <div ng-include="'partials/errors'"></div>
+                    <div class="nav">
+                        <a class="btn btn-outline-primary mr-auto" ng-href="#/signup">
+                            <span>Registrati</span>
+                        </a>
+                        <button type="button" class="btn btn-primary animated infinite" ng-click="form.$valid && submit('signin')" ng-class="state.classes('signin', { busy: 'bounce', error: 'shake', success: 'pulse' })" ng-bind="state.labels('signin', { ready: 'accedi', busy: '...', 'error': 'errore', success: 'successo' })"
+                            ng-disabled="state.disabled('signin')">accedi</button>
                     </div>
-                </section>
+                </div>
             </div>
         </form>
     </div>

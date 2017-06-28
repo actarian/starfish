@@ -482,7 +482,10 @@
         };
 
         $scope.submit = function(key) {
+            // console.log('ProfileCtrl.submit', key);
+            // form.$valid && 
             if (state.busy(key)) {
+                // console.log('state', state);
                 // angular.extend(user, model);
                 angular.forEach(model, function(value, key) {
                     if (value) {
@@ -2463,6 +2466,7 @@
                             scope.maxLength = attributes.max || Number.POSITIVE_INFINITY;
                             scope.options = $parse(attributes.options)(scope) || {};
                             scope.focus = false;
+                            scope.visible = false;
                             scope.getType = function() {
                                 var type = 'text';
                                 switch (attributes.control) {
@@ -2576,6 +2580,7 @@
                 var format = attributes.format || '';
                 var precision = attributes.precision || 2;
                 var focus = false;
+                // console.log('validate', type);
                 switch (type) {
                     case 'date':
                     case 'datetime':
@@ -2866,6 +2871,7 @@
         }
 
         function disabled(key) {
+            // console.log('disabled', key, this.key);
             return (this.key && this.key !== key);
         }
     }]);

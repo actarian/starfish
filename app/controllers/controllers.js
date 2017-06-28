@@ -72,7 +72,10 @@
         };
 
         $scope.submit = function(key) {
+            // console.log('ProfileCtrl.submit', key);
+            // form.$valid && 
             if (state.busy(key)) {
+                // console.log('state', state);
                 // angular.extend(user, model);
                 angular.forEach(model, function(value, key) {
                     if (value) {

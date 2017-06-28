@@ -7,21 +7,21 @@
 <main>
     <div class="content">
         <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()">
-            <section class="container-fluid container-form">
+            <div class="container-fluid container-form pt-5 pb-3">
                 <div class="inner">
                     <div ng-if="user">
                         homepage
                     </div>
-                    <div ng-if="!user">
-                        <a class="btn btn-primary btn-block" href="/#signin">
+                    <div class="nav" ng-if="!user">
+                        <a class="btn btn-primary mr-3" href="#/signin">
                             <span>Accedi</span>
                         </a>
-                        <a class="btn btn-primary btn-block" href="/#signup">
+                        <a class="btn btn-outline-primary" href="#/signup">
                             <span>Registrati</span>
                         </a>
                     </div>
                 </div>
-            </section>
+            </div>
         </form>
     </div>
 </main>

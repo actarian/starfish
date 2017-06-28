@@ -89,6 +89,7 @@
                             scope.maxLength = attributes.max || Number.POSITIVE_INFINITY;
                             scope.options = $parse(attributes.options)(scope) || {};
                             scope.focus = false;
+                            scope.visible = false;
                             scope.getType = function() {
                                 var type = 'text';
                                 switch (attributes.control) {

@@ -152,6 +152,7 @@
         }
 
         function disabled(key) {
+            // console.log('disabled', key, this.key);
             return (this.key && this.key !== key);
         }
     }]);
