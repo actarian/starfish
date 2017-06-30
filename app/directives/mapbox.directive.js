@@ -284,6 +284,184 @@
         }
     }]);
 
+    app.directive('mapboxViewer', ['$http', '$timeout', 'GoogleMaps', function($http, $timeout, googleMaps) {
+        if (!mapboxgl) {
+            return;
+        }
+        mapboxgl.accessToken = 'pk.eyJ1IjoiYWN0YXJpYW4iLCJhIjoiY2lqNWU3MnBzMDAyZndnbTM1cjMyd2N2MiJ9.CbuEGSvOAfIYggQv854pRQ';
+
+        return {
+            restrict: 'A',
+            link: link,
+        };
+
+        function link(scope, element, attributes, model) {
+            var map, markers, marker, geocoder, position, bounds, canvas, dragging, overing;
+
+            position = { lng: 0, lat: 0 };
+
+            function newMap() {
+                var map = new mapboxgl.Map({
+                    container: element[0],
+                    style: 'mapbox://styles/mapbox/streets-v9',
+                    interactive: true,
+                    logoPosition: 'bottom-right',
+                    center: [position.lng, position.lat],
+                    zoom: 9,
+                });
+                canvas = map.getCanvasContainer();
+                scope.map.setAddress = function(item) {
+                    console.log('setAddress', item);
+                    scope.map.results = null;
+                    flyTo(item.position);
+                };
+                scope.map.search = function() {
+                    console.log('address', scope.map.address);
+                    scope.map.results = null;
+                    geocodeAddress(scope.map.address);
+                    return true;
+                };
+                scope.map.styles = {
+                    RIVA: 1,
+                    SATELLITE: 2,
+                };
+                scope.map.style = scope.map.styles.RIVA;
+                scope.map.styleToggle = function() {
+                    if (scope.map.style === scope.map.styles.RIVA) {
+                        scope.map.style = scope.map.styles.SATELLITE;
+                        map.setStyle('mapbox://styles/mapbox/satellite-v9');
+                    } else {
+                        scope.map.style = scope.map.styles.RIVA;
+                        map.setStyle('mapbox://styles/mapbox/streets-v9');
+                    }
+                };
+                scope.map.setStyle = function(style) {
+                    scope.map.style = style;
+                    if (scope.map.style === scope.map.styles.RIVA) {
+                        map.setStyle('mapbox://styles/mapbox/streets-v9');
+                    } else {
+                        map.setStyle('mapbox://styles/mapbox/satellite-v9');
+                    }
+                };
+                return map;
+            }
+
+            function newMarker(item) {
+                var node = document.createElement('div');
+                node.id = 'point';
+                node.className = 'marker';
+                var marker = new mapboxgl.Marker(node, { offset: [-10, -10] })
+                    .setLngLat([
+                        item.position.lng,
+                        item.position.lat
+                    ])
+                    .addTo(map);
+                var markerElement = angular.element(node);
+                markerElement.on('click', function(e) {
+                    console.log('click', this);
+                });
+                return marker;
+            }
+
+            function geocodeAddress(address) {
+                geocoder.geocode({ 'address': address }, function(results, status) {
+                    $timeout(function() {
+                        if (status === 'OK') {
+                            scope.map.results = googleMaps.parse(results);
+                        } else {
+                            alert('Geocode was not successful for the following reason: ' + status);
+                        }
+                    });
+                });
+            }
+
+            function reverseGeocode(position) {
+                console.log('reverseGeocode', position);
+                geocoder.geocode({ 'location': position }, function(results, status) {
+                    $timeout(function() {
+                        if (status === 'OK') {
+                            scope.map.results = googleMaps.parse(results);
+                        } else {
+                            console.log('Geocoder failed due to: ' + status);
+                        }
+                    });
+                });
+            }
+
+            function geolocalize() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(p) {
+                        $timeout(function() {
+                            position = { lat: p.coords.latitude, lng: p.coords.longitude };
+                            flyTo(position);
+                            reverseGeocode(position);
+                        });
+                    }, function(e) {
+                        console.log('error', e);
+                    });
+                } else {
+                    console.log('error', 'Browser doesn\'t support Geolocation');
+                }
+            }
+
+            function flyTo(position) {
+                map.flyTo({
+                    center: [
+                        parseFloat(position.lng),
+                        parseFloat(position.lat)
+                    ],
+                    zoom: 15,
+                    speed: 1.5,
+                    curve: 1,
+                });
+            }
+
+            function fitBounds(bounds) {
+                map.fitBounds(bounds, {
+                    speed: 1.5,
+                    curve: 1,
+                    padding: 30,
+                    linear: false,
+                    maxZoom: 8,
+                });
+            }
+
+            function ready() {
+                map = newMap();
+                scope.$watch('map.items', function(items) {
+                    console.log(items);
+                    angular.forEach(markers, function(marker) {
+                        map.removeLayer(marker);
+                    });
+                    markers = [];
+                    if (items) {
+                        var latmin = Number.POSITIVE_INFINITY;
+                        var latmax = Number.NEGATIVE_INFINITY;
+                        var lngmin = Number.POSITIVE_INFINITY;
+                        var lngmax = Number.NEGATIVE_INFINITY;
+                        angular.forEach(items, function(item) {
+                            marker = newMarker(item);
+                            markers.push(marker);
+                            latmin = Math.min(latmin, item.position.lat);
+                            latmax = Math.max(latmax, item.position.lat);
+                            lngmin = Math.min(lngmin, item.position.lng);
+                            lngmax = Math.max(lngmax, item.position.lng);
+                            bounds = new mapboxgl.LngLatBounds(
+                                new mapboxgl.LngLat(lngmin, latmin),
+                                new mapboxgl.LngLat(lngmax, latmax)
+                            );
+                        });
+                        fitBounds(bounds);
+                    }
+                });
+            }
+            googleMaps.geocoder().then(function(response) {
+                geocoder = response;
+                ready();
+            });
+        }
+    }]);
+
     app.service('GoogleMaps', ['$q', '$http', function($q, $http) {
 
         var _key = 'AIzaSyAYuhIEO-41YT_GdYU6c1N7DyylT_OcMSY';

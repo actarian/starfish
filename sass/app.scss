@@ -38,6 +38,10 @@ mapbox {
     height: 300px;
 }
 
+[mapbox-viewer] {
+    height: calc(100vh - 60px);
+}
+
 .mapboxgl-ctrl {
     display: none;
 }
@@ -58,18 +62,23 @@ mapbox {
 }
 
 .controls {
+    position: relative;
     .input-group {
         position: absolute;
         top: 15px;
         left: 15px;
         right: 15px;
         width: auto;
+        max-width: 960px;
+        margin: 0 auto;
     }
     .dropdown-menu {
         position: absolute;
         top: 60px;
         left: 15px;
         right: 15px;
+        max-width: 960px;
+        margin: 0 auto;
     }
     .btn-group {
         position: absolute;

@@ -26,6 +26,7 @@
         service.user = undefined;
         service.presence = undefined;
         service.items = getUserItems;
+        service.facilities = getFacilities;
         service.auth = {
             signin: signin,
             signup: signup,
@@ -170,6 +171,10 @@
             service.user = null;
             deferred.resolve();
             return deferred.promise;
+        }
+
+        function getFacilities() {
+            return getArray('users');
         }
 
         function getUserItems() {

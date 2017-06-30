@@ -6,23 +6,44 @@
 
 <main>
     <div class="content">
-        <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()">
-            <div class="container-fluid container-form pt-5 pb-3">
-                <div class="inner">
-                    <div ng-if="user">
-                        homepage
-                    </div>
-                    <div class="nav" ng-if="!user">
-                        <a class="btn btn-primary mr-3" href="#/signin">
-                            <span>Accedi</span>
-                        </a>
-                        <a class="btn btn-outline-primary" href="#/signup">
-                            <span>Registrati</span>
-                        </a>
-                    </div>
+        <div class="outer controls">
+            <div mapbox-viewer="items"></div>
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="ricerca indirizzo..." ng-model="map.address" ng-keyup="$event.keyCode == 13 && map.search() && $event.preventDefault()">
+                <span class="input-group-btn">
+                    <button class="btn btn-primary" type="button" ng-click="map.search()">Cerca</button>
+                </span>
+            </div>
+            <div class="dropdown-menu" ng-style="{ display: map.results.length ? 'block' : 'none' }">
+                <h6 class="dropdown-header">trovati {{map.results.length}} indirizzi</h6>
+                <span class="dropdown-item" ng-click="map.setAddress(item)" ng-repeat="item in map.results track by $index" ng-bind="item.name"></span>
+            </div>
+            <div class="btn-group" data-toggle="buttons">
+                <label class="btn btn-primary btn-sm" ng-class="{ active: map.style == map.styles.RIVA }" ng-click="map.setStyle(map.styles.RIVA)">
+                    <input type="radio" name="options" autocomplete="off" ng-checked="map.style == map.styles.RIVA"> strade
+                </label>
+                <label class="btn btn-primary btn-sm" ng-class="{ active: map.style == map.styles.SATELLITE }" ng-click="map.setStyle(map.styles.SATELLITE)">
+                    <input type="radio" name="options" autocomplete="off" ng-checked="map.style == map.styles.SATELLITE"> satellite
+                </label>
+            </div>
+        </div>
+        <!--
+        <div class="container-fluid container-form pt-5 pb-3">
+            <div class="inner">
+                <div ng-if="user">
+                    homepage
+                </div>
+                <div class="nav" ng-if="!user">
+                    <a class="btn btn-primary mr-3" href="#/signin">
+                        <span>Accedi</span>
+                    </a>
+                    <a class="btn btn-outline-primary" href="#/signup">
+                        <span>Registrati</span>
+                    </a>
                 </div>
             </div>
-        </form>
+        </div>
+        -->
     </div>
 </main>
 

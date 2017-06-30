@@ -29,6 +29,16 @@
 
         var state = $scope.state = new State();
 
+        var map = $scope.map = {};
+
+        api.facilities().then(function(items) {
+            $scope.map.items = items;
+            // console.log(items);
+            state.ready();
+        }, function(error) {
+            state.error(error);
+        })
+
         state.ready();
 
     }]);
