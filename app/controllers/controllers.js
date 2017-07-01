@@ -16,7 +16,7 @@
             });
         };
 
-        api.current().then(function(user) {
+        api.auth.current().then(function(user) {
             $scope.user = user;
             console.log(user);
         }, function error(response) {

@@ -298,7 +298,10 @@
         function link(scope, element, attributes, model) {
             var map, markers, marker, geocoder, position, bounds, canvas, dragging, overing;
 
-            position = { lng: 0, lat: 0 };
+            position = {
+                lng: 13.5998744,
+                lat: 41.3412555,
+            };
 
             function newMap() {
                 var map = new mapboxgl.Map({
@@ -307,7 +310,7 @@
                     interactive: true,
                     logoPosition: 'bottom-right',
                     center: [position.lng, position.lat],
-                    zoom: 9,
+                    zoom: 6,
                 });
                 canvas = map.getCanvasContainer();
                 scope.map.setAddress = function(item) {

@@ -1,0 +1,32 @@
+<div class="content mt-3">
+    <div class="container-fluid container-form pb-3">
+        <div class="outer controls">
+        </div>
+        <div class="inner pt-3">
+            <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()">
+                <h3>Apertura</h3>
+                <div class="field-control">
+                    <div ng-click="flags.dateFrom = true" is-open="flags.dateFrom" ng-model="filters.dateFrom" ng-change="source.setDateFrom(filters.dateFrom)" uib-datepicker-popup datepicker-template-url="uib/template/datepicker/datepicker.html" show-button-bar="false"
+                        current-text="Oggi" clear-text="Rimuovi" close-text="Chiudi">
+                        <span ng-bind="filters.dateFrom || 'seleziona' | date : 'dd-MM-yyyy'"></span>
+                        <i class="icon-remove" ng-if="filters.dateFrom" ng-click="stop($event) && (filters.dateFrom = null)"></i>
+                        <i class="icon-calendar"></i>
+                    </div>
+                </div>
+                <div class="field-control">
+                    <div ng-click="flags.dateTo = true" is-open="flags.dateTo" ng-model="filters.dateTo" ng-change="source.setDateTo(filters.dateTo)" uib-datepicker-popup datepicker-template-url="uib/template/datepicker/datepicker.html" show-button-bar="false" current-text="Oggi"
+                        clear-text="Rimuovi" close-text="Chiudi">
+                        <span ng-bind="filters.dateTo || 'seleziona' | date : 'dd-MM-yyyy'"></span>
+                        <i class="icon-remove" ng-if="filters.dateTo" ng-click="stop($event) && (filters.dateTo = null)"></i>
+                        <i class="icon-calendar"></i>
+                    </div>
+                </div>
+                <div ng-include="'partials/errors'"></div>
+                <div class="text-right">
+                    <button type="button" class="btn btn-primary animated infinite" ng-click="form.$valid && submit('save')" ng-class="state.classes('save', { busy: 'bounce', error: 'shake', success: 'pulse' })" ng-bind="state.labels('save', { ready: 'salva', busy: '...', 'error': 'errore', success: 'salvato' })"
+                        ng-disabled="state.disabled('save')">salva</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

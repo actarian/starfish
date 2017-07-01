@@ -1,0 +1,35 @@
+<div class="container-fluid maxw-lg">
+    <nav class="navbar navbar-toggleable-md navbar-light">
+        <div class="collapse navbar-collapse show">
+            <ul class="nav nav-pills mr-auto">
+                <!--
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">Active</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Link</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Link</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#">Disabled</a>
+                </li>
+                -->
+                <li class="nav-item p-1">
+                    Ombrelloni <span ng-bind="beach.items.length"></span>
+                </li>
+                <li class="nav-item p-1">
+                    File <span ng-bind="beach.cols"></span>
+                </li>
+                <li class="nav-item p-1">
+                    Righe <span ng-bind="beach.rows"></span>
+                </li>
+            </ul>
+            <button type="button" class="btn btn-secondary mr-2" ng-click="controls.setCenter()">centra</button>
+            <button type="button" class="btn btn-primary animated infinite" ng-click="saveItems('items')" ng-class="state.classes('items', { busy: 'bounce', error: 'shake', success: 'pulse' })" ng-bind="state.labels('items', { ready: 'salva', busy: '...', 'error': 'errore', success: 'salvato' })"
+                ng-disabled="state.disabled('items')">salva</button>
+        </div>
+    </nav>
+</div>
+<canvas beach unselectable></canvas>

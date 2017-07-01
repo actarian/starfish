@@ -9,7 +9,7 @@
     <div class="content">
         <div ng-if="api.user">
             Hai già effettuato l'accesso
-            <button type="button" class="btn btn-sm btn-primary" ng-click="api.signout()">esci</button>
+            <button type="button" class="btn btn-sm btn-primary" ng-click="api.auth.signout()">esci</button>
         </div>
         <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()" ng-if="!api.user">
             <div class="container-fluid container-form pt-5 pb-3">

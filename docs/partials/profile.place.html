@@ -1,0 +1,50 @@
+<div class="content mt-3">
+    <div class="container-fluid container-form pb-3">
+        <!-- <div mapboxgl access-token="pk.eyJ1IjoiYWN0YXJpYW4iLCJhIjoiY2lqNWU3MnBzMDAyZndnbTM1cjMyd2N2MiJ9.CbuEGSvOAfIYggQv854pRQ" gl-style="'mapbox://styles/mapbox/light-v9'" __gl-center="{ autodiscover: true }" gl-controls="glControls"></div> -->
+        <!-- <h6 class="headline foreground light-60">Accedi</h6> -->
+        <div class="outer controls">
+            <mapbox ng-if="model"></mapbox>
+            <div class="input-group">
+                <!-- ng-model-options="{ allowInvalid: false, debounce: 1000 }" -->
+                <input type="text" class="form-control" placeholder="ricerca indirizzo..." ng-model="map.address" ng-keyup="$event.keyCode == 13 && map.search() && $event.preventDefault()">
+                <span class="input-group-btn">
+                    <button class="btn btn-primary" type="button" ng-click="map.search()">Cerca</button>
+                </span>
+            </div>
+            <div class="dropdown-menu" ng-style="{ display: map.results.length ? 'block' : 'none' }">
+                <h6 class="dropdown-header">trovati {{map.results.length}} indirizzi</h6>
+                <span class="dropdown-item" ng-click="map.setAddress(item)" ng-repeat="item in map.results track by $index" ng-bind="item.name"></span>
+            </div>
+            <div class="btn-group" data-toggle="buttons">
+                <label class="btn btn-primary btn-sm" ng-class="{ active: map.style == map.styles.RIVA }" ng-click="map.setStyle(map.styles.RIVA)">
+                    <input type="radio" name="options" autocomplete="off" ng-checked="map.style == map.styles.RIVA"> strade
+                </label>
+                <label class="btn btn-primary btn-sm" ng-class="{ active: map.style == map.styles.SATELLITE }" ng-click="map.setStyle(map.styles.SATELLITE)">
+                    <input type="radio" name="options" autocomplete="off" ng-checked="map.style == map.styles.SATELLITE"> satellite
+                </label>
+            </div>
+        </div>
+        <div class="inner pt-3">
+            <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()">
+                <h3>Indirizzo</h3>
+                <div form="form" control="text" ng-model="model.shopName" title="Stabilimento" placeholder="il nome dello stabilimento" required="true"></div>
+                <div form="form" control="text" ng-model="model.position.lat" title="Latitudine" placeholder="latitudine" validate="number" precision="20" required="true"></div>
+                <div form="form" control="text" ng-model="model.position.lng" title="Longitudine" placeholder="longitudine" validate="number" precision="20" required="true"></div>
+                <div form="form" control="text" ng-model="model.street" title="Via" placeholder="via dello stabilimento"></div>
+                <div form="form" control="text" ng-model="model.locality" title="Località" placeholder="località dello stabilimento"></div>
+                <div form="form" control="text" ng-model="model.number" title="N° Civico" placeholder="numero civico"></div>
+                <div form="form" control="text" ng-model="model.postalCode" title="Cap" placeholder="inserisci il cap" required="true"></div>
+                <div form="form" control="text" ng-model="model.city" title="Città" placeholder="inserisci la città" required="true"></div>
+                <div form="form" control="text" ng-model="model.province" title="Provincia" placeholder="inserisci la provincia"></div>
+                <div form="form" control="text" ng-model="model.region" title="Regione" placeholder="inserisci la regione"></div>
+                <div form="form" control="text" ng-model="model.country" title="Stato" placeholder="seleziona lo stato" required="true"></div>
+                <!-- <div form="form" control="select" ng-model="model.type" title="Type" placeholder="selezione un tipo" required="true" source="[{id:1,name:'1'}, {id:2,name:'2'}]"></div> -->
+                <div ng-include="'partials/errors'"></div>
+                <div class="text-right">
+                    <button type="button" class="btn btn-primary animated infinite" ng-click="form.$valid && submit('save')" ng-class="state.classes('save', { busy: 'bounce', error: 'shake', success: 'pulse' })" ng-bind="state.labels('save', { ready: 'salva', busy: '...', 'error': 'errore', success: 'salvato' })"
+                        ng-disabled="state.disabled('save')">salva</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

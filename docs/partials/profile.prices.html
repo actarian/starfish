@@ -1,0 +1,16 @@
+<div class="content mt-3">
+    <div class="container-fluid container-form pb-3">
+        <div class="outer controls">
+        </div>
+        <div class="inner pt-3">
+            <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()">
+                <h3>Tariffe</h3>
+                <div ng-include="'partials/errors'"></div>
+                <div class="text-right">
+                    <button type="button" class="btn btn-primary animated infinite" ng-click="form.$valid && submit('save')" ng-class="state.classes('save', { busy: 'bounce', error: 'shake', success: 'pulse' })" ng-bind="state.labels('save', { ready: 'salva', busy: '...', 'error': 'errore', success: 'salvato' })"
+                        ng-disabled="state.disabled('save')">salva</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
