@@ -31,7 +31,7 @@
 
         var map = $scope.map = {};
 
-        api.facilities().then(function(items) {
+        api.facilities.get().then(function(items) {
             $scope.map.items = items;
             // console.log(items);
             state.ready();
@@ -58,6 +58,10 @@
 
         var model = $scope.model = {
             shopName: user.shopName,
+            cols: 0,
+            rows: 0,
+            items: [],
+            /*
             address: user.address,
             number: user.number,
             postalCode: user.postalCode,
@@ -67,19 +71,59 @@
             region: user.region,
             country: user.country,
             position: user.position,
+            */
         };
 
         var map = $scope.map = {};
 
+        /*
         var beach = $scope.beach = user.beach || {
             items: [],
             cols: 0,
             rows: 0,
         };
+        */
 
         var controls = $scope.controls = {
 
         };
+
+        $scope.saveFacility = function(key) {
+            if (state.busy(key)) {
+                var facility = {};
+                if (model.$save) {
+                    facility = model;
+                } else {
+                    angular.forEach(model, function(value, key) {
+                        if (value) {
+                            facility[key] = value;
+                        } else {
+                            delete facility[key];
+                        }
+                    });
+                    facility.userId = user.id;
+                }
+                api.facilities.save(facility).then(function success(response) {
+                    console.log('response', response);
+                    state.success();
+                }, function error(response) {
+                    state.error(response);
+                });
+            }
+        };
+
+        $scope.saveItems = function(key) {
+            $scope.saveFacility(key);
+        };
+
+        api.facilities.user(user.id).then(function(facility) {
+            console.log('user.facilities', facility);
+            if (facility) {
+                model = $scope.model = facility;
+            }
+        });
+
+        /*
 
         $scope.submit = function(key) {
             // console.log('ProfileCtrl.submit', key);
@@ -103,12 +147,6 @@
                 });
             }
         };
-
-        $scope.saveItems = function(key) {
-            $scope.submit(key);
-        };
-
-        /*
                 var glControls = {
                     navigation: {
                         enabled: true,
@@ -144,16 +182,31 @@
         */
     }]);
 
+    app.controller('BeachCtrl', ['$scope', '$routeParams', 'State', 'FirebaseApi', function($scope, $routeParams, State, api) {
+
+        var state = $scope.state = new State();
+
+        var model = $scope.model = {};
+
+        var map = $scope.map = {};
+
+        var controls = $scope.controls = {
+
+        };
+
+        var facilityId = $scope.facilityId = parseInt($routeParams.facilityId);
+
+        api.facilities.detail(facilityId).then(function(facility) {
+            model = $scope.model = facility;
+        });
+
+    }]);
+
     app.controller('DashboardCtrl', ['$scope', 'State', 'FirebaseApi', 'user', function($scope, State, api, user) {
 
         var state = $scope.state = new State();
 
         state.ready();
-
-        api.items().then(function(items) {
-            console.log('DashboardCtrl.items', items);
-            $scope.items = items;
-        });
 
     }]);
 
@@ -168,7 +221,7 @@
                 api.auth.signin(model).then(function success(response) {
                     // console.log('SigninCtrl', response);
                     state.success();
-                    router.retry('/dashboard');
+                    router.path('/dashboard');
                 }, function error(response) {
                     console.log('SigninCtrl.error', response);
                     state.error(response);
@@ -189,7 +242,7 @@
                 api.auth.signup(model).then(function success(response) {
                     // console.log('SignupCtrl', path, response);
                     state.success();
-                    router.retry('/dashboard');
+                    router.apply('/dashboard');
                 }, function error(response) {
                     console.log('SignupCtrl.error', response);
                     state.error(response);

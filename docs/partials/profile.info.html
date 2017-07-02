@@ -6,11 +6,12 @@
             <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()">
                 <h3>Informazioni</h3>
                 <div form="form" control="text" ng-model="model.picture" title="Immagine" placeholder="foto dello stabilimento" required="false"></div>
+                <div form="form" control="text" ng-model="model.shopName" title="Nome" placeholder="nome dello stabilimento" required="true"></div>
                 <div form="form" control="markdown" ng-model="model.description" title="Descrizione" placeholder="descrizione" required="false"></div>
                 <div form="form" control="text" ng-model="model.servizi" title="Servizi" placeholder="elenco servizi separati da virgola" required="false"></div>
                 <div ng-include="'partials/errors'"></div>
                 <div class="text-right">
-                    <button type="button" class="btn btn-primary animated infinite" ng-click="form.$valid && submit('save')" ng-class="state.classes('save', { busy: 'bounce', error: 'shake', success: 'pulse' })" ng-bind="state.labels('save', { ready: 'salva', busy: '...', 'error': 'errore', success: 'salvato' })"
+                    <button type="button" class="btn btn-primary animated infinite" ng-click="form.$valid && submit('save')" ng-class="state.classes('save', { busy: 'bounce', error: 'shake', success: 'pulse' })" ng-bind="state.labels('save', { ready: 'salva', busy: 'attendi', 'error': 'errore', success: 'salvato' })"
                         ng-disabled="state.disabled('save')">salva</button>
                 </div>
             </form>

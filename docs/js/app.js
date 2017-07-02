@@ -40,9 +40,14 @@
             controller: 'ProfileCtrl',
             resolve: {
                 user: ['FirebaseApi', function(api) {
-                    return api.isLoggedOrGoTo('/signin');
+                    return api.auth.redirect('/signin');
                 }],
             },
+
+        }).when('/spiaggia/:facilityId', {
+            title: 'Spiaggia',
+            templateUrl: 'partials/beach.html',
+            controller: 'BeachCtrl',
 
         }).when('/signin', {
             title: 'Accedi',
@@ -60,7 +65,7 @@
             controller: 'DashboardCtrl',
             resolve: {
                 user: ['FirebaseApi', function(api) {
-                    return api.isLoggedOrGoTo('/signin');
+                    return api.auth.redirect('/signin');
                 }],
             },
 
@@ -70,7 +75,7 @@
             controller: 'UserCtrl',
             resolve: {
                 user: ['FirebaseApi', function(api) {
-                    return api.isLoggedOrGoTo('/signin');
+                    return api.auth.redirect('/signin');
                 }],
             },
 
@@ -100,126 +105,142 @@
 
         var scope = this;
         scope.user = undefined;
-        scope.isLoggedOrGoTo = isLoggedOrGoTo;
-        scope.auth = {
-            current: userCurrent,
-            signin: userSignin,
-            signup: userSignup,
-            signout: userSignout,
-        };
-        scope.users = {
-            index: userIndex,
-            detail: userDetail,
-            save: userSave,
-        };
-        scope.items = getUserItems;
-        scope.facilities = getFacilities;
 
-        function userCurrent() {
-            var deferred = $q.defer();
-            if (scope.user) {
-                deferred.resolve(scope.user);
-            } else {
-                var token = storage.get('token');
-                if (token) {
-                    service.getSingle('users', { token: token }).then(function(user) {
+        scope.auth = {
+            redirect: function(path) {
+                var deferred = $q.defer();
+                scope.auth.current().then(function(user) {
+                    deferred.resolve(scope.user);
+                }, function(data) {
+                    deferred.reject(service.error(data));
+                    router.redirect(path);
+                });
+                return deferred.promise;
+            },
+            current: function() {
+                var deferred = $q.defer();
+                if (scope.user) {
+                    deferred.resolve(scope.user);
+                } else {
+                    var token = storage.get('token');
+                    if (token) {
+                        service.getSingle('users', { token: token }).then(function(user) {
+                            scope.user = user;
+                            deferred.resolve(user);
+                        }, function(data) {
+                            deferred.reject(service.error(data));
+                        });
+                    } else {
+                        deferred.reject(service.error('not logged'));
+                    }
+                }
+                return deferred.promise;
+            },
+            signin: function(model) {
+                console.log('FirebaseApi.userSignin', model);
+                var deferred = $q.defer();
+                if (scope.user) {
+                    console.log('signed', scope.user);
+                    deferred.resolve(scope.user);
+                } else {
+                    service.getSingle('users', { email: model.email }).then(function(user) {
+                        if (model.password === user.password) {
+                            storage.set('token', user.token);
+                            scope.user = user;
+                            deferred.resolve(user);
+                        } else {
+                            deferred.reject(getEttot('not found'));
+                        }
+                    }, function(data) {
+                        deferred.reject(service.error(data));
+                    });
+                }
+                return deferred.promise;
+            },
+            signup: function(model) {
+                console.log('api.userSignup', model);
+                var deferred = $q.defer();
+                service.getSingle('users', { email: model.email }).then(function(user) {
+                    deferred.reject(service.error('indirizzo email già in uso.'));
+                }, function(data) {
+                    model.token = service.presence.uid;
+                    service.addObject('users', model).then(function(user) {
+                        storage.set('token', user.token);
                         scope.user = user;
                         deferred.resolve(user);
                     }, function(data) {
                         deferred.reject(service.error(data));
                     });
-                } else {
-                    deferred.reject(service.error('not logged'));
-                }
-            }
-            return deferred.promise;
-        }
+                });
+                return deferred.promise;
+            },
+            signout: function userSignout() {
+                console.log('api.signout');
+                var deferred = $q.defer();
+                storage.delete('token');
+                scope.user = null;
+                deferred.resolve();
+                return deferred.promise;
+            },
+        };
 
-        function userSignin(model) {
-            console.log('FirebaseApi.userSignin', model);
+        scope.users = {
+            get: function() {
+                return service.getArray('users');
+            },
+            detail: function(id) {
+                return service.getSingle('users', { id: id });
+            },
+            save: function(model) {
+                return save('users', model);
+            },
+        };
+
+        scope.facilities = {
+            get: function() {
+                return service.getArray('facilities');
+            },
+            user: function(userId) {
+                return service.getSingle('facilities', { userId: userId });
+            },
+            detail: function(id) {
+                return service.getSingle('facilities', { id: id });
+            },
+            save: function(model) {
+                return save('facilities', model);
+            },
+        };
+
+        scope.facilityItems = {
+            get: function() {
+                return service.getArray('facilityItems');
+            },
+            user: function(facilityId) {
+                return service.getArray('facilityItems', { facilityId: facilityId });
+            },
+            detail: function(id) {
+                return service.getSingle('facilityItems', { id: id });
+            },
+            save: function(model) {
+                return save('facilityItems', model);
+            },
+        };
+
+        function save(collection, model) {
             var deferred = $q.defer();
-            if (scope.user) {
-                console.log('signed', scope.user);
-                deferred.resolve(scope.user);
+            if (model.$save) {
+                service.saveObject(model).then(function(ref) {
+                    deferred.resolve(model);
+                }, function(data) {
+                    deferred.reject(service.error(data));
+                });
             } else {
-                service.getSingle('users', { email: model.email }).then(function(user) {
-                    if (model.password === user.password) {
-                        storage.set('token', user.token);
-                        scope.user = user;
-                        deferred.resolve(user);
-                    } else {
-                        deferred.reject(getEttot('not found'));
-                    }
+                service.addObject(collection, model).then(function(model) {
+                    deferred.resolve(model);
                 }, function(data) {
                     deferred.reject(service.error(data));
                 });
             }
-            return deferred.promise;
-        }
-
-        function userSignup(model) {
-            console.log('FirebaseApi.userSignup', model);
-            var deferred = $q.defer();
-            service.getSingle('users', { email: model.email }).then(function(user) {
-                deferred.reject(service.error('indirizzo email già in uso.'));
-            }, function(data) {
-                model.token = service.presence.uid;
-                addObject('users', model).then(function(user) {
-                    storage.set('token', user.token);
-                    scope.user = user;
-                    deferred.resolve(user);
-                }, function(data) {
-                    deferred.reject(service.error(data));
-                });
-            });
-            return deferred.promise;
-        }
-
-        function userSignout() {
-            console.log('FirebaseApi.signout');
-            var deferred = $q.defer();
-            storage.delete('token');
-            scope.user = null;
-            deferred.resolve();
-            return deferred.promise;
-        }
-
-        function userIndex() {
-            return service.getArray('users');
-        }
-
-        function userDetail(id) {
-            return service.getSingle('users', { id: id });
-        }
-
-        function userSave(model) {
-            var deferred = $q.defer();
-            service.saveObject(model).then(function(ref) {
-                // ref.key === obj.$id; // true
-                deferred.resolve(model);
-            }, function(data) {
-                console.log('userSave', data);
-                deferred.reject(service.error(data));
-            });
-            return deferred.promise;
-        }
-
-        function getUserItems() {
-            return getArray('items', { token: 'token' });
-        }
-
-        function getFacilities() {
-            return service.getArray('users');
-        }
-
-        function isLoggedOrGoTo(path) {
-            var deferred = $q.defer();
-            userCurrent().then(function(user) {
-                deferred.resolve(scope.user);
-            }, function(data) {
-                deferred.reject(service.error(data));
-                router.redirect(path);
-            });
             return deferred.promise;
         }
 
@@ -248,11 +269,12 @@
         scope.getObject = getObject;
         scope.getArray = getArray;
         scope.addObject = addObject;
+        scope.addArray = addArray;
         scope.saveObject = saveObject;
         scope.error = error;
 
         function getUID() {
-            return (new Date()).getTime() + Math.floor(Math.random() * 9999);
+            return (new Date()).getTime() + Math.floor(Math.random() * 999);
         }
 
         function connect() {
@@ -375,7 +397,32 @@
             return deferred.promise;
         }
 
+        function addArray(collection, array) {
+            var deferred = $q.defer();
+            connect().then(function(presence) {
+                var root = firebase.database().ref();
+                var arrayRef = root.child(collection);
+                var id = getUID();
+                angular.forEach(array, function(item) {
+                    item.id = item.id || ++id;
+                    var ref = arrayRef.push();
+                    ref.set(item);
+                });
+                $firebaseArray(arrayRef).$loaded().then(function(data) {
+                    deferred.resolve(data);
+                }, function(data) {
+                    deferred.reject(error(data));
+                });
+            }, function(data) {
+                deferred.reject(error(data));
+            });
+            return deferred.promise;
+        }
+
         function saveObject(model) {
+            if (model.length === undefined) {
+                model.id = model.id || getUID();
+            }
             return model.$save();
         }
 
@@ -389,294 +436,6 @@
                 message = data.message;
             }
             return { status: status, message: message };
-        }
-
-    }]);
-
-    app.service('_____FirebaseApi', ['$q', '$firebaseAuth', '$firebaseObject', '$firebaseArray', 'LocalStorage', 'Router', function($q, $firebaseAuth, $firebaseObject, $firebaseArray, storage, router) {
-
-        var firebase = window.firebase || null;
-        if (firebase) {
-            var config = {
-                apiKey: "AIzaSyCskd8Cgzd_j7JzgEC3mEb4ir1qZFh6auQ",
-                authDomain: "starfish-c2b0f.firebaseapp.com",
-                databaseURL: "https://starfish-c2b0f.firebaseio.com",
-                projectId: "starfish-c2b0f",
-                storageBucket: "starfish-c2b0f.appspot.com",
-                messagingSenderId: "796739915579"
-            };
-            firebase.initializeApp(config);
-        } else {
-            throw ('missing firebase.js');
-        }
-
-        var service = this;
-        service.user = undefined;
-        service.presence = undefined;
-        service.items = getUserItems;
-        service.facilities = getFacilities;
-        service.auth = {
-            signin: signin,
-            signup: signup,
-            signout: signout,
-        };
-        service.users = {
-            save: userSave,
-        };
-        service.current = current;
-        service.isLoggedOrGoTo = isLoggedOrGoTo;
-
-        function getError(data) {
-            var status = 400;
-            var message = 'Errore';
-            if (angular.isString(data)) {
-                message = data;
-            } else if (data && data.message) {
-                status = data.status;
-                message = data.message;
-            }
-            return { status: status, message: message };
-        }
-
-        function getUID() {
-            return (new Date()).getTime() + Math.floor(Math.random() * 9999);
-        }
-
-        function connect() {
-            var deferred = $q.defer();
-            if (service.presence) {
-                deferred.resolve(service.presence);
-            } else {
-                var auth = $firebaseAuth();
-                auth.$signInAnonymously({ remember: 'sessionOnly' }).then(function(logged) {
-                    var presence = service.presence = {
-                        uid: logged.uid,
-                    };
-                    deferred.resolve(presence);
-                }).catch(function(error) {
-                    console.log('Error', error);
-                    deferred.reject(getError(error));
-                });
-            }
-            return deferred.promise;
-        }
-
-        function current() {
-            var deferred = $q.defer();
-            if (service.user) {
-                deferred.resolve(service.user);
-            } else {
-                var token = storage.get('token');
-                if (token) {
-                    connect().then(function(presence) {
-                        getSingle('users', { token: token }).then(function(user) {
-                            service.user = user;
-                            deferred.resolve(user);
-                        }, function(error) {
-                            deferred.reject(getError(error));
-                        });
-                    }, function(error) {
-                        deferred.reject(getError(error));
-                    });
-                } else {
-                    deferred.reject(getError('not logged'));
-                }
-            }
-            return deferred.promise;
-        }
-
-        function signin(model) {
-            console.log('FirebaseApi.signin', model);
-            var deferred = $q.defer();
-            if (service.user) {
-                console.log('signed', service.user);
-                deferred.resolve(service.user);
-            } else {
-                connect().then(function(presence) {
-                    getSingle('users', { email: model.email }).then(function(user) {
-                        if (user.password === model.password) {
-                            storage.set('token', user.token);
-                            service.user = user;
-                            deferred.resolve(user);
-                        } else {
-                            deferred.reject(getEttot('not found'));
-                        }
-                    }, function(error) {
-                        deferred.reject(getError(error));
-                    });
-                }, function(error) {
-                    deferred.reject(getError(error));
-                });
-            }
-            return deferred.promise;
-        }
-
-        function signup(model) {
-            console.log('FirebaseApi.signup', model);
-            var deferred = $q.defer();
-            connect().then(function(presence) {
-                getSingle('users', { email: model.email }).then(function(user) {
-                    deferred.reject(getError('indirizzo email già in uso.'));
-                }, function(error) {
-                    model.token = presence.uid;
-                    model.id = getUID();
-                    addObject('users', model).then(function(user) {
-                        storage.set('token', user.token);
-                        service.user = user;
-                        deferred.resolve(user);
-                    }, function(error) {
-                        deferred.reject(getError(error));
-                    });
-                });
-            }, function(error) {
-                deferred.reject(getError(error));
-            });
-            return deferred.promise;
-        }
-
-        function signout() {
-            console.log('FirebaseApi.signout');
-            var deferred = $q.defer();
-            storage.delete('token');
-            service.user = null;
-            deferred.resolve();
-            return deferred.promise;
-        }
-
-        function getFacilities() {
-            return getArray('users');
-        }
-
-        function getUserItems() {
-            return getArray('items', { token: 'token' });
-        }
-
-        function isLoggedOrGoTo(path) {
-            var deferred = $q.defer();
-            current().then(function(user) {
-                deferred.resolve(service.user);
-            }, function(error) {
-                deferred.reject(getError(error));
-                router.redirect(path);
-            });
-            return deferred.promise;
-        }
-
-        function userSave(model) {
-            console.log('userSave', model);
-            var deferred = $q.defer();
-            model.$save().then(function(ref) {
-                // ref.key === obj.$id; // true
-                deferred.resolve(model);
-            }, function(error) {
-                console.log('userSave', error);
-                deferred.reject(getError(error));
-            });
-            return deferred.promise;
-        }
-
-        // UTILS
-
-        function removeRange(firebaseArray, from, to) {
-            var keys = {};
-            if (to === undefined) {
-                to = firebaseArray.length;
-            }
-            for (var i = from; i < to; ++i) {
-                keys[firebaseArray.$keyAt(i)] = null;
-            }
-            return firebaseArray.$ref().update(keys);
-        }
-
-        function queryBase(collection, query) {
-            var deferred = $q.defer();
-            var root = firebase.database().ref();
-            var ref = root.child(collection);
-            var fields = [];
-            for (var p in query) {
-                fields.push({
-                    key: p,
-                    value: query[p],
-                });
-            }
-            var field = fields.shift();
-            var items = [];
-            ref.orderByChild(field.key).equalTo(field.value).on('child_added', function(snap) {
-                var item = snap.val();
-                if (item) {
-                    deferred.resolve(item);
-                } else {
-                    deferred.reject(getError());
-                }
-            });
-            return deferred.promise;
-        }
-
-        function getField(query) {
-            var fields = [];
-            for (var p in query) {
-                fields.push({
-                    key: p,
-                    value: query[p],
-                });
-            }
-            var field = null;
-            if (fields.length) {
-                field = fields.shift();
-            }
-            return field;
-        }
-
-        function getSingle(collection, query, limit) {
-            var deferred = $q.defer();
-            var items = getArray(collection, query, limit).then(function(items) {
-                // console.log('getSingle', items.length);
-                if (items.length === 1) {
-                    var key = items[0].$id;
-                    // console.log('getSingle', key);
-                    getObject(collection, key).then(function(item) {
-                        // console.log('getSingle', item);
-                        deferred.resolve(item);
-                    }, function(error) {
-                        deferred.reject(getError(error));
-                    });
-                } else {
-                    deferred.reject(getError('record duplicati'));
-                }
-            }, function(error) {
-                deferred.reject(getError(error));
-            });
-            return deferred.promise;
-        }
-
-        function getObject(collection, key) {
-            var root = firebase.database().ref();
-            var ref = root.child(collection).child(key);
-            return $firebaseObject(ref).$loaded();
-        }
-
-        function getArray(collection, query, limit) {
-            var root = firebase.database().ref();
-            var ref = root.child(collection);
-            var queryOrRef = ref;
-            if (query) {
-                var field = getField(query);
-                if (field) {
-                    queryOrRef = ref.orderByChild(field.key).equalTo(field.value);
-                    if (limit) {
-                        queryOrRef = queryOrRef.limitToLast(limit);
-                    }
-                }
-            }
-            return $firebaseArray(queryOrRef).$loaded();
-        }
-
-        function addObject(collection, model) {
-            var root = firebase.database().ref();
-            var arrayRef = root.child(collection);
-            var ref = arrayRef.push();
-            ref.set(model);
-            return $firebaseObject(ref).$loaded();
         }
 
     }]);
@@ -715,7 +474,7 @@
 
         var map = $scope.map = {};
 
-        api.facilities().then(function(items) {
+        api.facilities.get().then(function(items) {
             $scope.map.items = items;
             // console.log(items);
             state.ready();
@@ -742,6 +501,10 @@
 
         var model = $scope.model = {
             shopName: user.shopName,
+            cols: 0,
+            rows: 0,
+            items: [],
+            /*
             address: user.address,
             number: user.number,
             postalCode: user.postalCode,
@@ -751,19 +514,59 @@
             region: user.region,
             country: user.country,
             position: user.position,
+            */
         };
 
         var map = $scope.map = {};
 
+        /*
         var beach = $scope.beach = user.beach || {
             items: [],
             cols: 0,
             rows: 0,
         };
+        */
 
         var controls = $scope.controls = {
 
         };
+
+        $scope.saveFacility = function(key) {
+            if (state.busy(key)) {
+                var facility = {};
+                if (model.$save) {
+                    facility = model;
+                } else {
+                    angular.forEach(model, function(value, key) {
+                        if (value) {
+                            facility[key] = value;
+                        } else {
+                            delete facility[key];
+                        }
+                    });
+                    facility.userId = user.id;
+                }
+                api.facilities.save(facility).then(function success(response) {
+                    console.log('response', response);
+                    state.success();
+                }, function error(response) {
+                    state.error(response);
+                });
+            }
+        };
+
+        $scope.saveItems = function(key) {
+            $scope.saveFacility(key);
+        };
+
+        api.facilities.user(user.id).then(function(facility) {
+            console.log('user.facilities', facility);
+            if (facility) {
+                model = $scope.model = facility;
+            }
+        });
+
+        /*
 
         $scope.submit = function(key) {
             // console.log('ProfileCtrl.submit', key);
@@ -787,12 +590,6 @@
                 });
             }
         };
-
-        $scope.saveItems = function(key) {
-            $scope.submit(key);
-        };
-
-        /*
                 var glControls = {
                     navigation: {
                         enabled: true,
@@ -828,16 +625,31 @@
         */
     }]);
 
+    app.controller('BeachCtrl', ['$scope', '$routeParams', 'State', 'FirebaseApi', function($scope, $routeParams, State, api) {
+
+        var state = $scope.state = new State();
+
+        var model = $scope.model = {};
+
+        var map = $scope.map = {};
+
+        var controls = $scope.controls = {
+
+        };
+
+        var facilityId = $scope.facilityId = parseInt($routeParams.facilityId);
+
+        api.facilities.detail(facilityId).then(function(facility) {
+            model = $scope.model = facility;
+        });
+
+    }]);
+
     app.controller('DashboardCtrl', ['$scope', 'State', 'FirebaseApi', 'user', function($scope, State, api, user) {
 
         var state = $scope.state = new State();
 
         state.ready();
-
-        api.items().then(function(items) {
-            console.log('DashboardCtrl.items', items);
-            $scope.items = items;
-        });
 
     }]);
 
@@ -852,7 +664,7 @@
                 api.auth.signin(model).then(function success(response) {
                     // console.log('SigninCtrl', response);
                     state.success();
-                    router.retry('/dashboard');
+                    router.path('/dashboard');
                 }, function error(response) {
                     console.log('SigninCtrl.error', response);
                     state.error(response);
@@ -873,7 +685,7 @@
                 api.auth.signup(model).then(function success(response) {
                     // console.log('SignupCtrl', path, response);
                     state.success();
-                    router.retry('/dashboard');
+                    router.apply('/dashboard');
                 }, function error(response) {
                     console.log('SignupCtrl.error', response);
                     state.error(response);
@@ -897,17 +709,17 @@
             link: link,
         };
 
-        function link(scope, element, attributes, model) {
+        function link(scope, element, attributes, ctrl) {
             var over, overItem, down, mode, mouse = { x: 0, y: 0 },
                 view = { w: 0, h: 0 },
                 cell = { w: 40, h: 40, w2: 20, h2: 20 };
 
-            var beach = scope.beach;
-            var controls = scope.controls;
-            var items = beach.items;
-
             var painter = new Painter(element[0]);
             var palette = new Palette();
+
+            var controls = scope.controls;
+            var model = scope.model;
+            var items = model.items;
 
             // document.body.appendChild(palette.painter.canvas);
 
@@ -1078,8 +890,8 @@
                         rows++;
                     }
                 });
-                beach.cols = cols;
-                beach.rows = rows;
+                model.cols = cols;
+                model.rows = rows;
             }
 
             function updateScope() {
@@ -1152,7 +964,7 @@
             }
 
             controls.setCenter = function() {
-                if (beach.rows && beach.cols) {
+                if (model.rows && model.cols) {
                     var cols = Math.floor(view.w / cell.w);
                     var rows = Math.floor(view.h / cell.h);
                     var cmin = Number.POSITIVE_INFINITY,
@@ -1161,14 +973,14 @@
                         cmin = Math.min(cmin, item.x);
                         rmin = Math.min(rmin, item.y);
                     });
-                    var sc = Math.max(0, Math.floor((cols - beach.cols) / 2) - 1);
-                    var sr = Math.max(0, Math.floor((rows - beach.rows) / 2) - 1);
+                    var sc = Math.max(0, Math.floor((cols - model.cols) / 2) - 1);
+                    var sr = Math.max(0, Math.floor((rows - model.rows) / 2) - 1);
                     angular.forEach(items, function(item) {
                         item.x = sc + (item.x - cmin);
                         item.y = sr + (item.y - rmin);
                     });
                 }
-                console.log('setCenter', beach.rows, beach.cols);
+                console.log('setCenter', model.rows, model.cols);
                 draw();
             };
 
@@ -1187,8 +999,13 @@
             });
 
             onResize();
-            $timeout(function() {
-                draw();
+
+            scope.$watch('model', function(newValue) {
+                model = newValue;
+                items = model.items;
+                $timeout(function() {
+                    draw();
+                });
             });
 
             /*
@@ -1381,12 +1198,6 @@
             }
 
             function setLocation() {
-                /*
-                map.setCenter([
-                    parseFloat(lng),
-                    parseFloat(lat)
-                ]);
-                */
                 marker.setLngLat([position.lng, position.lat]);
                 map.flyTo({
                     center: [
@@ -1396,59 +1207,13 @@
                     zoom: 15,
                     speed: 1.5,
                     curve: 1,
-                    /*
-                    easing: function (t) {
-                        return t;
-                    }
-                    */
                 });
             }
-
-            /*
-            scope.$watch('model', function(model) {
-                position = model.position;
-                setLocation();
-            });
-            */
-
-            /*
-            scope.$watch('map.address', function(address) {
-                if (!address) {
-                    return;
-                }
-                scope.map.results = null;
-                scope.map.setAddress = function(item) {
-                    console.log('setAddress', item);
-                    angular.extend(scope.model, item);
-                    scope.map.results = null;
-                    setLocation();
-                };
-                geocodeAddress(address);
-            });
-            */
-
-            /*
-            // When the cursor enters a feature in the point layer, prepare for dragging.
-            map.on('mouseenter', 'point', function() {
-                // map.setPaintProperty('point', 'circle-color', '#3bb2d0');
-                canvas.style.cursor = 'move';
-                overing = true;
-                map.dragPan.disable();
-            });
-            map.on('mouseleave', 'point', function() {
-                // map.setPaintProperty('point', 'circle-color', '#3887be');
-                canvas.style.cursor = '';
-                overing = false;
-                map.dragPan.enable();
-            });
-            */
 
             function mouseDown() {
                 if (!overing) return;
                 dragging = true;
-                // Set a cursor indicator
                 canvas.style.cursor = 'grab';
-                // Mouse events
                 map.on('mousemove', onMove);
                 map.once('mouseup', onUp);
             }
@@ -1456,52 +1221,38 @@
             function onMove(e) {
                 if (!dragging) return;
                 var p = e.lngLat;
-                // Set a UI indicator for dragging.
                 canvas.style.cursor = 'grabbing';
-                // Update the Point feature in `geojson` coordinates
-                // and call setData to the source layer `point` on it.
                 marker.setLngLat([
                     p.lng,
                     p.lat
                 ]);
-                // geojson.features[0].geometry.coordinates = [p.lng, p.lat];
-                // map.getSource('point').setData(geojson);
             }
 
             function onUp(e) {
                 if (!dragging) return;
                 var p = e.lngLat;
-                // Print the coordinates of where the point had
-                // finished being dragged to on the map.
-                // coordinates.style.display = 'block';
-                // coordinates.innerHTML = 'Longitude: ' + p.lng + '<br />Latitude: ' + p.lat;
                 $timeout(function() {
                     position = setPosition(p.lat, p.lng);
-                    reverseGeocode(p);
+                    // reverseGeocode(p);
                 });
                 canvas.style.cursor = '';
                 dragging = false;
-                // Unbind mouse events
                 map.off('mousemove', onMove);
             }
 
             function ready() {
-
                 map = newMap();
-
                 marker = newMarker();
-
             }
 
             googleMaps.geocoder().then(function(response) {
                 geocoder = response;
                 ready();
             });
-
         }
     }]);
 
-    app.directive('mapboxViewer', ['$http', '$timeout', 'GoogleMaps', function($http, $timeout, googleMaps) {
+    app.directive('mapboxViewer', ['$http', '$timeout', 'GoogleMaps', 'Router', function($http, $timeout, googleMaps, router) {
         if (!mapboxgl) {
             return;
         }
@@ -1578,7 +1329,8 @@
                     .addTo(map);
                 var markerElement = angular.element(node);
                 markerElement.on('click', function(e) {
-                    console.log('click', this);
+                    console.log('click', item);
+                    router.apply('/spiaggia/' + item.id);
                 });
                 return marker;
             }
@@ -3835,16 +3587,17 @@
 }());
 /* global angular */
 
-(function () {
+(function() {
     "use strict";
 
     var app = angular.module('app');
 
-    app.service('Router', ['$location', '$timeout', function ($location, $timeout) {
+    app.service('Router', ['$location', '$timeout', function($location, $timeout) {
 
         var service = this;
         service.redirect = redirect;
-        service.retry = retry;
+        service.path = path;
+        service.apply = apply;
 
         function redirect(path, msecs) {
             function doRedirect() {
@@ -3852,7 +3605,7 @@
                 $location.path(path);
             }
             if (msecs) {
-                $timeout(function () {
+                $timeout(function() {
                     doRedirect();
                 }, msecs);
             } else {
@@ -3860,18 +3613,33 @@
             }
         }
 
-        function retry(path, msecs) {
+        function path(path, msecs) {
             function doRetry() {
                 path = $location.$$lastRequestedPath || path;
                 $location.$$lastRequestedPath = null;
                 $location.path(path);
             }
             if (msecs) {
-                $timeout(function () {
+                $timeout(function() {
                     doRetry();
                 }, msecs);
             } else {
                 doRetry();
+            }
+        }
+
+        function apply(path, msecs) {
+            function doRetry() {
+                $location.path(path);
+            }
+            if (msecs) {
+                $timeout(function() {
+                    doRetry();
+                }, msecs);
+            } else {
+                $timeout(function() {
+                    doRetry();
+                });
             }
         }
 

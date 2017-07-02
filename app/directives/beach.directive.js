@@ -11,17 +11,17 @@
             link: link,
         };
 
-        function link(scope, element, attributes, model) {
+        function link(scope, element, attributes, ctrl) {
             var over, overItem, down, mode, mouse = { x: 0, y: 0 },
                 view = { w: 0, h: 0 },
                 cell = { w: 40, h: 40, w2: 20, h2: 20 };
 
-            var beach = scope.beach;
-            var controls = scope.controls;
-            var items = beach.items;
-
             var painter = new Painter(element[0]);
             var palette = new Palette();
+
+            var controls = scope.controls;
+            var model = scope.model;
+            var items = model.items;
 
             // document.body.appendChild(palette.painter.canvas);
 
@@ -192,8 +192,8 @@
                         rows++;
                     }
                 });
-                beach.cols = cols;
-                beach.rows = rows;
+                model.cols = cols;
+                model.rows = rows;
             }
 
             function updateScope() {
@@ -266,7 +266,7 @@
             }
 
             controls.setCenter = function() {
-                if (beach.rows && beach.cols) {
+                if (model.rows && model.cols) {
                     var cols = Math.floor(view.w / cell.w);
                     var rows = Math.floor(view.h / cell.h);
                     var cmin = Number.POSITIVE_INFINITY,
@@ -275,14 +275,14 @@
                         cmin = Math.min(cmin, item.x);
                         rmin = Math.min(rmin, item.y);
                     });
-                    var sc = Math.max(0, Math.floor((cols - beach.cols) / 2) - 1);
-                    var sr = Math.max(0, Math.floor((rows - beach.rows) / 2) - 1);
+                    var sc = Math.max(0, Math.floor((cols - model.cols) / 2) - 1);
+                    var sr = Math.max(0, Math.floor((rows - model.rows) / 2) - 1);
                     angular.forEach(items, function(item) {
                         item.x = sc + (item.x - cmin);
                         item.y = sr + (item.y - rmin);
                     });
                 }
-                console.log('setCenter', beach.rows, beach.cols);
+                console.log('setCenter', model.rows, model.cols);
                 draw();
             };
 
@@ -301,8 +301,13 @@
             });
 
             onResize();
-            $timeout(function() {
-                draw();
+
+            scope.$watch('model', function(newValue) {
+                model = newValue;
+                items = model.items;
+                $timeout(function() {
+                    draw();
+                });
             });
 
             /*

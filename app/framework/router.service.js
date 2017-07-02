@@ -1,15 +1,16 @@
 /* global angular */
 
-(function () {
+(function() {
     "use strict";
 
     var app = angular.module('app');
 
-    app.service('Router', ['$location', '$timeout', function ($location, $timeout) {
+    app.service('Router', ['$location', '$timeout', function($location, $timeout) {
 
         var service = this;
         service.redirect = redirect;
-        service.retry = retry;
+        service.path = path;
+        service.apply = apply;
 
         function redirect(path, msecs) {
             function doRedirect() {
@@ -17,7 +18,7 @@
                 $location.path(path);
             }
             if (msecs) {
-                $timeout(function () {
+                $timeout(function() {
                     doRedirect();
                 }, msecs);
             } else {
@@ -25,18 +26,33 @@
             }
         }
 
-        function retry(path, msecs) {
+        function path(path, msecs) {
             function doRetry() {
                 path = $location.$$lastRequestedPath || path;
                 $location.$$lastRequestedPath = null;
                 $location.path(path);
             }
             if (msecs) {
-                $timeout(function () {
+                $timeout(function() {
                     doRetry();
                 }, msecs);
             } else {
                 doRetry();
+            }
+        }
+
+        function apply(path, msecs) {
+            function doRetry() {
+                $location.path(path);
+            }
+            if (msecs) {
+                $timeout(function() {
+                    doRetry();
+                }, msecs);
+            } else {
+                $timeout(function() {
+                    doRetry();
+                });
             }
         }
 

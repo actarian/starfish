@@ -25,7 +25,7 @@
             </div>
         </div>
         <div class="inner pt-3">
-            <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && submit()" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && submit()">
+            <form name="form" role="form" novalidate autocomplete="off" ng-submit="state.enabled() && form.$valid && saveFacility('save')" ng-keyup="$event.keyCode == 13 && state.enabled() && form.$valid && saveFacility('save')">
                 <h3>Indirizzo</h3>
                 <div form="form" control="text" ng-model="model.shopName" title="Stabilimento" placeholder="il nome dello stabilimento" required="true"></div>
                 <div form="form" control="text" ng-model="model.position.lat" title="Latitudine" placeholder="latitudine" validate="number" precision="20" required="true"></div>
@@ -41,7 +41,7 @@
                 <!-- <div form="form" control="select" ng-model="model.type" title="Type" placeholder="selezione un tipo" required="true" source="[{id:1,name:'1'}, {id:2,name:'2'}]"></div> -->
                 <div ng-include="'partials/errors'"></div>
                 <div class="text-right">
-                    <button type="button" class="btn btn-primary animated infinite" ng-click="form.$valid && submit('save')" ng-class="state.classes('save', { busy: 'bounce', error: 'shake', success: 'pulse' })" ng-bind="state.labels('save', { ready: 'salva', busy: '...', 'error': 'errore', success: 'salvato' })"
+                    <button type="button" class="btn btn-primary animated infinite" ng-click="form.$valid && saveFacility('save')" ng-class="state.classes('save', { busy: 'bounce', error: 'shake', success: 'pulse' })" ng-bind="state.labels('save', { ready: 'salva', busy: 'attendi', 'error': 'errore', success: 'salvato' })"
                         ng-disabled="state.disabled('save')">salva</button>
                 </div>
             </form>

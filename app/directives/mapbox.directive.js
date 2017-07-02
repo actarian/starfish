@@ -164,12 +164,6 @@
             }
 
             function setLocation() {
-                /*
-                map.setCenter([
-                    parseFloat(lng),
-                    parseFloat(lat)
-                ]);
-                */
                 marker.setLngLat([position.lng, position.lat]);
                 map.flyTo({
                     center: [
@@ -179,59 +173,13 @@
                     zoom: 15,
                     speed: 1.5,
                     curve: 1,
-                    /*
-                    easing: function (t) {
-                        return t;
-                    }
-                    */
                 });
             }
-
-            /*
-            scope.$watch('model', function(model) {
-                position = model.position;
-                setLocation();
-            });
-            */
-
-            /*
-            scope.$watch('map.address', function(address) {
-                if (!address) {
-                    return;
-                }
-                scope.map.results = null;
-                scope.map.setAddress = function(item) {
-                    console.log('setAddress', item);
-                    angular.extend(scope.model, item);
-                    scope.map.results = null;
-                    setLocation();
-                };
-                geocodeAddress(address);
-            });
-            */
-
-            /*
-            // When the cursor enters a feature in the point layer, prepare for dragging.
-            map.on('mouseenter', 'point', function() {
-                // map.setPaintProperty('point', 'circle-color', '#3bb2d0');
-                canvas.style.cursor = 'move';
-                overing = true;
-                map.dragPan.disable();
-            });
-            map.on('mouseleave', 'point', function() {
-                // map.setPaintProperty('point', 'circle-color', '#3887be');
-                canvas.style.cursor = '';
-                overing = false;
-                map.dragPan.enable();
-            });
-            */
 
             function mouseDown() {
                 if (!overing) return;
                 dragging = true;
-                // Set a cursor indicator
                 canvas.style.cursor = 'grab';
-                // Mouse events
                 map.on('mousemove', onMove);
                 map.once('mouseup', onUp);
             }
@@ -239,52 +187,38 @@
             function onMove(e) {
                 if (!dragging) return;
                 var p = e.lngLat;
-                // Set a UI indicator for dragging.
                 canvas.style.cursor = 'grabbing';
-                // Update the Point feature in `geojson` coordinates
-                // and call setData to the source layer `point` on it.
                 marker.setLngLat([
                     p.lng,
                     p.lat
                 ]);
-                // geojson.features[0].geometry.coordinates = [p.lng, p.lat];
-                // map.getSource('point').setData(geojson);
             }
 
             function onUp(e) {
                 if (!dragging) return;
                 var p = e.lngLat;
-                // Print the coordinates of where the point had
-                // finished being dragged to on the map.
-                // coordinates.style.display = 'block';
-                // coordinates.innerHTML = 'Longitude: ' + p.lng + '<br />Latitude: ' + p.lat;
                 $timeout(function() {
                     position = setPosition(p.lat, p.lng);
-                    reverseGeocode(p);
+                    // reverseGeocode(p);
                 });
                 canvas.style.cursor = '';
                 dragging = false;
-                // Unbind mouse events
                 map.off('mousemove', onMove);
             }
 
             function ready() {
-
                 map = newMap();
-
                 marker = newMarker();
-
             }
 
             googleMaps.geocoder().then(function(response) {
                 geocoder = response;
                 ready();
             });
-
         }
     }]);
 
-    app.directive('mapboxViewer', ['$http', '$timeout', 'GoogleMaps', function($http, $timeout, googleMaps) {
+    app.directive('mapboxViewer', ['$http', '$timeout', 'GoogleMaps', 'Router', function($http, $timeout, googleMaps, router) {
         if (!mapboxgl) {
             return;
         }
@@ -361,7 +295,8 @@
                     .addTo(map);
                 var markerElement = angular.element(node);
                 markerElement.on('click', function(e) {
-                    console.log('click', this);
+                    console.log('click', item);
+                    router.apply('/spiaggia/' + item.id);
                 });
                 return marker;
             }

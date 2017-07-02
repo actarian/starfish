@@ -18,9 +18,14 @@
             controller: 'ProfileCtrl',
             resolve: {
                 user: ['FirebaseApi', function(api) {
-                    return api.isLoggedOrGoTo('/signin');
+                    return api.auth.redirect('/signin');
                 }],
             },
+
+        }).when('/spiaggia/:facilityId', {
+            title: 'Spiaggia',
+            templateUrl: 'partials/beach.html',
+            controller: 'BeachCtrl',
 
         }).when('/signin', {
             title: 'Accedi',
@@ -38,7 +43,7 @@
             controller: 'DashboardCtrl',
             resolve: {
                 user: ['FirebaseApi', function(api) {
-                    return api.isLoggedOrGoTo('/signin');
+                    return api.auth.redirect('/signin');
                 }],
             },
 
@@ -48,7 +53,7 @@
             controller: 'UserCtrl',
             resolve: {
                 user: ['FirebaseApi', function(api) {
-                    return api.isLoggedOrGoTo('/signin');
+                    return api.auth.redirect('/signin');
                 }],
             },
 

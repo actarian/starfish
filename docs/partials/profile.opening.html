@@ -23,7 +23,7 @@
                 </div>
                 <div ng-include="'partials/errors'"></div>
                 <div class="text-right">
-                    <button type="button" class="btn btn-primary animated infinite" ng-click="form.$valid && submit('save')" ng-class="state.classes('save', { busy: 'bounce', error: 'shake', success: 'pulse' })" ng-bind="state.labels('save', { ready: 'salva', busy: '...', 'error': 'errore', success: 'salvato' })"
+                    <button type="button" class="btn btn-primary animated infinite" ng-click="form.$valid && submit('save')" ng-class="state.classes('save', { busy: 'bounce', error: 'shake', success: 'pulse' })" ng-bind="state.labels('save', { ready: 'salva', busy: 'attendi', 'error': 'errore', success: 'salvato' })"
                         ng-disabled="state.disabled('save')">salva</button>
                 </div>
             </form>
