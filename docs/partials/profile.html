@@ -7,20 +7,25 @@
 <main>
     <ul class="nav nav-tabs justify-content-center">
         <li class="nav-item">
+            <a class="nav-link" ng-class="{ active: mode == MODES.INFO }" ng-click="mode = MODES.INFO" ng-bind="model.shopName || 'Informazioni'">-</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" ng-class="{ active: mode == MODES.PLACE }" ng-click="mode = MODES.PLACE">Posizione</a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" ng-class="{ active: mode == MODES.BEACH }" ng-click="mode = MODES.BEACH">Spiaggia</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" ng-class="{ active: mode == MODES.PRICES }" ng-click="mode = MODES.PRICES">Tariffe</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" ng-class="{ active: mode == MODES.PLACE }" ng-click="mode = MODES.PLACE">Posizione</a>
-        </li>
-        <li class="nav-item">
             <a class="nav-link" ng-class="{ active: mode == MODES.OPENING }" ng-click="mode = MODES.OPENING">Apertura</a>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" ng-class="{ active: mode == MODES.INFO }" ng-click="mode = MODES.INFO">Informazioni</a>
-        </li>
+        <!--
+            <li class="nav-item">
+                <a class="nav-link" ng-class="{ active: mode == MODES.INFO }" ng-click="mode = MODES.INFO">Informazioni</a>
+            </li>
+        -->
     </ul>
     <div ng-if="mode == MODES.BEACH" ng-include="'partials/profile.beach.html'"></div>
     <div ng-if="mode == MODES.PRICES" ng-include="'partials/profile.prices.html'"></div>
